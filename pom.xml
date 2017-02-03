@@ -1,0 +1,55 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>net.spals</groupId>
+        <artifactId>spals-parent-pom</artifactId>
+        <version>6</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.spals.appbuilder</groupId>
+    <artifactId>spals-appbuilder-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>App Builder</name>
+    <description>
+        AppBuilder is a library to help easily create application micro-services in Java and Scala.
+    </description>
+    <url>https://github.com/spals/appbuilder</url>
+
+    <developers>
+        <developer>
+            <name>Jim Spagnola</name>
+        </developer>
+        <developer>
+            <name>Tim Kral</name>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/spals/appbuilder.git</connection>
+        <developerConnection>scm:git:git@github.com:spals/appbuilder.git</developerConnection>
+        <url>https://github.com/spals/appbuilder</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>The BSD 3-Clause License</name>
+            <url>http://opensource.org/licenses/BSD-3-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+    </properties>
+
+    <modules>
+        <module>config</module>
+    </modules>
+
+    <dependencyManagement>
+    </dependencyManagement>
+
+</project>

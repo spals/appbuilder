@@ -1,0 +1,18 @@
+# Eclipse files
+.project
+.classpath
+.settings/
+
+# IntelliJ files
+.idea
+*.iml
+
+# Output files
+.travis/
+target/
+test-output/
+logs/
+bin/
+
+# Output file from shade plugin
+dependency-reduced-pom.xml
