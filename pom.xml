@@ -54,6 +54,7 @@
         <module>annotations</module>
         <module>app</module>
         <module>config</module>
+        <module>config-test</module>
     </modules>
 
     <dependencyManagement>
