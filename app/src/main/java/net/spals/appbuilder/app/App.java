@@ -16,6 +16,7 @@ import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
+import net.spals.appbuilder.app.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.bootstrap.AutoBindModulesBootstrapModule;
 import net.spals.appbuilder.app.modules.AutoBindJerseyModule;
 import net.spals.appbuilder.app.modules.AutoBindServicesModule;
@@ -65,7 +66,6 @@ public abstract class App {
     public static class Builder extends App_Builder {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
-        private Optional<Reflections> serviceScan = Optional.empty();
 
         public Builder() {
             this.lifecycleInjectorBuilder = LifecycleInjector.builder()
@@ -113,6 +113,12 @@ public abstract class App {
             return addModule(new ServletModule());
         }
 
+        @Override
+        public Builder setServiceConfig(final Config serviceConfig) {
+            addBootstrapModule(new AutoBindConfigBootstrapModule(serviceConfig));
+            return super.setServiceConfig(serviceConfig);
+        }
+
         public Builder setServiceConfigFromClasspath(final String serviceConfigFileName) {
             return setServiceConfig(ConfigFactory.load(serviceConfigFileName,
                     ConfigParseOptions.defaults().setAllowMissing(false),
@@ -120,8 +126,8 @@ public abstract class App {
         }
 
         public Builder setServiceScan(final Reflections serviceScan) {
-            this.serviceScan = Optional.ofNullable(serviceScan);
-            return this;
+            addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
+            return addModule(new AutoBindServicesModule(serviceScan));
         }
 
         public Builder usingDropwizard(final Environment env) {
@@ -138,19 +144,6 @@ public abstract class App {
         }
 
         public App build() {
-            // Bind the service configuration
-            lifecycleInjectorBuilder.withAdditionalBootstrapModules(bootstrapBinder -> {
-                // This will parse the configuration and deliver its individual pieces
-                // to @Configuration fields.
-                bootstrapBinder.bindConfigurationProvider()
-                        .toInstance(new TypesafeConfigurationProvider(getServiceConfig()));
-                // Also give access to the full blown configuration
-                bootstrapBinder.bind(Config.class).annotatedWith(ServiceConfig.class).toInstance(getServiceConfig());
-            });
-
-            serviceScan.ifPresent(scan -> lifecycleInjectorBuilder
-                .withAdditionalBootstrapModules(new AutoBindModulesBootstrapModule(scan))
-                .withAdditionalModules(new AutoBindServicesModule(scan)));
             setLifecycleInjector(lifecycleInjectorBuilder.build());
             return super.build();
         }

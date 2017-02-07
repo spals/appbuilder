@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
- * A {@link BootstrapModule} which implements
+ * A {@link BootstrapModule} which installs
+ * {@link Module}s marked for auto binding.
  *
  * @author tkral
  */

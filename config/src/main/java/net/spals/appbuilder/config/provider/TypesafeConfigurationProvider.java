@@ -1,10 +1,16 @@
 package net.spals.appbuilder.config.provider;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.governator.configuration.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A {@link ConfigurationProvider} which is backed
@@ -12,9 +18,11 @@ import java.util.Date;
  *
  * @author tkral
  */
-public class TypesafeConfigurationProvider extends AbstractObjectConfigurationProvider {
+public class TypesafeConfigurationProvider extends DefaultConfigurationProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TypesafeConfigurationProvider.class);
 
     private final Config config;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public TypesafeConfigurationProvider(final Config config) {
         this.config = config;
@@ -93,5 +101,26 @@ public class TypesafeConfigurationProvider extends AbstractObjectConfigurationPr
     @Override
     public Property<Date> getDateProperty(final ConfigurationKey key, final Date defaultValue) {
         return new DateWithDefaultProperty(getStringProperty(key, null), defaultValue);
+    }
+
+    @Override
+    public <T> Property<T> getObjectProperty(final ConfigurationKey key,  final T defaultValue, final Class<T> objectType) {
+        return new Property<T>() {
+            @Override
+            public T get() {
+                final Config configValue = config.getConfig(key.getRawKey());
+                final Map<String, Object> configValueMap = configValue.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().unwrapped()));
+
+                try {
+                    final byte[] serialized = mapper.writeValueAsBytes(configValueMap);
+                    return mapper.readValue(serialized, objectType);
+                } catch (IOException e) {
+                    LOGGER.warn("Could not deserialize configuration with key " + key.getRawKey()
+                            + " to type " + objectType, e);
+                    return defaultValue;
+                }
+            }
+        };
     }
 }
