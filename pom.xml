@@ -53,6 +53,7 @@
     <modules>
         <module>annotations</module>
         <module>app</module>
+        <module>app-test</module>
         <module>config</module>
         <module>config-test</module>
     </modules>

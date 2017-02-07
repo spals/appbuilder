@@ -182,7 +182,8 @@ public class AutoBindServicesModule extends AbstractModule {
      *
      * @author tkral
      */
-    private static class AutoBoundProvider implements com.google.inject.Provider {
+    @VisibleForTesting
+    static class AutoBoundProvider implements com.google.inject.Provider {
         private final Class<? extends javax.inject.Provider> providerClazz;
 
         @Inject
