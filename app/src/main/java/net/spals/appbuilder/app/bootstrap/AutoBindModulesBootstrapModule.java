@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
-import net.spals.appbuilder.annotations.AutoBindModule;
+import net.spals.appbuilder.annotations.service.AutoBindModule;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

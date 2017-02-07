@@ -1,4 +1,4 @@
-package net.spals.appbuilder.annotations;
+package net.spals.appbuilder.annotations.service;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

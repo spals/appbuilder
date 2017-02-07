@@ -1,4 +1,4 @@
-package net.spals.appbuilder.annotations;
+package net.spals.appbuilder.annotations.service;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a singleton service to be auto-bound
- * as a key-value pair in a map within an application.
+ * in a set within an application.
  *
  * See https://github.com/google/guice/wiki/Multibindings
  *
@@ -15,25 +15,13 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface AutoBindInMap {
+public @interface AutoBindInSet {
 
     /**
      * The type under which the service should be bound. This
-     * effectively acts as the value type within the map binder.
+     * effectively acts as the generic type within the set binder.
      *
      * Under almost all circumstances, this should be an interface.
      */
     Class<?> baseClass();
-
-    /**
-     * The key value that maps to the service within the map binder.
-     */
-    String key();
-
-    /**
-     * The type of the key that maps to the service within the map binder.
-     *
-     * Note that this can only be a String or Enum.
-     */
-    Class<?> keyType() default String.class;
 }
