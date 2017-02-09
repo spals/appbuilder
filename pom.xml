@@ -56,6 +56,8 @@
         <module>app-test</module>
         <module>config</module>
         <module>config-test</module>
+        <module>message-core</module>
+        <module>message-local</module>
     </modules>
 
     <dependencyManagement>
@@ -109,6 +111,16 @@
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-message-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-message-local</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

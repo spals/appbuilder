@@ -8,7 +8,7 @@ import org.inferred.freebuilder.FreeBuilder;
 import java.util.Optional;
 
 /**
- * Common configuration for an event consumer.
+ * Common configuration for an asynchronous message consumer.
  *
  * @author tkral
  */
