@@ -58,6 +58,7 @@
         <module>config-test</module>
         <module>message-core</module>
         <module>message-local</module>
+        <module>store-core</module>
     </modules>
 
     <dependencyManagement>
@@ -85,6 +86,11 @@
             <dependency>
                 <groupId>com.netflix.governator</groupId>
                 <artifactId>governator</artifactId>
+                <version>${governator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netflix.governator</groupId>
+                <artifactId>governator-api</artifactId>
                 <version>${governator.version}</version>
             </dependency>
             <dependency>
@@ -121,6 +127,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-message-local</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-store-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
