@@ -12,6 +12,10 @@ public interface Message {
 
     Map<String, Object> getPayload();
 
+    String getChannel();
+
+    String getGlobalId();
+
     String getTag();
 
     class Builder extends Message_Builder {  }
