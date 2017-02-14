@@ -31,8 +31,8 @@ import static com.google.common.base.Preconditions.checkState;
  * @author tkral
  */
 @AutoBindInMap(baseClass = MessageConsumerPlugin.class, key = "local")
-class LocalMessageConsumerPlugin implements MessageConsumerPlugin, Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalMessageConsumerPlugin.class);
+class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runnable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockingQueueMessageConsumerPlugin.class);
 
     private final Map<String, MessageConsumerCallback> consumerCallbackMap;
     private final BlockingQueue<Message> localMessageQueue;
@@ -42,9 +42,9 @@ class LocalMessageConsumerPlugin implements MessageConsumerPlugin, Runnable {
     private final TimeUnit pollTimeoutUnit;
 
     @Inject
-    LocalMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
-                               final Map<String, MessageConsumerCallback> consumerCallbackMap,
-                               @Named("localMessageQueue") final BlockingQueue<Message> localMessageQueue) {
+    BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
+                                       final Map<String, MessageConsumerCallback> consumerCallbackMap,
+                                       @Named("localMessageQueue") final BlockingQueue<Message> localMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
                 .filter(config -> config.hasPath("local.queue.pollTimeout"))
                 .map(config -> config.getLong("local.queue.pollTimeout")).orElse(10L);

@@ -26,8 +26,8 @@ import static com.google.common.base.Preconditions.checkState;
  * @author tkral
  */
 @AutoBindInMap(baseClass = MessageProducerPlugin.class, key = "local")
-class LocalMessageProducerPlugin implements MessageProducerPlugin {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalMessageProducerPlugin.class);
+class BlockingQueueMessageProducerPlugin implements MessageProducerPlugin {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockingQueueMessageProducerPlugin.class);
 
     private final BlockingQueue<Message> localMessageQueue;
 
@@ -35,8 +35,8 @@ class LocalMessageProducerPlugin implements MessageProducerPlugin {
     private final Optional<TimeUnit> offerTimeoutUnit;
 
     @Inject
-    LocalMessageProducerPlugin(@ServiceConfig final Config serviceConfig,
-                               @Named("localMessageQueue") final BlockingQueue<Message> localMessageQueue) {
+    BlockingQueueMessageProducerPlugin(@ServiceConfig final Config serviceConfig,
+                                       @Named("localMessageQueue") final BlockingQueue<Message> localMessageQueue) {
         this.localMessageQueue = localMessageQueue;
         this.offerTimeout = Optional.of(serviceConfig)
                 .filter(config -> config.hasPath("local.queue.offerTimeout"))

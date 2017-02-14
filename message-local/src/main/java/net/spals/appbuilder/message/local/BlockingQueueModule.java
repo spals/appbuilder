@@ -27,13 +27,13 @@ import java.util.concurrent.TimeUnit;
  * @author tkral
  */
 @AutoBindModule
-class LocalMessageQueueModule extends AbstractModule {
+class BlockingQueueModule extends AbstractModule {
 
     // local.queue.size
     private final Integer queueSize;
 
     @Inject
-    LocalMessageQueueModule(@ServiceConfig final Config serviceConfig) {
+    BlockingQueueModule(@ServiceConfig final Config serviceConfig) {
         this.queueSize = Optional.of(serviceConfig).filter(config -> config.hasPath("local.queue.size"))
                 .map(config -> config.getInt("local.queue.size")).orElse(Integer.MAX_VALUE);
     }
