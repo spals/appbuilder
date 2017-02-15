@@ -7,6 +7,8 @@ import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.store.core.StorePlugin;
 import net.spals.appbuilder.store.core.model.StoreKey;
 import net.spals.appbuilder.store.core.model.StoreOperator.Standard;
+import net.spals.appbuilder.store.core.model.TwoValueRangeKey;
+import net.spals.appbuilder.store.core.model.TwoValueRangeKey.TwoValueHolder;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
@@ -65,7 +67,11 @@ class MapDBStorePlugin implements StorePlugin {
                 final Object[] allKeyArray = new Object[]{key.getHashValue()};
                 valueArrays = table.prefixSubMap(allKeyArray).values();
                 break;
-//            case BETWEEN:
+            case BETWEEN:
+                final Object[] fromKeyArray = new Object[]{key.getHashValue(), ((TwoValueHolder)key.getRangeKey().getValue()).getValue1()};
+                final Object[] toKeyArray = new Object[]{key.getHashValue(), ((TwoValueHolder)key.getRangeKey().getValue()).getValue2()};
+                valueArrays = table.subMap(fromKeyArray, true, toKeyArray, true).values();
+                break;
             case EQUAL_TO:
                 final Object[] equalToKeyArray = convertSimpleKeyToArray(key);
                 valueArrays = Optional.ofNullable(table.get(equalToKeyArray))
@@ -126,8 +132,6 @@ class MapDBStorePlugin implements StorePlugin {
                                           final Map<String, Object> payload) {
         checkWriteItem(key, payload);
 
-//        final Optional<Map<String, Object>> item;
-//        if (key.getRangeKey().getOperator() == )
         final Optional<Map<String, Object>> item = getItem(tableName, key);
         // If no item is present at the given key, then updateItem takes on putItem semantics
         if (!item.isPresent()) {

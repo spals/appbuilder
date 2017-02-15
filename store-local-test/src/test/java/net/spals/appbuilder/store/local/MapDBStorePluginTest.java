@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static net.spals.appbuilder.store.core.model.SingleValueRangeKey.*;
+import static net.spals.appbuilder.store.core.model.TwoValueRangeKey.between;
 import static net.spals.appbuilder.store.core.model.ZeroValueRangeKey.all;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -118,6 +119,14 @@ public class MapDBStorePluginTest {
                 {new StoreKey.Builder().setHash("myHashField", "myHashValue")
                         .setRange("myRangeField", all()).build(),
                         ImmutableList.of(result.apply(1), result.apply(2), result.apply(3), result.apply(4))},
+                // Case: Between different values
+                {new StoreKey.Builder().setHash("myHashField", "myHashValue")
+                        .setRange("myRangeField", between(2, 4)).build(),
+                        ImmutableList.of(result.apply(2), result.apply(3), result.apply(4))},
+                // Case: Between same value
+                {new StoreKey.Builder().setHash("myHashField", "myHashValue")
+                        .setRange("myRangeField", between(2, 2)).build(),
+                        ImmutableList.of(result.apply(2))},
                 {new StoreKey.Builder().setHash("myHashField", "myHashValue")
                         .setRange("myRangeField", equalTo(1)).build(),
                     ImmutableList.of(result.apply(1))},
