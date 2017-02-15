@@ -1,12 +1,13 @@
 package net.spals.appbuilder.store.core.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import net.spals.appbuilder.store.core.model.StoreOperator.Standard;
 import org.inferred.freebuilder.FreeBuilder;
 
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static net.spals.appbuilder.store.core.model.ZeroValueRangeKey.none;
 
 /**
  * @author tkral
@@ -21,24 +22,27 @@ public interface StoreKey {
 
     Optional<String> getRangeField();
 
-    Optional<Object> getRangeValue();
+    StoreRangeKey getRangeKey();
 
     class Builder extends StoreKey_Builder {
 
-        @Override
-        public Builder setRangeValue(final Object rangeValue) {
-            checkArgument((rangeValue instanceof Boolean)
-                    || (rangeValue instanceof Number)
-                    || (rangeValue instanceof String),
-                    "Illegal range value type. Must be Boolean, Number, or String. But is %s", rangeValue.getClass());
+        public Builder() {
+            setRangeKey(none());
+        }
 
-            return super.setRangeValue(rangeValue);
+        public Builder setHash(final String hashField, final String hashValue) {
+            setHashField(hashField);
+            return setHashValue(hashValue);
+        }
+
+        public Builder setRange(final String rangeField, final StoreRangeKey rangeKey) {
+            setRangeField(rangeField);
+            return setRangeKey(rangeKey);
         }
 
         @Override
         public StoreKey build() {
-            checkState(getRangeField().isPresent() == getRangeValue().isPresent(),
-                    "Either both range key and range value must be set or neither can be set");
+            checkState(getRangeKey().getOperator() == Standard.NONE || getRangeField().isPresent());
             return super.build();
         }
     }

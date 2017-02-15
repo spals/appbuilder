@@ -8,6 +8,7 @@ import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.store.core.model.StoreKey;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -53,6 +54,11 @@ class StoreProvider implements Provider<Store> {
         @Override
         public Optional<Map<String, Object>> getItem(final String tableName, final StoreKey key) {
             return pluginDelegate.getItem(tableName, key);
+        }
+
+        @Override
+        public List<Map<String, Object>> getItems(final String tableName, final StoreKey key) {
+            return pluginDelegate.getItems(tableName, key);
         }
 
         @Override

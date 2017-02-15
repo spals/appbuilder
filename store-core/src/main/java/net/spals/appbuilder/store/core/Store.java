@@ -2,6 +2,7 @@ package net.spals.appbuilder.store.core;
 
 import net.spals.appbuilder.store.core.model.StoreKey;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -13,6 +14,8 @@ public interface Store {
     void deleteItem(String tableName, StoreKey key);
 
     Optional<Map<String, Object>> getItem(String tableName, StoreKey key);
+
+    List<Map<String, Object>> getItems(String tableName, StoreKey key);
 
     Map<String, Object> putItem(String tableName, StoreKey key, Map<String, Object> payload);
 
