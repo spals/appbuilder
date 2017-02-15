@@ -51,7 +51,7 @@ class StoreProvider implements Provider<Store> {
         }
 
         @Override
-        public Map<String, Object> getItem(final String tableName, final StoreKey key) {
+        public Optional<Map<String, Object>> getItem(final String tableName, final StoreKey key) {
             return pluginDelegate.getItem(tableName, key);
         }
 
