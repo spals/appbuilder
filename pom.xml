@@ -57,6 +57,7 @@
         <module>app-test</module>
         <module>config</module>
         <module>config-test</module>
+        <module>filestore-core</module>
         <module>message-core</module>
         <module>message-local</module>
         <module>nosqlstore-core</module>
@@ -120,6 +121,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-filestore-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
