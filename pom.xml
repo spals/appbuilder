@@ -59,9 +59,9 @@
         <module>config-test</module>
         <module>message-core</module>
         <module>message-local</module>
-        <module>store-core</module>
-        <module>store-local</module>
-        <module>store-local-test</module>
+        <module>nosqlstore-core</module>
+        <module>nosqlstore-local</module>
+        <module>nosqlstore-local-test</module>
     </modules>
 
     <dependencyManagement>
@@ -134,12 +134,12 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
-                <artifactId>spals-appbuilder-store-core</artifactId>
+                <artifactId>spals-appbuilder-nosqlstore-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
-                <artifactId>spals-appbuilder-store-local</artifactId>
+                <artifactId>spals-appbuilder-nosqlstore-local</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
