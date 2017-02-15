@@ -8,13 +8,13 @@ import java.net.URI;
  * @author tkral
  */
 @FreeBuilder
-public interface FileStoreMetadata {
+public interface FileMetadata {
 
-    FileScope getFileScore();
+    FileScope getScope();
 
-    URI getFileURI();
+    URI getURI();
 
     FileStoreLocation getStoreLocation();
 
-    class Builder extends FileStoreMetadata_Builder {  }
+    class Builder extends FileMetadata_Builder {  }
 }

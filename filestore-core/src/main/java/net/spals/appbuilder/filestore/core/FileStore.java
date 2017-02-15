@@ -1,9 +1,10 @@
 package net.spals.appbuilder.filestore.core;
 
+import net.spals.appbuilder.filestore.core.model.FileMetadata;
 import net.spals.appbuilder.filestore.core.model.FileStoreKey;
-import net.spals.appbuilder.filestore.core.model.FileStoreMetadata;
 import net.spals.appbuilder.filestore.core.model.PutFileStoreRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -12,11 +13,11 @@ import java.util.Optional;
  */
 public interface FileStore {
 
-    boolean deleteFile(FileStoreKey key);
+    boolean deleteFile(FileStoreKey key) throws IOException;
 
-    Optional<FileStoreMetadata> getFileMetadata(FileStoreKey key);
+    Optional<InputStream> getFileContent(FileStoreKey key) throws IOException;
 
-    Optional<InputStream> getFile(FileStoreKey key);
+    Optional<FileMetadata> getFileMetadata(FileStoreKey key) throws IOException;
 
-    FileStoreMetadata putFile(FileStoreKey key, PutFileStoreRequest request);
+    FileMetadata putFile(FileStoreKey key, PutFileStoreRequest request) throws IOException;
 }
