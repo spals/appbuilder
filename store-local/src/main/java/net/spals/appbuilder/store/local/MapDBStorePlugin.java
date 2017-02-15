@@ -3,23 +3,17 @@ package net.spals.appbuilder.store.local;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.governator.annotations.Configuration;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.store.core.StorePlugin;
 import net.spals.appbuilder.store.core.model.StoreKey;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
-import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArrayTuple;
 import org.mapdb.serializer.SerializerUtils;
 
-import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -31,18 +25,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 @AutoBindInMap(baseClass = StorePlugin.class, key = "local")
 class MapDBStorePlugin implements StorePlugin {
 
-    @Configuration("local.store.file")
-    private volatile File storeFile;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final DB mapDB;
 
-    private DB mapDB;
-
-    MapDBStorePlugin() {  }
-
-    @PostConstruct
-    void postConstruct() {
-        this.mapDB = DBMaker.fileDB(storeFile).closeOnJvmShutdown().make();
+    MapDBStorePlugin(final DB mapDB) {
+        this.mapDB = mapDB;
     }
 
     @Override
@@ -87,17 +74,18 @@ class MapDBStorePlugin implements StorePlugin {
 
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertKeyToArray(key);
+        final Map<String, Object> returnValue = new TreeMap<>(payload);
 
-        payload.putIfAbsent(key.getHashField(), key.getHashValue());
-        key.getRangeField().ifPresent(rangeField -> payload.putIfAbsent(rangeField, key.getRangeValue().get()));
+        returnValue.putIfAbsent(key.getHashField(), key.getHashValue());
+        key.getRangeField().ifPresent(rangeField -> returnValue.putIfAbsent(rangeField, key.getRangeValue().get()));
 
         try {
-            table.put(keyArray, objectMapper.writeValueAsBytes(payload));
+            table.put(keyArray, objectMapper.writeValueAsBytes(returnValue));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return payload;
+        return returnValue;
     }
 
     @Override
@@ -116,23 +104,23 @@ class MapDBStorePlugin implements StorePlugin {
 
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertKeyToArray(key);
-        final Map<String, Object> currItem = item.get();
+        final Map<String, Object> returnValue = new TreeMap<>(item.get());
 
         payload.entrySet().stream().forEach(entry -> {
             if (isNullOrEmptyEntry().test(entry)) {
-                currItem.remove(entry.getKey());
+                returnValue.remove(entry.getKey());
             } else {
-                currItem.put(entry.getKey(), entry.getValue());
+                returnValue.put(entry.getKey(), entry.getValue());
             }
         });
 
         try {
-            table.put(keyArray, objectMapper.writeValueAsBytes(currItem));
+            table.put(keyArray, objectMapper.writeValueAsBytes(returnValue));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return currItem;
+        return returnValue;
     }
 
     @VisibleForTesting
