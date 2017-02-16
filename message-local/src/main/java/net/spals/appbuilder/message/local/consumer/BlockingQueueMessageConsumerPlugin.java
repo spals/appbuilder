@@ -7,7 +7,7 @@ import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.config.ConsumerConfig;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
-import net.spals.appbuilder.message.core.consumer.callback.MessageConsumerCallback;
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback;
 import net.spals.appbuilder.message.core.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

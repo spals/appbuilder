@@ -13,7 +13,7 @@ public interface PutFileStoreRequest {
 
     InputStream getFileStream();
 
-    FileScope getFileScope();
+    FileSecurityLevel getFileSecurityLevel();
 
     Optional<Long> getContentLength();
 

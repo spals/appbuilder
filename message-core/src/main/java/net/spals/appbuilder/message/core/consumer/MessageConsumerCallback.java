@@ -1,4 +1,4 @@
-package net.spals.appbuilder.message.core.consumer.callback;
+package net.spals.appbuilder.message.core.consumer;
 
 import net.spals.appbuilder.message.core.model.Message;
 

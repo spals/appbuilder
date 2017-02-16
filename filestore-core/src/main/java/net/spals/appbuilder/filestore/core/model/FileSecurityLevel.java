@@ -1,9 +1,11 @@
 package net.spals.appbuilder.filestore.core.model;
 
 /**
+ * The definition for file security.
+ *
  * @author tkral
  */
-public enum FileScope {
+public enum FileSecurityLevel {
     PRIVATE,
     PUBLIC,
     ;

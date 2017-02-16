@@ -7,7 +7,7 @@ import com.google.inject.name.Named;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.filestore.core.model.FileMetadata;
-import net.spals.appbuilder.filestore.core.model.FileScope;
+import net.spals.appbuilder.filestore.core.model.FileSecurityLevel;
 import net.spals.appbuilder.filestore.core.model.FileStoreKey;
 import net.spals.appbuilder.filestore.core.model.PutFileStoreRequest;
 import org.slf4j.Logger;
@@ -75,9 +75,9 @@ class LocalFSFileStorePlugin implements FileStorePlugin {
         }
 
         try {
-            final FileScope fileScope = Files.getPosixFilePermissions(filePath).contains(OTHERS_READ) ?
-                    FileScope.PUBLIC : FileScope.PRIVATE;
-            return Optional.of(new FileMetadata.Builder().setScope(fileScope).setStoreLocation(LOCAL)
+            final FileSecurityLevel fileSecurity = Files.getPosixFilePermissions(filePath).contains(OTHERS_READ) ?
+                    FileSecurityLevel.PUBLIC : FileSecurityLevel.PRIVATE;
+            return Optional.of(new FileMetadata.Builder().setSecurityLevel(fileSecurity).setStoreLocation(LOCAL)
                     .setURI(filePath.toUri()).build());
         } catch (IOException e) {
             LOGGER.error(String.format("Unexpected error while getting file metadata from local filesystem: %s", filePath), e);
@@ -96,12 +96,12 @@ class LocalFSFileStorePlugin implements FileStorePlugin {
 
             final ImmutableSet.Builder<PosixFilePermission> filePermsBuilder = ImmutableSet.<PosixFilePermission>builder()
                     .add(OWNER_READ, OWNER_EXECUTE, GROUP_READ, GROUP_EXECUTE);
-            if (request.getFileScope().isPublic()) {
+            if (request.getFileSecurityLevel().isPublic()) {
                 filePermsBuilder.add(OTHERS_READ);
             }
 
             Files.setPosixFilePermissions(filePath, filePermsBuilder.build());
-            return new FileMetadata.Builder().setScope(request.getFileScope()).setStoreLocation(LOCAL)
+            return new FileMetadata.Builder().setSecurityLevel(request.getFileSecurityLevel()).setStoreLocation(LOCAL)
                     .setURI(filePath.toUri()).build();
         } catch (IOException e) {
             LOGGER.error(String.format("Unexpected error while putting file in local filesystem: %s", filePath), e);
