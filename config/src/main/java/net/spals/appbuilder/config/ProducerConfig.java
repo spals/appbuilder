@@ -19,6 +19,7 @@ public interface ProducerConfig {
     String ACTIVE_KEY = "active";
     String CHANNEL_KEY = "channel";
     String DESTINATION_KEY = "destination";
+    String FORMAT_KEY = "format";
     String GLOBAL_ID_KEY = "globalId";
 
     @JsonProperty(ProducerConfig.ACTIVE_KEY)
@@ -34,6 +35,9 @@ public interface ProducerConfig {
 
     @JsonProperty(ProducerConfig.DESTINATION_KEY)
     String getDestination();
+
+    @JsonProperty(ProducerConfig.FORMAT_KEY)
+    String getFormat();
 
     @JsonProperty(ProducerConfig.GLOBAL_ID_KEY)
     String getGlobalId();

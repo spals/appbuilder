@@ -1,11 +1,13 @@
 package net.spals.appbuilder.message.core.producer;
 
-import net.spals.appbuilder.message.core.model.Message;
+import net.spals.appbuilder.config.ProducerConfig;
+
+import java.io.IOException;
 
 /**
  * @author tkral
  */
 public interface MessageProducerPlugin {
 
-    void sendMessage(final Message message);
+    void sendMessage(final ProducerConfig producerConfig, final byte[] serializedPayload) throws IOException;
 }

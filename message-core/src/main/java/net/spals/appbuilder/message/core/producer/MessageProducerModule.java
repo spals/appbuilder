@@ -8,8 +8,11 @@ import com.google.inject.name.Names;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindModule;
 import net.spals.appbuilder.config.ProducerConfig;
-import net.spals.appbuilder.message.core.model.Message;
+import net.spals.appbuilder.message.core.formatter.MessageFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,12 +23,17 @@ import java.util.Optional;
 class MessageProducerModule extends AbstractModule {
 
     private final Map<String, ProducerConfig> producerConfigMap;
+
+    private final Map<String, MessageFormatter> formatterMap;
     private final Map<String, MessageProducerPlugin> producerPluginMap;
 
     @Inject
     MessageProducerModule(final Map<String, ProducerConfig> producerConfigMap,
+                          final Map<String, MessageFormatter> formatterMap,
                           final Map<String, MessageProducerPlugin> producerPluginMap) {
         this.producerConfigMap = producerConfigMap;
+
+        this.formatterMap = formatterMap;
         this.producerPluginMap = producerPluginMap;
     }
 
@@ -34,11 +42,17 @@ class MessageProducerModule extends AbstractModule {
         producerConfigMap.entrySet().forEach(producerConfigEntry -> {
             final String tag = producerConfigEntry.getKey();
             final ProducerConfig producerConfig = producerConfigEntry.getValue();
+
             final MessageProducerPlugin producerPlugin = Optional.ofNullable(producerPluginMap.get(producerConfig.getDestination()))
                     .orElseThrow(() -> new ConfigException.BadValue(tag + ".producer.destination",
                             "No message producer plugin found for destination: " + producerConfig.getDestination()));
 
-            final MessageProducer delegatingProducer = new DelegatingMessageProducer(producerConfig, producerPlugin);
+            final MessageFormatter formatter = Optional.ofNullable(formatterMap.get(producerConfig.getFormat()))
+                    .orElseThrow(() -> new ConfigException.BadValue(tag + ".producer.format",
+                            "No message formatter plugin found for format: " + producerConfig.getFormat()));
+
+            final MessageProducer delegatingProducer =
+                    new DelegatingMessageProducer(producerConfig, formatter, producerPlugin);
             final MapBinder mapBinder = MapBinder.newMapBinder(binder(), String.class, MessageProducer.class);
             mapBinder.addBinding(tag).toInstance(delegatingProducer);
 
@@ -48,20 +62,38 @@ class MessageProducerModule extends AbstractModule {
 
     @VisibleForTesting
     static class DelegatingMessageProducer implements MessageProducer {
-
+        private final Logger logger;
         private final ProducerConfig producerConfig;
+
+        private final MessageFormatter formatter;
         private final MessageProducerPlugin pluginDelegate;
 
         DelegatingMessageProducer(final ProducerConfig producerConfig,
+                                  final MessageFormatter formatter,
                                   final MessageProducerPlugin pluginDelegate) {
+            this.logger = LoggerFactory.getLogger(DelegatingMessageProducer.class.getName() + "[" + producerConfig.getTag() + "]");
             this.producerConfig = producerConfig;
+
+            this.formatter = formatter;
             this.pluginDelegate = pluginDelegate;
         }
 
         @Override
         public void sendMessage(final Map<String, Object> payload) {
-            pluginDelegate.sendMessage(new Message.Builder()
-                    .putAllPayload(payload).setTag(producerConfig.getTag()).build());
+            final byte[] serializedPayload;
+            try {
+                serializedPayload = formatter.serializePayload(payload);
+            } catch (IOException e) {
+                logger.error("Error while serializing message payload with " + producerConfig.getFormat(), e);
+                return;
+            }
+
+            try {
+                pluginDelegate.sendMessage(producerConfig, serializedPayload);
+            } catch (IOException e) {
+                logger.error("Error while sending message to " + producerConfig.getDestination(), e);
+                return;
+            }
         }
     }
 }
