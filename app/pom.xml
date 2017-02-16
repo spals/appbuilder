@@ -51,16 +51,6 @@
             <artifactId>spals-appbuilder-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-message-core</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-message-local</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>org.inferred</groupId>
             <artifactId>freebuilder</artifactId>
         </dependency>

@@ -21,10 +21,10 @@
 
     <developers>
         <developer>
-            <name>Jim Spagnola</name>
+            <name>Tim Kral</name>
         </developer>
         <developer>
-            <name>Tim Kral</name>
+            <name>Jim Spagnola</name>
         </developer>
     </developers>
 
@@ -55,6 +55,7 @@
         <module>annotations</module>
         <module>app</module>
         <module>app-test</module>
+        <module>bom</module>
         <module>config</module>
         <module>config-test</module>
         <module>filestore-core</module>
