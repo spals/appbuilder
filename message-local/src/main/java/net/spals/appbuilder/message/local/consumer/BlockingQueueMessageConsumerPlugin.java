@@ -6,8 +6,8 @@ import com.typesafe.config.Config;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.config.ConsumerConfig;
-import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback;
+import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +46,11 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
                                        final Map<String, MessageConsumerCallback> consumerCallbackMap,
                                        @Named("localMessageQueue") final BlockingQueue<Message> localMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("local.queue.pollTimeout"))
-                .map(config -> config.getLong("local.queue.pollTimeout")).orElse(10L);
+                .filter(config -> config.hasPath("local.messageConsumer.pollTimeout"))
+                .map(config -> config.getLong("local.messageConsumer.pollTimeout")).orElse(10L);
         this.pollTimeoutUnit = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("local.queue.pollTimeoutUnit"))
-                .map(config -> config.getEnum(TimeUnit.class, "local.queue.pollTimeoutUnit")).orElse(TimeUnit.MILLISECONDS);
+                .filter(config -> config.hasPath("local.messageConsumer.pollTimeoutUnit"))
+                .map(config -> config.getEnum(TimeUnit.class, "local.messageConsumer.pollTimeoutUnit")).orElse(TimeUnit.MILLISECONDS);
 
         this.consumerCallbackMap = consumerCallbackMap;
         this.localMessageQueue = localMessageQueue;

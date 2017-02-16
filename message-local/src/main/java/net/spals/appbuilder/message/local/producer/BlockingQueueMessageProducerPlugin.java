@@ -39,11 +39,11 @@ class BlockingQueueMessageProducerPlugin implements MessageProducerPlugin {
                                        @Named("localMessageQueue") final BlockingQueue<Message> localMessageQueue) {
         this.localMessageQueue = localMessageQueue;
         this.offerTimeout = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("local.queue.offerTimeout"))
-                .map(config -> config.getLong("local.queue.offerTimeout"));
+                .filter(config -> config.hasPath("local.messageProducer.offerTimeout"))
+                .map(config -> config.getLong("local.messageProducer.offerTimeout"));
         this.offerTimeoutUnit = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("local.queue.offerTimeoutUnit"))
-                .map(config -> config.getEnum(TimeUnit.class, "local.queue.offerTimeoutUnit"));
+                .filter(config -> config.hasPath("local.messageProducer.offerTimeoutUnit"))
+                .map(config -> config.getEnum(TimeUnit.class, "local.messageProducer.offerTimeoutUnit"));
         checkState(offerTimeout.isPresent() == offerTimeoutUnit.isPresent(),
                 "local.queue.offerTimeout and local.queue.offerTimeoutUnit must both have values");
     }
