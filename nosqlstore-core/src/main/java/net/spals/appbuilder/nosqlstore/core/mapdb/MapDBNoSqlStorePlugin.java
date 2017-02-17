@@ -25,7 +25,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * @author tkral
  */
-@AutoBindInMap(baseClass = NoSqlStorePlugin.class, key = "mapdb")
+@AutoBindInMap(baseClass = NoSqlStorePlugin.class, key = "mapDB")
 class MapDBNoSqlStorePlugin implements NoSqlStorePlugin {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

@@ -15,7 +15,7 @@ import java.util.Optional;
 @AutoBindProvider
 class MapDBProvider implements Provider<DB> {
 
-    @Configuration("local.nosqlStore.file")
+    @Configuration("mapDB.nosqlStore.file")
     @VisibleForTesting
     private volatile String storeFilePath;
 
