@@ -59,9 +59,9 @@
         <module>config</module>
         <module>config-test</module>
         <module>filestore-core</module>
+        <module>mapstore-core</module>
+        <module>mapstore-core-test</module>
         <module>message-core</module>
-        <module>nosqlstore-core</module>
-        <module>nosqlstore-core-test</module>
     </modules>
 
     <dependencyManagement>
@@ -129,12 +129,12 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
-                <artifactId>spals-appbuilder-message-core</artifactId>
+                <artifactId>spals-appbuilder-mapstore-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
-                <artifactId>spals-appbuilder-nosqlstore-core</artifactId>
+                <artifactId>spals-appbuilder-message-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
