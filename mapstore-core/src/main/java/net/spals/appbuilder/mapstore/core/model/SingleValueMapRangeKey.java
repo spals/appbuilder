@@ -1,6 +1,7 @@
 package net.spals.appbuilder.mapstore.core.model;
 
 import com.google.auto.value.AutoValue;
+import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Extended;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Standard;
 
 /**
@@ -27,6 +28,14 @@ public abstract class SingleValueMapRangeKey<C extends Comparable<C>> implements
 
     public static <C extends Comparable<C>> MapRangeKey<C> lessThanOrEqualTo(final C value) {
         return new AutoValue_SingleValueMapRangeKey<>(Standard.LESS_THAN_OR_EQUAL_TO, value);
+    }
+
+    public static MapRangeKey<String> like(final String value) {
+        return new AutoValue_SingleValueMapRangeKey<>(Extended.LIKE, value);
+    }
+
+    public static MapRangeKey<String> startsWith(final String value) {
+        return new AutoValue_SingleValueMapRangeKey<>(Extended.STARTS_WITH, value);
     }
 
     @Override

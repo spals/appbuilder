@@ -72,21 +72,6 @@ public class MapDBMapStorePluginTest {
         assertThat(storePlugin.getItem("myTable", storeKey), is(Optional.of(expectedResult)));
     }
 
-    @Test(dataProvider = "putItemProvider")
-    public void testUpdateItemAsPutItem(final MapStoreKey storeKey,
-                                        final Map<String, Object> payload,
-                                        final Map<String, Object> expectedResult) throws IOException {
-        // Just for kicks, ensure that fileDBs work too
-        final Path dbDir = Files.createTempDirectory(MapDBMapStorePluginTest.class.getSimpleName());
-        final String dbFilePath = dbDir.resolve(UUID.randomUUID() + ".db").toString();
-
-        final DB fileDB = DBMaker.fileDB(dbFilePath).make();
-        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(fileDB);
-
-        assertThat(storePlugin.updateItem("myTable", storeKey, payload), is(expectedResult));
-        assertThat(storePlugin.getItem("myTable", storeKey), is(Optional.of(expectedResult)));
-    }
-
     @DataProvider
     Object[][] updateItemProvider() {
         return new Object[][] {
@@ -99,8 +84,13 @@ public class MapDBMapStorePluginTest {
 
     @Test(dataProvider = "updateItemProvider")
     public void testUpdateItem(final Map<String, Object> payload,
-                               final Map<String, Object> expectedResult) {
-        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
+                               final Map<String, Object> expectedResult) throws IOException {
+        // Just for kicks, ensure that fileDBs work too
+        final Path dbDir = Files.createTempDirectory(MapDBMapStorePluginTest.class.getSimpleName());
+        final String dbFilePath = dbDir.resolve(UUID.randomUUID() + ".db").toString();
+
+        final DB fileDB = DBMaker.fileDB(dbFilePath).make();
+        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(fileDB);
 
         final MapStoreKey storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
                 .setRange("myRangeField", equalTo("myRangeValue")).build();

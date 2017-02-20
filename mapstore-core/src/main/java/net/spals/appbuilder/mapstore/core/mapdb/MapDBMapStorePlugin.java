@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
+import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Standard;
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHolder;
@@ -38,7 +39,6 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     @Override
     public void deleteItem(final String tableName,
                            final MapStoreKey key) {
-        checkSingleItemKey(key);
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
 
@@ -48,7 +48,6 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     @Override
     public Optional<Map<String, Object>> getItem(final String tableName,
                                                  final MapStoreKey key) {
-        checkSingleItemKey(key);
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
 
@@ -61,7 +60,11 @@ class MapDBMapStorePlugin implements MapStorePlugin {
                                               final MapStoreKey key) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         Collection<byte[]> valueArrays = Collections.emptyList();
-        switch (Standard.valueOf(key.getRangeKey().getOperator().toString())) {
+        final MapRangeOperator.Standard op = Standard.fromName(key.getRangeKey().getOperator().toString())
+                .orElseThrow(() -> new IllegalArgumentException("MapDB cannot support the operator " +
+                        key.getRangeKey().getOperator()));
+
+        switch (op) {
             case ALL:
                 final Object[] allKeyArray = new Object[]{key.getHashValue()};
                 valueArrays = table.prefixSubMap(allKeyArray).values();
@@ -101,14 +104,6 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     public Map<String, Object> putItem(final String tableName,
                                        final MapStoreKey key,
                                        final Map<String, Object> payload) {
-        checkWriteItem(key, payload);
-        // Null or empty values have special semantics in updateItem so we'll disallow them here.
-        final Set<String> nullValueKeys = payload.entrySet().stream()
-                .filter(isNullOrEmptyEntry())
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-        checkArgument(nullValueKeys.isEmpty(), "The following keys have null or empty values: %s", nullValueKeys);
-
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
         final Map<String, Object> returnValue = new TreeMap<>(payload);
@@ -129,17 +124,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     public Map<String, Object> updateItem(final String tableName,
                                           final MapStoreKey key,
                                           final Map<String, Object> payload) {
-        checkWriteItem(key, payload);
-
-        final Optional<Map<String, Object>> item = getItem(tableName, key);
-        // If no item is present at the given key, then updateItem takes on putItem semantics
-        if (!item.isPresent()) {
-            return putItem(tableName, key, payload);
-        }
-
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
-        final Map<String, Object> returnValue = new TreeMap<>(item.get());
+        // As a precondition, the item is guaranteed to be present
+        final Map<String, Object> returnValue = new TreeMap<>(getItem(tableName, key).get());
 
         payload.entrySet().stream().forEach(entry -> {
             if (isNullOrEmptyEntry().test(entry)) {
@@ -176,11 +164,6 @@ class MapDBMapStorePlugin implements MapStorePlugin {
                 .keySerializer(storeKeySerializer)
                 .valueSerializer(Serializer.BYTE_ARRAY)
                 .createOrOpen();
-    }
-
-    @VisibleForTesting
-    Predicate<Map.Entry> isNullOrEmptyEntry() {
-        return entry -> entry.getValue() == null || "".equals(entry.getValue());
     }
 
     @VisibleForTesting
