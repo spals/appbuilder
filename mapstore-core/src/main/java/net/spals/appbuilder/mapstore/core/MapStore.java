@@ -1,5 +1,6 @@
 package net.spals.appbuilder.mapstore.core;
 
+import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public interface MapStore {
 
     Optional<Map<String, Object>> getItem(String tableName, MapStoreKey key);
 
-    List<Map<String, Object>> getItems(String tableName, MapStoreKey key);
+    List<Map<String, Object>> getItems(String tableName, MapStoreKey key, MapQueryOptions options);
 
     Map<String, Object> putItem(String tableName, MapStoreKey key, Map<String, Object> payload);
 

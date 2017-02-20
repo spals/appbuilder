@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions;
 import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.*;
 import static net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between;
 import static net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all;
@@ -147,6 +148,7 @@ public class MapDBMapStorePluginTest {
         storePlugin.putItem("myTable", keyFunction.apply(3), payload);
         storePlugin.putItem("myTable", keyFunction.apply(4), payload);
 
-        assertThat(storePlugin.getItems("myTable", storeKey), contains(expectedResults.stream().toArray()));
+        assertThat(storePlugin.getItems("myTable", storeKey, defaultOptions()),
+                contains(expectedResults.stream().toArray()));
     }
 }

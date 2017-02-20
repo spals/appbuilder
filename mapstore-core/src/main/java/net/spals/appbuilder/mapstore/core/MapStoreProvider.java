@@ -6,6 +6,7 @@ import com.google.inject.Provider;
 import com.netflix.governator.annotations.Configuration;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
+import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 
@@ -52,20 +53,24 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
-        public void deleteItem(final String tableName, final MapStoreKey key) {
+        public void deleteItem(final String tableName,
+                               final MapStoreKey key) {
             checkSingleItemKey(key);
             pluginDelegate.deleteItem(tableName, key);
         }
 
         @Override
-        public Optional<Map<String, Object>> getItem(final String tableName, final MapStoreKey key) {
+        public Optional<Map<String, Object>> getItem(final String tableName,
+                                                     final MapStoreKey key) {
             checkSingleItemKey(key);
             return pluginDelegate.getItem(tableName, key);
         }
 
         @Override
-        public List<Map<String, Object>> getItems(final String tableName, final MapStoreKey key) {
-            return pluginDelegate.getItems(tableName, key);
+        public List<Map<String, Object>> getItems(final String tableName,
+                                                  final MapStoreKey key,
+                                                  final MapQueryOptions options) {
+            return pluginDelegate.getItems(tableName, key, options);
         }
 
         @Override

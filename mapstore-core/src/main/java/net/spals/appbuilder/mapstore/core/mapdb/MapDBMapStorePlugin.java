@@ -3,8 +3,11 @@ package net.spals.appbuilder.mapstore.core.mapdb;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Ordering;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
+import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
+import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Standard;
@@ -20,6 +23,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -57,7 +61,8 @@ class MapDBMapStorePlugin implements MapStorePlugin {
 
     @Override
     public List<Map<String, Object>> getItems(final String tableName,
-                                              final MapStoreKey key) {
+                                              final MapStoreKey key,
+                                              final MapQueryOptions options) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         Collection<byte[]> valueArrays = Collections.emptyList();
         final MapRangeOperator.Standard op = Standard.fromName(key.getRangeKey().getOperator().toString())
@@ -94,10 +99,11 @@ class MapDBMapStorePlugin implements MapStorePlugin {
                 break;
         }
 
-        return valueArrays.stream()
+        final Stream<Map<String, Object>> valueStream = valueArrays.stream()
                 .map(valueMapper())
-                .sorted(valueComparator(key))
-                .collect(Collectors.toList());
+                .sorted(valueComparator(key, options.getOrder()));
+        return options.getLimit().map(limit -> valueStream.limit(limit).collect(Collectors.toList()))
+                .orElseGet(() -> valueStream.collect(Collectors.toList()));
     }
 
     @Override
@@ -167,7 +173,7 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @VisibleForTesting
-    Comparator<Map<String, Object>> valueComparator(final MapStoreKey key) {
+    Comparator<Map<String, Object>> valueComparator(final MapStoreKey key, final Order order) {
         return (m1, m2) -> {
             // If there's no range key than order doesn't matter
             if (!key.getRangeField().isPresent()) {
@@ -176,7 +182,9 @@ class MapDBMapStorePlugin implements MapStorePlugin {
 
             // Otherwise, sort by the range field values
             final String rangeField = key.getRangeField().get();
-            return ((Comparable) m1.get(rangeField)).compareTo(m2.get(rangeField));
+            return order == Order.ASC ?
+                    ((Comparable) m1.get(rangeField)).compareTo(m2.get(rangeField)) :
+                    ((Comparable) m2.get(rangeField)).compareTo(m1.get(rangeField));
         };
     }
 
