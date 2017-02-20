@@ -60,6 +60,11 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
+        public List<Map<String, Object>> getAllItems(final String tableName) {
+            return pluginDelegate.getAllItems(tableName);
+        }
+
+        @Override
         public Optional<Map<String, Object>> getItem(final String tableName,
                                                      final MapStoreKey key) {
             checkSingleItemKey(key);

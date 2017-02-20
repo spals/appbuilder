@@ -50,6 +50,15 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
+    public List<Map<String, Object>> getAllItems(final String tableName) {
+        final BTreeMap<?, byte[]> table = mapDB.treeMap(tableName)
+                .valueSerializer(Serializer.BYTE_ARRAY)
+                .createOrOpen();
+        final Stream<Map<String, Object>> valueStream = table.values().stream().map(valueMapper());
+        return valueStream.collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Map<String, Object>> getItem(final String tableName,
                                                  final MapStoreKey key) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
