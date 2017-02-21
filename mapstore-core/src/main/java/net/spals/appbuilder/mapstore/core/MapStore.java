@@ -2,6 +2,7 @@ package net.spals.appbuilder.mapstore.core;
 
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
+import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,37 @@ import java.util.Optional;
  * @author tkral
  */
 public interface MapStore {
+
+    /**
+     * Creates a secondary index for the given table
+     * with the given key.
+     *
+     * Note that the table must already exist.
+     *
+     * @return true iff the creation was successful
+     */
+//    boolean createIndex(String tableName, String indexName, MapStoreTableKey indexKey);
+
+    /**
+     * Creates a table with the given key.
+     *
+     * @return true iff the creation was successful
+     */
+    boolean createTable(String tableName, MapStoreTableKey tableKey);
+
+    /**
+     * Drops a secondary index for the given table.
+     *
+     * @return true iff the drop was successful
+     */
+//    boolean dropIndex(String tableName, String indexName);
+
+    /**
+     * Drops a table.
+     *
+     * @return true iff the drop was successful
+     */
+    boolean dropTable(String tableName);
 
     /**
      * Delete an item from the given table

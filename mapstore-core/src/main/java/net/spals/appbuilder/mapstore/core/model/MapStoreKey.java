@@ -18,7 +18,7 @@ public interface MapStoreKey {
 
     String getHashField();
 
-    String getHashValue();
+    Object getHashValue();
 
     Optional<String> getRangeField();
 
@@ -30,7 +30,7 @@ public interface MapStoreKey {
             setRangeKey(none());
         }
 
-        public Builder setHash(final String hashField, final String hashValue) {
+        public Builder setHash(final String hashField, final Object hashValue) {
             setHashField(hashField);
             return setHashValue(hashValue);
         }

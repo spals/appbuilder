@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
+import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.testng.annotations.DataProvider;
@@ -37,16 +38,22 @@ public class MapDBMapStorePluginTest {
     Object[][] emptyGetProvider() {
         return new Object[][] {
                 // Case: Hash-only key
-                {new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build()},
+                {new MapStoreTableKey.Builder().setHash("myHashField", String.class).build(),
+                    new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build()},
                 // Case: Hash and range key
-                {new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-                    .setRange("myRangeField", equalTo("myRangeValue")).build()},
+                {new MapStoreTableKey.Builder().setHash("myHashField", String.class)
+                    .setRange("myRangeField", String.class).build(),
+                    new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
+                        .setRange("myRangeField", equalTo("myRangeValue")).build()},
         };
     }
 
     @Test(dataProvider = "emptyGetProvider")
-    public void testEmptyGet(final MapStoreKey storeKey) throws IOException {
+    public void testEmptyGet(final MapStoreTableKey tableKey,
+                             final MapStoreKey storeKey) throws IOException {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
+        storePlugin.createTable("myTable", tableKey);
+
         assertThat(storePlugin.getItem("myTable", storeKey), is(Optional.empty()));
     }
 
@@ -54,21 +61,27 @@ public class MapDBMapStorePluginTest {
     Object[][] putItemProvider() {
         return new Object[][] {
                 // Case: Hash-only key
-                {new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build(),
+                {new MapStoreTableKey.Builder().setHash("myHashField", String.class).build(),
+                    new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build(),
                     ImmutableMap.of("key", "value"),
                     ImmutableMap.of("myHashField", "myHashValue", "key", "value")},
-                {new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-                    .setRange("myRangeField", equalTo("myRangeValue")).build(),
+                {new MapStoreTableKey.Builder().setHash("myHashField", String.class)
+                    .setRange("myRangeField", String.class).build(),
+                    new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
+                        .setRange("myRangeField", equalTo("myRangeValue")).build(),
                     ImmutableMap.of("key", "value"),
                     ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "myRangeValue", "key", "value")},
         };
     }
 
     @Test(dataProvider = "putItemProvider")
-    public void testPutItem(final MapStoreKey storeKey,
+    public void testPutItem(final MapStoreTableKey tableKey,
+                            final MapStoreKey storeKey,
                             final Map<String, Object> payload,
                             final Map<String, Object> expectedResult) {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
+        storePlugin.createTable("myTable", tableKey);
+
         assertThat(storePlugin.putItem("myTable", storeKey, payload), is(expectedResult));
         assertThat(storePlugin.getItem("myTable", storeKey), is(Optional.of(expectedResult)));
     }
@@ -93,6 +106,9 @@ public class MapDBMapStorePluginTest {
         final DB fileDB = DBMaker.fileDB(dbFilePath).make();
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(fileDB);
 
+        final MapStoreTableKey tableKey = new MapStoreTableKey.Builder().setHash("myHashField", String.class)
+                .setRange("myRangeField", String.class).build();
+        storePlugin.createTable("myTable", tableKey);
         final MapStoreKey storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
                 .setRange("myRangeField", equalTo("myRangeValue")).build();
         storePlugin.putItem("myTable", storeKey, ImmutableMap.of("key", "value"));
@@ -138,10 +154,15 @@ public class MapDBMapStorePluginTest {
 
     @Test(dataProvider = "getItemsProvider")
     public void testGetItems(final MapStoreKey storeKey, final List<Map<String, Object>> expectedResults) {
-        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         final Function<Integer, MapStoreKey> keyFunction = i -> new MapStoreKey.Builder()
                 .setHash("myHashField", "myHashValue").setRange("myRangeField", equalTo(i)).build();
+
+        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         final Map<String, Object> payload = ImmutableMap.of("key", "value");
+
+        final MapStoreTableKey tableKey = new MapStoreTableKey.Builder().setHash("myHashField", String.class)
+                .setRange("myRangeField", Integer.class).build();
+        storePlugin.createTable("myTable", tableKey);
 
         storePlugin.putItem("myTable", keyFunction.apply(1), payload);
         storePlugin.putItem("myTable", keyFunction.apply(2), payload);

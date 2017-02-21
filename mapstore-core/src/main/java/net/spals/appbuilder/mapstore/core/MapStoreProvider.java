@@ -9,6 +9,7 @@ import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
+import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,17 @@ class MapStoreProvider implements Provider<MapStore> {
 
         DelegatingMapStore(final MapStorePlugin pluginDelegate) {
             this.pluginDelegate = pluginDelegate;
+        }
+
+        @Override
+        public boolean createTable(final String tableName,
+                                   final MapStoreTableKey tableKey) {
+            return pluginDelegate.createTable(tableName, tableKey);
+        }
+
+        @Override
+        public boolean dropTable(final String tableName) {
+            return pluginDelegate.dropTable(tableName);
         }
 
         @Override

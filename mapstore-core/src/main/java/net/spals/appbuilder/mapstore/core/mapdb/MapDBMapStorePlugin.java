@@ -3,14 +3,14 @@ package net.spals.appbuilder.mapstore.core.mapdb;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Ordering;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
-import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Standard;
+import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
+import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHolder;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
@@ -21,11 +21,8 @@ import org.mapdb.serializer.SerializerUtils;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * @author tkral
@@ -41,6 +38,28 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
+    public boolean createTable(final String tableName,
+                               final MapStoreTableKey tableKey) {
+        final SerializerArrayTuple storeKeySerializer = createKeySerializer(tableKey.getHashFieldType(),
+                tableKey.getRangeFieldType());
+
+        mapDB.treeMap(tableName)
+                .keySerializer(storeKeySerializer)
+                .valueSerializer(Serializer.BYTE_ARRAY)
+                .create();
+        return true;
+    }
+
+    @Override
+    public boolean dropTable(final String tableName) {
+        final BTreeMap<?, ?> table = mapDB.treeMap(tableName).open();
+        table.clear();
+        table.close();
+
+        return true;
+    }
+
+    @Override
     public void deleteItem(final String tableName,
                            final MapStoreKey key) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
@@ -53,9 +72,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     public List<Map<String, Object>> getAllItems(final String tableName) {
         final BTreeMap<?, byte[]> table = mapDB.treeMap(tableName)
                 .valueSerializer(Serializer.BYTE_ARRAY)
-                .createOrOpen();
+                .open();
         final Stream<Map<String, Object>> valueStream = table.values().stream().map(valueMapper());
         return valueStream.collect(Collectors.toList());
+
     }
 
     @Override
@@ -168,17 +188,29 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @VisibleForTesting
-    BTreeMap<Object[], byte[]> getTable(final String tableName, final MapStoreKey key) {
-        final Optional<Serializer> rangeKeySerializer = Optional.ofNullable(key.getRangeKey().getValue())
-                .map(rangeValue -> (Serializer) SerializerUtils.serializerForClass(rangeValue.getClass()));
-        final SerializerArrayTuple storeKeySerializer = rangeKeySerializer
-                .map(rangeKeySer -> new SerializerArrayTuple(Serializer.STRING, rangeKeySer))
-                .orElseGet(() -> new SerializerArrayTuple(Serializer.STRING));
+    SerializerArrayTuple createKeySerializer(final Class<?> hashFieldType,
+                                             final Optional<Class<? extends Comparable>> rangeFieldType) {
+        final Serializer hashKeySerializer = SerializerUtils.serializerForClass(hashFieldType);
+        final Optional<Serializer> rangeKeySerializer = rangeFieldType
+                .map(rangeType -> (Serializer) SerializerUtils.serializerForClass(rangeType));
+        return rangeKeySerializer
+                .map(rangeKeySer -> new SerializerArrayTuple(hashKeySerializer, rangeKeySer))
+                .orElseGet(() -> new SerializerArrayTuple(hashKeySerializer));
+    }
+
+    @VisibleForTesting
+    BTreeMap<Object[], byte[]> getTable(final String tableName,
+                                        final MapStoreKey key) {
+        final SerializerArrayTuple storeKeySerializer = createKeySerializer(key.getHashValue().getClass(),
+                key.getRangeField().flatMap(rangeField -> {
+                    final Optional<Comparable<?>> rangeValue = Optional.ofNullable(key.getRangeKey().getValue());
+                    return rangeValue.map(rValue -> rValue.getClass());
+                }));
 
         return mapDB.treeMap(tableName)
                 .keySerializer(storeKeySerializer)
                 .valueSerializer(Serializer.BYTE_ARRAY)
-                .createOrOpen();
+                .open();
     }
 
     @VisibleForTesting
