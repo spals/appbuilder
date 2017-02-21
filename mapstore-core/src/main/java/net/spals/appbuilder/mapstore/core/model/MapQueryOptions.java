@@ -10,7 +10,7 @@ import java.util.Optional;
 @FreeBuilder
 public interface MapQueryOptions {
 
-    public static MapQueryOptions defaultOptions() {
+    static MapQueryOptions defaultOptions() {
         return new Builder().build();
     }
 
