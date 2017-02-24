@@ -6,7 +6,7 @@ import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.migration.AutoBindMigration;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.mapstore.core.MapStore;
-import net.spals.appbuilder.mapstore.core.annotations.NativeMapStoreClient;
+import net.spals.appbuilder.mapstore.core.annotations.MapStoreNativeClient;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ class DefaultMapStoreMigrationRunner<C> implements MapStoreMigrationRunner {
 
     @Inject
     DefaultMapStoreMigrationRunner(@ApplicationName final String applicationName,
-                                   @NativeMapStoreClient final C nativeClient,
+                                   @MapStoreNativeClient final C nativeClient,
                                    final MapStore mapStore,
                                    final Map<Integer, MapStoreMigration<C>> storeMigrations) {
         this.applicationName = applicationName;

@@ -17,5 +17,5 @@ import java.lang.annotation.Target;
 @BindingAnnotation
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface NativeMapStoreClient {
+public @interface MapStoreNativeClient {
 }
