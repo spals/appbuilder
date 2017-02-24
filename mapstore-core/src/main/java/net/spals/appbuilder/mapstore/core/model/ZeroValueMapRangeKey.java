@@ -13,6 +13,14 @@ public abstract class ZeroValueMapRangeKey implements MapRangeKey<String> {
         return new AutoValue_ZeroValueMapRangeKey(Standard.ALL);
     }
 
+    public static MapRangeKey<String> max() {
+        return new AutoValue_ZeroValueMapRangeKey(Standard.MAX);
+    }
+
+    public static MapRangeKey<String> min() {
+        return new AutoValue_ZeroValueMapRangeKey(Standard.MIN);
+    }
+
     public static MapRangeKey<String> none() {
         return new AutoValue_ZeroValueMapRangeKey(Standard.NONE);
     }

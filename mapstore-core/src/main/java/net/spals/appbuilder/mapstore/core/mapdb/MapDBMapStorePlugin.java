@@ -46,7 +46,7 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         mapDB.treeMap(tableName)
                 .keySerializer(storeKeySerializer)
                 .valueSerializer(Serializer.BYTE_ARRAY)
-                .create();
+                .createOrOpen();
         return true;
     }
 

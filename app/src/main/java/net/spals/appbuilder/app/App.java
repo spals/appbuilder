@@ -15,10 +15,13 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import io.dropwizard.setup.Environment;
+import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.app.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.bootstrap.AutoBindModulesBootstrapModule;
+import net.spals.appbuilder.app.bootstrap.DropwizardBootstrapModule;
 import net.spals.appbuilder.app.modules.AutoBindJerseyModule;
+import net.spals.appbuilder.app.modules.AutoBindMigrationsModule;
 import net.spals.appbuilder.app.modules.AutoBindServicesModule;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
 import org.glassfish.jersey.message.internal.TracingLogger;
@@ -114,6 +117,13 @@ public abstract class App {
         }
 
         @Override
+        public Builder setName(final String name) {
+            addBootstrapModule(bootstrapBinder ->
+                    bootstrapBinder.bind(String.class).annotatedWith(ApplicationName.class).toInstance(name));
+            return super.setName(name);
+        }
+
+        @Override
         public Builder setServiceConfig(final Config serviceConfig) {
             addBootstrapModule(new AutoBindConfigBootstrapModule(serviceConfig));
             return super.setServiceConfig(serviceConfig);
@@ -127,17 +137,12 @@ public abstract class App {
 
         public Builder setServiceScan(final Reflections serviceScan) {
             addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
+            addModule(new AutoBindMigrationsModule(serviceScan));
             return addModule(new AutoBindServicesModule(serviceScan));
         }
 
         public Builder usingDropwizard(final Environment env) {
-            // Bind standard DropWizard state
-            addBootstrapModule(bootstrapBinder -> {
-                bootstrapBinder.bind(Environment.class).toInstance(env);
-                bootstrapBinder.bind(HealthCheckRegistry.class).toInstance(env.healthChecks());
-                bootstrapBinder.bind(MetricRegistry.class).toInstance(env.metrics());
-            });
-
+            addBootstrapModule(new DropwizardBootstrapModule(env));
             enableApiAutoBinding(env.jersey().getResourceConfig());
             enableRequestScoping((filterName, filter) -> env.servlets().addFilter(filterName, filter));
             return setName(env.getName());
