@@ -1,9 +1,6 @@
 package net.spals.appbuilder.annotations.service;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import static net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope.SINGLETON;
 
@@ -20,6 +17,8 @@ import static net.spals.appbuilder.annotations.service.AutoBindProvider.Provider
 public @interface AutoBindProvider {
 
     ProviderScope value() default SINGLETON;
+
+    Class<? extends Annotation> bindingAnnotation() default AutoBindProvider.class;
 
     enum ProviderScope {
         NONE,

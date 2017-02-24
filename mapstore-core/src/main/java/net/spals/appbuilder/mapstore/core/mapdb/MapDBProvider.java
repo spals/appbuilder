@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provider;
 import com.netflix.governator.annotations.Configuration;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
+import net.spals.appbuilder.mapstore.core.annotations.NativeMapStoreClient;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
 /**
  * @author tkral
  */
-@AutoBindProvider
+@AutoBindProvider(bindingAnnotation = NativeMapStoreClient.class)
 class MapDBProvider implements Provider<DB> {
 
     @Configuration("mapDB.mapStore.file")

@@ -1,4 +1,4 @@
-package net.spals.appbuilder.mapstore.core;
+package net.spals.appbuilder.mapstore.core.migration;
 
 /**
  * @author tkral

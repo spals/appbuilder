@@ -6,8 +6,6 @@ import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.migration.AutoBindMigration;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.mapstore.core.MapStore;
-import net.spals.appbuilder.mapstore.core.MapStoreMigration;
-import net.spals.appbuilder.mapstore.core.MapStoreMigrationRunner;
 import net.spals.appbuilder.mapstore.core.annotations.NativeMapStoreClient;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;

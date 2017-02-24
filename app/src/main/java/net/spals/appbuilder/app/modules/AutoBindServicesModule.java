@@ -3,6 +3,7 @@ package net.spals.appbuilder.app.modules;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
@@ -80,6 +81,10 @@ public class AutoBindServicesModule extends AbstractModule {
         providerClasses.stream()
             .forEach(providerClazz -> {
                 final AutoBindProvider autoBindProvider = providerClazz.getAnnotation(AutoBindProvider.class);
+                checkState(autoBindProvider.bindingAnnotation() == AutoBindProvider.class
+                        || autoBindProvider.bindingAnnotation().isAnnotationPresent(BindingAnnotation.class),
+                        "@AutoBindProvider.bindingAnnotation must be annotated with @BindingAnnotation: %s",
+                        autoBindProvider.bindingAnnotation());
                 LOGGER.info("Binding @AutoBindProvider: {}", providerClazz);
 
                 // Taken from Governator's ProviderBinderUtil
@@ -90,8 +95,12 @@ public class AutoBindServicesModule extends AbstractModule {
                     throw Throwables.propagate(e);
                 }
 
-                binder.bind(providedType)
-                        .toProvider((javax.inject.Provider) new AutoBoundProvider((Class<? extends javax.inject.Provider>) providerClazz))
+                final AnnotatedBindingBuilder<?> bindingBuilder = binder.bind(providedType);
+                if (autoBindProvider.bindingAnnotation() != AutoBindProvider.class) {
+                    bindingBuilder.annotatedWith(autoBindProvider.bindingAnnotation());
+                }
+
+                bindingBuilder.toProvider((javax.inject.Provider) new AutoBoundProvider((Class<? extends javax.inject.Provider>) providerClazz))
                         .in(mapProviderScope(autoBindProvider.value()));
             });
     }
