@@ -2,6 +2,7 @@ package net.spals.appbuilder.mapstore.core.model;
 
 import com.google.auto.value.AutoValue;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Standard;
+import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.SyntacticSugar;
 
 /**
  * @author tkral
@@ -14,11 +15,11 @@ public abstract class ZeroValueMapRangeKey implements MapRangeKey<String> {
     }
 
     public static MapRangeKey<String> max() {
-        return new AutoValue_ZeroValueMapRangeKey(Standard.MAX);
+        return new AutoValue_ZeroValueMapRangeKey(SyntacticSugar.MAX);
     }
 
     public static MapRangeKey<String> min() {
-        return new AutoValue_ZeroValueMapRangeKey(Standard.MIN);
+        return new AutoValue_ZeroValueMapRangeKey(SyntacticSugar.MIN);
     }
 
     public static MapRangeKey<String> none() {

@@ -99,7 +99,7 @@ class DefaultMapStoreMigrationRunner<C> implements MapStoreMigrationRunner {
                 .setHash(APPLICATION_NAME_KEY, applicationName)
                 .setRange(MIGRATION_INDEX, max())
                 .build();
-        return mapStore.getItem("migrations", lastMigrationKey)
+        return mapStore.getItem(MIGRATIONS_TABLE_NAME, lastMigrationKey)
                 .map(migration -> (Integer) migration.get(MIGRATION_INDEX)).orElse(-1);
     }
 }

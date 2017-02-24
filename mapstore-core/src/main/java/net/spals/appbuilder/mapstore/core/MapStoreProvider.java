@@ -1,15 +1,19 @@
 package net.spals.appbuilder.mapstore.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netflix.governator.annotations.Configuration;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
-import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
+import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order;
+import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.Standard;
+import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.SyntacticSugar;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
+import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey;
 
 import java.util.List;
 import java.util.Map;
@@ -79,6 +83,16 @@ class MapStoreProvider implements Provider<MapStore> {
         @Override
         public Optional<Map<String, Object>> getItem(final String tableName,
                                                      final MapStoreKey key) {
+            final Optional<SyntacticSugar> sugarOp = SyntacticSugar.fromName(key.getRangeKey().getOperator().toString());
+            if (sugarOp.isPresent()) {
+                switch (sugarOp.get()) {
+                    case MAX: return getMaxItem(tableName, key);
+                    case MIN: return getMinItem(tableName, key);
+                    default:
+                        throw new IllegalArgumentException("MapStore.getItem does not support the syntactic sugar operator: "+ sugarOp.get().name());
+                }
+            }
+
             checkSingleItemKey(key);
             return pluginDelegate.getItem(tableName, key);
         }
@@ -87,6 +101,14 @@ class MapStoreProvider implements Provider<MapStore> {
         public List<Map<String, Object>> getItems(final String tableName,
                                                   final MapStoreKey key,
                                                   final MapQueryOptions options) {
+            final Optional<SyntacticSugar> sugarOp = SyntacticSugar.fromName(key.getRangeKey().getOperator().toString());
+            if (sugarOp.isPresent()) {
+                switch (sugarOp.get()) {
+                    default:
+                        throw new IllegalArgumentException("MapStore.getItems does not support the syntactic sugar operator: "+ sugarOp.get().name());
+                }
+            }
+
             return pluginDelegate.getItems(tableName, key, options);
         }
 
@@ -134,10 +156,10 @@ class MapStoreProvider implements Provider<MapStore> {
         @VisibleForTesting
         void checkSingleItemKey(final MapStoreKey key) {
             if (key.getRangeField().isPresent()) {
-                checkArgument(key.getRangeKey().getOperator() == MapRangeOperator.Standard.EQUAL_TO,
+                checkArgument(key.getRangeKey().getOperator() == Standard.EQUAL_TO,
                         "Illegal range operator found (%s). You must use EQUAL_TO with value", key.getRangeKey().getOperator());
             } else {
-                checkArgument(key.getRangeKey().getOperator() == MapRangeOperator.Standard.NONE,
+                checkArgument(key.getRangeKey().getOperator() == Standard.NONE,
                         "Illegal range operator found (%s). You must use NONE without value", key.getRangeKey().getOperator());
             }
         }
@@ -151,6 +173,36 @@ class MapStoreProvider implements Provider<MapStore> {
             key.getRangeField().ifPresent(rangeField -> checkKeyField(rangeField, key.getRangeKey().getValue(), payload));
             // Write access only one item at a time
             checkSingleItemKey(key);
+        }
+
+        // Run max syntactic sugar operation
+        Optional<Map<String, Object>> getMaxItem(final String tableName, final MapStoreKey key) {
+            checkArgument(key.getRangeKey().getOperator() == SyntacticSugar.MAX);
+
+            // The max operator is equivalent to grabbing all range keys, sorting
+            // them in descending order, and grabbing the first one.
+            final MapStoreKey maxKey = new MapStoreKey.Builder()
+                    .setHash(key.getHashField(), key.getHashValue())
+                    .setRange(key.getRangeField().get(), ZeroValueMapRangeKey.all())
+                    .build();
+            final List<Map<String, Object>> maxItems = getItems(tableName, maxKey,
+                    new MapQueryOptions.Builder().setOrder(Order.DESC).setLimit(1).build());
+            return Optional.ofNullable(Iterables.getOnlyElement(maxItems, null));
+        }
+
+        // Run min syntactic sugar operation
+        Optional<Map<String, Object>> getMinItem(final String tableName, final MapStoreKey key) {
+            checkArgument(key.getRangeKey().getOperator() == SyntacticSugar.MIN);
+
+            // The min operator is equivalent to grabbing all range keys, sorting
+            // them in ascending order, and grabbing the first one.
+            final MapStoreKey maxKey = new MapStoreKey.Builder()
+                    .setHash(key.getHashField(), key.getHashValue())
+                    .setRange(key.getRangeField().get(), ZeroValueMapRangeKey.all())
+                    .build();
+            final List<Map<String, Object>> minItems = getItems(tableName, maxKey,
+                    new MapQueryOptions.Builder().setOrder(Order.ASC).setLimit(1).build());
+            return Optional.ofNullable(Iterables.getOnlyElement(minItems, null));
         }
     }
 }
