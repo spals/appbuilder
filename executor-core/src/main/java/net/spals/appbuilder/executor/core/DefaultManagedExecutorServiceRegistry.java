@@ -3,12 +3,15 @@ package net.spals.appbuilder.executor.core;
 import com.netflix.governator.annotations.Configuration;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Default implementation of {@link ManagedExecutorServiceRegistry}.
+ *
  * @author tkral
  */
 @AutoBindSingleton(baseClass = ManagedExecutorServiceRegistry.class)
@@ -20,23 +23,51 @@ class DefaultManagedExecutorServiceRegistry implements ManagedExecutorServiceReg
     @Configuration("executorService.registry.shutdownUnit")
     private volatile TimeUnit shutdownUnit = TimeUnit.MILLISECONDS;
 
-    private final Set<ManagedExecutorService> managedExecutorServices = new HashSet<>();
+    private final Map<Key, ManagedExecutorService> managedExecutorServices = new HashMap<>();
+
 
     @Override
-    public ManagedExecutorService registerExecutorService(final ExecutorService executorService) {
+    public ManagedExecutorService registerExecutorService(final Class<?> parentClass,
+                                                          final ExecutorService executorService,
+                                                          final String... tags) {
+        final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
         final ManagedExecutorService managedExecutorService =
                 new DelegatingManagedExecutorService(executorService, shutdown, shutdownUnit);
 
-        managedExecutorServices.add(managedExecutorService);
-        return managedExecutorService;
+        return managedExecutorServices.put(key, managedExecutorService);
     }
 
     @Override
-    public void stop() {
-        managedExecutorServices.forEach(managedExecutorService -> {
-            synchronized (managedExecutorService) {
-                managedExecutorService.stop();
-            }
-        });
+    public ManagedExecutorService registerExecutorService(final Class<?> parentClass,
+                                                          final ManagedExecutorService managedExecutorService,
+                                                          final String... tags) {
+        final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
+        return managedExecutorServices.put(key, managedExecutorService);
+    }
+
+    @Override
+    public synchronized void start() {
+        managedExecutorServices.values()
+                .forEach(managedExecutorService -> managedExecutorService.start());
+    }
+
+    @Override
+    public synchronized void start(final Class<?> parentClass, final String... tags) {
+        final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
+        Optional.ofNullable(managedExecutorServices.get(key))
+                .ifPresent(managedExecutorService -> managedExecutorService.start());
+    }
+
+    @Override
+    public synchronized void stop() {
+        managedExecutorServices.values()
+                .forEach(managedExecutorService -> managedExecutorService.stop());
+    }
+
+    @Override
+    public synchronized void stop(final Class<?> parentClass, final String... tags) {
+        final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
+        Optional.ofNullable(managedExecutorServices.get(key))
+                .ifPresent(managedExecutorService -> managedExecutorService.stop());
     }
 }

@@ -45,8 +45,8 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
 
     @Inject
     BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
-                                       final ManagedExecutorServiceRegistry executorServiceRegistry,
                                        final Map<String, MessageConsumerCallback> consumerCallbackMap,
+                                       final ManagedExecutorServiceRegistry executorServiceRegistry,
                                        @Named("blockingMessageQueue") final BlockingQueue<byte[]> blockingMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
                 .filter(config -> config.hasPath("blockingQueue.messageConsumer.pollTimeout"))
@@ -59,7 +59,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
         this.blockingMessageQueue = blockingMessageQueue;
         // The number of registered consumer callbacks provides an upper bound on
         // the number of executor threads that we'll need.
-        this.executorService = executorServiceRegistry.registerExecutorService(
+        this.executorService = executorServiceRegistry.registerExecutorService(getClass(),
                 Executors.newFixedThreadPool(consumerCallbackMap.size()));
     }
 
