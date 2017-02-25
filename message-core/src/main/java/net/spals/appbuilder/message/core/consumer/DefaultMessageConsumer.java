@@ -20,8 +20,6 @@ class DefaultMessageConsumer implements MessageConsumer {
     private final Map<String, MessageFormatter> formatterMap;
     private final Map<String, MessageConsumerPlugin> consumerPluginMap;
 
-
-
     @Inject
     DefaultMessageConsumer(final Map<String, ConsumerConfig> consumerConfigMap,
                            final Map<String, MessageFormatter> formatterMap,
