@@ -1,5 +1,6 @@
 package net.spals.appbuilder.executor.core;
 
+import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,13 +15,20 @@ class DelegatingManagedExecutorService implements ManagedExecutorService {
 
     private final ExecutorService executorServiceDelegate;
 
+    private final Logger logger;
+
     private final long shutdown;
     private final TimeUnit shutdownUnit;
 
     DelegatingManagedExecutorService(final ExecutorService executorServiceDelegate,
+                                     final ManagedExecutorServiceRegistry.Key executorServiceKey,
                                      final long shutdown,
                                      final TimeUnit shutdownUnit) {
         this.executorServiceDelegate = executorServiceDelegate;
+
+        final String loggerName = String.format("%s[%s]", executorServiceKey.getParentClass().getName(),
+                Joiner.on(',').join(executorServiceKey.getTags()));
+        this.logger = LoggerFactory.getLogger(loggerName);
 
         this.shutdown = shutdown;
         this.shutdownUnit = shutdownUnit;
@@ -86,7 +94,6 @@ class DelegatingManagedExecutorService implements ManagedExecutorService {
             return;
         }
 
-        final Logger logger = LoggerFactory.getLogger(getClass());
         // See https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html
         shutdown(); // Disable new tasks from being submitted
 

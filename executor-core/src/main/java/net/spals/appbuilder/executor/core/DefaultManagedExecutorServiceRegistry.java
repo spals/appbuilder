@@ -32,7 +32,7 @@ class DefaultManagedExecutorServiceRegistry implements ManagedExecutorServiceReg
                                                           final String... tags) {
         final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
         final ManagedExecutorService managedExecutorService =
-                new DelegatingManagedExecutorService(executorService, shutdown, shutdownUnit);
+                new DelegatingManagedExecutorService(executorService, key, shutdown, shutdownUnit);
 
         return managedExecutorServices.put(key, managedExecutorService);
     }
