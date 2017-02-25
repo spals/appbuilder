@@ -9,34 +9,18 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.spals.appbuilder</groupId>
-    <artifactId>spals-appbuilder-message-core</artifactId>
+    <artifactId>spals-appbuilder-executor-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-multibindings</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>com.netflix.governator</groupId>
+            <artifactId>governator-api</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-executor-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.inferred</groupId>
-            <artifactId>freebuilder</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -6,6 +6,8 @@ import com.typesafe.config.Config;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.config.ConsumerConfig;
+import net.spals.appbuilder.executor.core.ManagedExecutorService;
+import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.formatter.MessageFormatter;
@@ -15,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -36,13 +37,15 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
 
     private final Map<String, MessageConsumerCallback> consumerCallbackMap;
     private final BlockingQueue<byte[]> blockingMessageQueue;
-    private final ExecutorService executor;
+
+    private final ManagedExecutorService executorService;
 
     private final Long pollTimeout;
     private final TimeUnit pollTimeoutUnit;
 
     @Inject
     BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
+                                       final ManagedExecutorServiceRegistry executorServiceRegistry,
                                        final Map<String, MessageConsumerCallback> consumerCallbackMap,
                                        @Named("blockingMessageQueue") final BlockingQueue<byte[]> blockingMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
@@ -56,7 +59,8 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
         this.blockingMessageQueue = blockingMessageQueue;
         // The number of registered consumer callbacks provides an upper bound on
         // the number of executor threads that we'll need.
-        this.executor = Executors.newFixedThreadPool(consumerCallbackMap.size());
+        this.executorService = executorServiceRegistry.registerExecutorService(
+                Executors.newFixedThreadPool(consumerCallbackMap.size()));
     }
 
     @Override
@@ -64,27 +68,12 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
         // 1. Verify that we have a matching callback for this configuration
         checkState(consumerCallbackMap.containsKey(consumerConfig.getTag()),
                 "No MessageConsumerCallback for '%s' configuration", consumerConfig.getTag());
-        executor.submit(this);
+        executorService.submit(this);
     }
 
     @Override
     public void stop(final ConsumerConfig consumerConfig) {
-        // See https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html
-        executor.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!executor.awaitTermination(60L, TimeUnit.SECONDS)) {
-                executor.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS))
-                    LOGGER.error("Error encountered while shutting down local message queue executor");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            executor.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
+        executorService.stop();
     }
 
     @Override
