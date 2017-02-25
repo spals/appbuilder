@@ -33,7 +33,7 @@ class BlockingQueueModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        binder().bind(new TypeLiteral<BlockingQueue<byte[]>>(){})
+        binder().bind(new TypeLiteral<BlockingQueue<BlockingQueueMessage>>(){})
                 .annotatedWith(Names.named("blockingMessageQueue"))
                 .toInstance(new LinkedBlockingQueue<>(queueSize));
     }

@@ -32,11 +32,11 @@ import static com.google.common.base.Preconditions.checkState;
  * @author tkral
  */
 @AutoBindInMap(baseClass = MessageConsumerPlugin.class, key = "blockingQueue")
-class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runnable {
+class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockingQueueMessageConsumerPlugin.class);
 
     private final Map<String, MessageConsumerCallback> consumerCallbackMap;
-    private final BlockingQueue<byte[]> blockingMessageQueue;
+    private final BlockingQueue<BlockingQueueMessage> blockingMessageQueue;
 
     private final ManagedExecutorService executorService;
 
@@ -47,7 +47,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
     BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
                                        final Map<String, MessageConsumerCallback> consumerCallbackMap,
                                        final ManagedExecutorServiceRegistry executorServiceRegistry,
-                                       @Named("blockingMessageQueue") final BlockingQueue<byte[]> blockingMessageQueue) {
+                                       @Named("blockingMessageQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
                 .filter(config -> config.hasPath("blockingQueue.messageConsumer.pollTimeout"))
                 .map(config -> config.getLong("blockingQueue.messageConsumer.pollTimeout")).orElse(10L);
@@ -65,10 +65,11 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
 
     @Override
     public synchronized void start(final ConsumerConfig consumerConfig, final MessageFormatter messageFormatter) {
-        // 1. Verify that we have a matching callback for this configuration
-        checkState(consumerCallbackMap.containsKey(consumerConfig.getTag()),
-                "No MessageConsumerCallback for '%s' configuration", consumerConfig.getTag());
-        executorService.submit(this);
+        final MessageConsumerCallback consumerCallback = Optional.ofNullable(consumerCallbackMap.get(consumerConfig.getTag()))
+                .orElseThrow(() -> new IllegalArgumentException(String.format("No MessageConsumerCallback for '%s' configuration", consumerConfig.getTag())));
+
+        final Runnable consumerRunnable = new BlockingQueueConsumerRunnable(consumerConfig, messageFormatter, consumerCallback);
+        executorService.submit(consumerRunnable);
     }
 
     @Override
@@ -76,23 +77,38 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin, Runna
         executorService.stop();
     }
 
-    @Override
-    public void run() {
-//        try {
-//            while (!Thread.interrupted()) {
-//                final byte[] message = blockingMessageQueue.poll(pollTimeout, pollTimeoutUnit);
-//                if (message != null) {
-//                    LOGGER.trace("Received '{}' message: {}", message.getTag(), message.getPayload());
-//                    final MessageConsumerCallback consumerCallback = consumerCallbackMap.get(message.getTag());
-//                    consumerCallback.processMessage(message);
-//                }
-//            }
-//        } catch (InterruptedException e) {
-//            LOGGER.warn("Local message queue was interrupted!");
-//        } catch (Throwable t) {
-//            LOGGER.error("Encountered unexpected error during callback of local messages", t);
-//        }
-//
-//        LOGGER.info("Stopping local message consumer thread");
+    class BlockingQueueConsumerRunnable implements Runnable {
+
+        private final ConsumerConfig consumerConfig;
+        private final MessageConsumerCallback consumerCallback;
+        private final MessageFormatter messageFormatter;
+
+        BlockingQueueConsumerRunnable(final ConsumerConfig consumerConfig,
+                                      final MessageFormatter messageFormatter,
+                                      final MessageConsumerCallback consumerCallback) {
+            this.consumerConfig = consumerConfig;
+            this.consumerCallback = consumerCallback;
+            this.messageFormatter = messageFormatter;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!Thread.interrupted()) {
+                    final BlockingQueueMessage message = blockingMessageQueue.poll(pollTimeout, pollTimeoutUnit);
+                    if (message != null) {
+                        final Map<String, Object> payload = messageFormatter.deserializePayload(message.getSerializedPayload());
+                        LOGGER.trace("Received '{}' message: {}", message.getTag(), payload);
+                        consumerCallback.processMessage(consumerConfig, payload);
+                    }
+                }
+            } catch (InterruptedException e) {
+                LOGGER.warn("BlockingQueue message queue was interrupted!");
+            } catch (Throwable t) {
+                LOGGER.error("Encountered unexpected error during callback of BlockingQueue messages", t);
+            }
+
+            LOGGER.info("Stopping blocking queue message consumer thread");
+        }
     }
 }

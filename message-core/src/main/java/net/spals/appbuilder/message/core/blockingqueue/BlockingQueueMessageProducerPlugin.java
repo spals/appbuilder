@@ -30,14 +30,14 @@ import static com.google.common.base.Preconditions.checkState;
 class BlockingQueueMessageProducerPlugin implements MessageProducerPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockingQueueMessageProducerPlugin.class);
 
-    private final BlockingQueue<byte[]> blockingMessageQueue;
+    private final BlockingQueue<BlockingQueueMessage> blockingMessageQueue;
 
     private final Optional<Long> offerTimeout;
     private final Optional<TimeUnit> offerTimeoutUnit;
 
     @Inject
     BlockingQueueMessageProducerPlugin(@ServiceConfig final Config serviceConfig,
-                                       @Named("blockingMessageQueue") final BlockingQueue<byte[]> blockingMessageQueue) {
+                                       @Named("blockingMessageQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
         this.blockingMessageQueue = blockingMessageQueue;
         this.offerTimeout = Optional.of(serviceConfig)
                 .filter(config -> config.hasPath("blockingQueue.messageProducer.offerTimeout"))
@@ -49,23 +49,19 @@ class BlockingQueueMessageProducerPlugin implements MessageProducerPlugin {
                 "blockingQueue.messageProducer.offerTimeout and blockingQueue.messageProducer.offerTimeoutUnit must both have values");
     }
 
-//    @Override
-//    public void sendMessage(final Message message) {
-//        try {
-//            if (offerTimeout.isPresent()) {
-//                blockingMessageQueue.offer(message, offerTimeout.get(), offerTimeoutUnit.get());
-//            } else {
-//                blockingMessageQueue.offer(message);
-//            }
-//        } catch (InterruptedException e) {
-//            LOGGER.warn("Interrupted while sending message on blocking queue", e);
-//        }
-//    }
-
     @Override
     public void sendMessage(final ProducerConfig producerConfig,
                             final byte[] serializedPayload) throws IOException {
-
-
+        final BlockingQueueMessage message = new BlockingQueueMessage.Builder()
+                .setSerializedPayload(serializedPayload).setTag(producerConfig.getTag()).build();
+        try {
+            if (offerTimeout.isPresent()) {
+                blockingMessageQueue.offer(message, offerTimeout.get(), offerTimeoutUnit.get());
+            } else {
+                blockingMessageQueue.offer(message);
+            }
+        } catch (InterruptedException e) {
+            LOGGER.warn("Interupted while sending message on blcoking queue", e);
+        }
     }
 }
