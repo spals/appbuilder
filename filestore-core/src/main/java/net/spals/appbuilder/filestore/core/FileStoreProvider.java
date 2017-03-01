@@ -21,7 +21,7 @@ import java.util.Optional;
 @AutoBindProvider
 class FileStoreProvider implements Provider<FileStore> {
 
-    @Configuration("file.store.system")
+    @Configuration("fileStore.system")
     private volatile String storeSystem;
 
     private final Map<String, FileStorePlugin> storePluginMap;
@@ -34,7 +34,7 @@ class FileStoreProvider implements Provider<FileStore> {
     @Override
     public FileStore get() {
         final FileStorePlugin storePlugin = Optional.ofNullable(storePluginMap.get(storeSystem))
-                .orElseThrow(() -> new ConfigException.BadValue("file.store.system",
+                .orElseThrow(() -> new ConfigException.BadValue("fileStore.system",
                         "No File Store plugin found for : " + storeSystem));
 
         return new DelegatingFileStore(storePlugin);

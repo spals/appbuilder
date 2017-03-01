@@ -29,7 +29,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 @AutoBindProvider
 class MapStoreProvider implements Provider<MapStore> {
 
-    @Configuration("map.store.system")
+    @Configuration("mapStore.system")
     private volatile String storeSystem;
 
     private final Map<String, MapStorePlugin> storePluginMap;
@@ -42,7 +42,7 @@ class MapStoreProvider implements Provider<MapStore> {
     @Override
     public MapStore get() {
         final MapStorePlugin storePlugin = Optional.ofNullable(storePluginMap.get(storeSystem))
-            .orElseThrow(() -> new ConfigException.BadValue("map.store.system",
+            .orElseThrow(() -> new ConfigException.BadValue("mapStore.system",
                     "No Map Store plugin found for : " + storeSystem));
 
         return new DelegatingMapStore(storePlugin);
