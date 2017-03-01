@@ -33,11 +33,11 @@ import java.util.function.BiFunction;
  * @author tkral
  */
 @FreeBuilder
-public abstract class App {
+public abstract class GenericApp {
 
     public abstract Logger getLogger();
 
-    abstract LifecycleInjector getLifecycleInjector();
+    protected abstract LifecycleInjector getLifecycleInjector();
 
     public abstract String getName();
 
@@ -54,7 +54,7 @@ public abstract class App {
         return getLifecycleInjector().createInjector();
     }
 
-    public static class Builder extends App_Builder {
+    public static class Builder extends GenericApp_Builder implements AppBuilder<GenericApp> {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
 
@@ -112,7 +112,7 @@ public abstract class App {
             return addModule(new AutoBindServicesModule(serviceScan));
         }
 
-        public App build() {
+        public GenericApp build() {
             setLifecycleInjector(lifecycleInjectorBuilder.build());
             return super.build();
         }
