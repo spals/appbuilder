@@ -7,7 +7,6 @@ import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
-import jersey.repackaged.com.google.common.base.Throwables;
 import net.spals.appbuilder.annotations.service.*;
 import net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope;
 import org.reflections.Reflections;
@@ -92,7 +91,7 @@ public class AutoBindServicesModule extends AbstractModule {
                 try {
                     providedType = providerClazz.getMethod("get").getReturnType();
                 } catch (NoSuchMethodException e) {
-                    throw Throwables.propagate(e);
+                    throw new RuntimeException(e);
                 }
 
                 final AnnotatedBindingBuilder<?> bindingBuilder = binder.bind(providedType);

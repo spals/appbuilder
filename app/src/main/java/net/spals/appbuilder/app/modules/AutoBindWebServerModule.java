@@ -7,7 +7,6 @@ import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,19 +14,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.DynamicFeature;
+import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
  * @author tkral
  */
-public class AutoBindJerseyModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindJerseyModule.class);
+public class AutoBindWebServerModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindWebServerModule.class);
 
-    private final ResourceConfig jerseyConfig;
+    private final Configurable<?> configurable;
 
-    public AutoBindJerseyModule(final ResourceConfig jerseyConfig) {
-        this.jerseyConfig = jerseyConfig;
+    public AutoBindWebServerModule(final Configurable<?> configurable) {
+        this.configurable = configurable;
     }
 
     @Override
@@ -42,9 +42,9 @@ public class AutoBindJerseyModule extends AbstractModule implements InjectionLis
     }
 
     @Override
-    public void afterInjection(final Object jerseyComponent) {
-        LOGGER.info("Registering Jersey component: {}", jerseyComponent);
-        jerseyConfig.register(jerseyComponent);
+    public void afterInjection(final Object wsComponent) {
+        LOGGER.info("Registering WebServer component: {}", wsComponent);
+        configurable.register(wsComponent);
     }
 
     @Override

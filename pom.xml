@@ -43,8 +43,9 @@
     </licenses>
 
     <properties>
-        <dropwizard.version>1.0.6</dropwizard.version>
         <governator.version>1.15.10</governator.version>
+        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <mapdb.version>3.0.3</mapdb.version>
         <reflections.version>0.9.10</reflections.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
@@ -82,10 +83,14 @@
                 <version>${typesafe.config.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-core</artifactId>
-                <version>${dropwizard.version}</version>
-                <scope>provided</scope>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${javax.ws.rs-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
