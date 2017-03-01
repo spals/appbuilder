@@ -54,7 +54,7 @@
     <modules>
         <module>annotations</module>
         <module>app-core</module>
-        <!--<module>app-test</module>-->
+        <module>app-core-test</module>
         <module>bom</module>
         <module>config</module>
         <module>config-test</module>

@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.bootstrap;
+package net.spals.appbuilder.app.core.bootstrap;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

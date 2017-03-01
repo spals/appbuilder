@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.modules;
+package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -9,7 +9,7 @@ import com.google.inject.servlet.ServletScopes;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
-import net.spals.appbuilder.app.modules.AutoBindServicesModule.AutoBoundProvider;
+import net.spals.appbuilder.app.core.modules.AutoBindServicesModule.AutoBoundProvider;
 import org.hamcrest.Matchers;
 import org.reflections.Reflections;
 import org.testng.annotations.DataProvider;
