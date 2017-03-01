@@ -1,8 +1,10 @@
 package net.spals.appbuilder.mapstore.core;
 
+import com.beust.jcommander.Strings;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -11,7 +13,8 @@ import java.util.function.Predicate;
 public interface MapStorePlugin extends MapStore {
 
     default Predicate<Map.Entry> isNullOrEmptyEntry() {
-        return entry -> entry.getValue() == null || "".equals(entry.getValue());
+        return entry -> Objects.isNull(entry.getValue())
+                || Strings.isStringEmpty(String.valueOf(entry.getValue()));
     }
 
     default void stripKey(final MapStoreKey key, final Map<String, Object> payload) {
