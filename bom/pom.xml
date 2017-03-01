@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-app</artifactId>
+            <artifactId>spals-appbuilder-app-core</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>

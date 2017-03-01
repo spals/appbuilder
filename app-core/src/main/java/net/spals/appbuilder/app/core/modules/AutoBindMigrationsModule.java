@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.modules;
+package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.*;

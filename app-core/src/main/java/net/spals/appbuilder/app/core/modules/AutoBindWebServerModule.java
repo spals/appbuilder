@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.modules;
+package net.spals.appbuilder.app.core.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;

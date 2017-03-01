@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app;
+package net.spals.appbuilder.app.core;
 
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
@@ -14,7 +14,7 @@ import java.util.function.BiFunction;
 /**
  * @author tkral
  */
-public interface AppBuilder<A extends GenericApp> {
+public interface AppBuilder<A extends App> {
 
     AppBuilder<A> addBootstrapModule(BootstrapModule bootstrapModule);
 

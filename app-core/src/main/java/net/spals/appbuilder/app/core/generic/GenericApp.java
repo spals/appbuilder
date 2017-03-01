@@ -1,26 +1,25 @@
-package net.spals.appbuilder.app;
+package net.spals.appbuilder.app.core.generic;
 
-import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.ServletModule;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
-import com.netflix.governator.lifecycle.LifecycleManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import net.spals.appbuilder.annotations.config.ApplicationName;
-import net.spals.appbuilder.app.bootstrap.AutoBindConfigBootstrapModule;
-import net.spals.appbuilder.app.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.modules.AutoBindMigrationsModule;
-import net.spals.appbuilder.app.modules.AutoBindServicesModule;
-import net.spals.appbuilder.app.modules.AutoBindWebServerModule;
+import net.spals.appbuilder.app.core.App;
+import net.spals.appbuilder.app.core.AppBuilder;
+import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
+import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
+import net.spals.appbuilder.app.core.modules.AutoBindMigrationsModule;
+import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
+import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
-import org.slf4j.Logger;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -33,26 +32,7 @@ import java.util.function.BiFunction;
  * @author tkral
  */
 @FreeBuilder
-public abstract class GenericApp {
-
-    public abstract Logger getLogger();
-
-    protected abstract LifecycleInjector getLifecycleInjector();
-
-    public abstract String getName();
-
-    public abstract Config getServiceConfig();
-
-    public final Injector getServiceInjector() throws Exception {
-        final LifecycleManager lifecycleManager = getLifecycleInjector().getLifecycleManager();
-        lifecycleManager.start();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            getLogger().info("Shutting down {} application.", getName());
-            lifecycleManager.close();
-        }));
-        return getLifecycleInjector().createInjector();
-    }
+public abstract class GenericApp implements App {
 
     public static class Builder extends GenericApp_Builder implements AppBuilder<GenericApp> {
 
