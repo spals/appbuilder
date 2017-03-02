@@ -197,7 +197,6 @@ public class AutoBindServicesModule extends AbstractModule {
         @Inject
         private Injector injector;
 
-        @Inject
         public AutoBoundProvider(Class<? extends javax.inject.Provider> providerClazz) {
             this.providerClazz = providerClazz;
         }
