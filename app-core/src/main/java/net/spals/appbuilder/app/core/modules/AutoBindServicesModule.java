@@ -130,7 +130,7 @@ public class AutoBindServicesModule extends AbstractModule {
                 LOGGER.info("Binding @AutoBindSingleton: {}", singletonClazz);
 
                 if (autoBindSingleton.baseClass() == Void.class) {
-                    binder.bind(singletonClazz).to((Class) singletonClazz).asEagerSingleton();
+                    binder.bind(singletonClazz).asEagerSingleton();
                 } else {
                     binder.bind(autoBindSingleton.baseClass()).to((Class) singletonClazz).asEagerSingleton();
                     if (autoBindSingleton.includeImpl()) {

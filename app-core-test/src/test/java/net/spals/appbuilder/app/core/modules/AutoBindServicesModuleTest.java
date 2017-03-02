@@ -76,11 +76,28 @@ public class AutoBindServicesModuleTest {
         verify(scopedBindingBuilder).in(eq(expectedScope));
     }
 
+    @Test
+    public void testAutoBindSimpleSingleton() {
+        final Reflections serviceScan = mock(Reflections.class);
+        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+                .thenReturn(ImmutableSet.of(MySingletonImplBind.class));
+
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(serviceScan);
+
+        final AnnotatedBindingBuilder annotatedBindingBuilder = mock(AnnotatedBindingBuilder.class);
+        final Binder binder = mock(Binder.class);
+        when(binder.bind(any(Class.class))).thenReturn(annotatedBindingBuilder);
+
+        autoBindModule.autoBindSingletons(binder);
+        verify(binder).bind(MySingletonImplBind.class);
+        verifyNoMoreInteractions(binder);
+        verify(annotatedBindingBuilder).asEagerSingleton();
+    }
+
     @DataProvider
     Object[][] autoBindSingletonsProvider() {
         return new Object[][] {
-                {MySingletonImplBind.class, ImmutableList.of(MySingletonImplBind.class)},
-                {MySingletoneInterfaceBind.class, ImmutableList.of(MySingleton.class)},
+                {MySingletonInterfaceBind.class, ImmutableList.of(MySingleton.class)},
                 {MySingletonInterfaceAndImplBind.class,
                         ImmutableList.of(MySingleton.class, MySingletonInterfaceAndImplBind.class)},
         };
@@ -205,7 +222,7 @@ public class AutoBindServicesModuleTest {
     private class MySingletonImplBind implements MySingleton {  }
 
     @AutoBindSingleton(baseClass = MySingleton.class)
-    private class MySingletoneInterfaceBind implements MySingleton {  }
+    private class MySingletonInterfaceBind implements MySingleton {  }
 
     @AutoBindSingleton(baseClass = MySingleton.class, includeImpl = true)
     private class MySingletonInterfaceAndImplBind implements MySingleton {  }
