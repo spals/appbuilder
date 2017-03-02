@@ -3,10 +3,10 @@ package net.spals.appbuilder.app.core.modules;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
-import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +32,12 @@ public class AutoBindWebServerModule extends AbstractModule implements Injection
 
     @Override
     protected void configure() {
-        final Matcher typeMatcher = Matchers.annotatedWith(Path.class)
-                .or(Matchers.annotatedWith(Provider.class))
-                .or((Matcher) Matchers.subclassesOf(DynamicFeature.class))
-                .or((Matcher) Matchers.subclassesOf(ExceptionMapper.class))
-                .or((Matcher) Matchers.subclassesOf(ContainerRequestFilter.class))
-                .or((Matcher) Matchers.subclassesOf(ContainerResponseFilter.class));
+        final Matcher typeMatcher = TypeLiteralMatchers.annotatedWith(Path.class)
+                .or(TypeLiteralMatchers.annotatedWith(Provider.class))
+                .or(TypeLiteralMatchers.subclassesOf(DynamicFeature.class))
+                .or(TypeLiteralMatchers.subclassesOf(ExceptionMapper.class))
+                .or(TypeLiteralMatchers.subclassesOf(ContainerRequestFilter.class))
+                .or(TypeLiteralMatchers.subclassesOf(ContainerResponseFilter.class));
         bindListener(typeMatcher, this);
     }
 
