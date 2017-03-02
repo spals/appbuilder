@@ -6,6 +6,7 @@ import com.google.inject.servlet.ServletModule;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
+import com.netflix.governator.guice.actions.BindingReport;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
@@ -44,7 +45,8 @@ public abstract class GenericApp implements App {
                     .withBootstrapModule(bootstrapBinder -> {
                         bootstrapBinder.disableAutoBinding();
                         bootstrapBinder.requireExactBindingAnnotations();
-                    });
+                    })
+                    .withPostInjectorAction(new BindingReport());
         }
 
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
