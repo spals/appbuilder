@@ -7,6 +7,6 @@ import java.util.Map;
  */
 public interface MessageProducer {
 
-    void sendMessage(final Map<String, Object> payload);
+    void sendMessage(String tag, Map<String, Object> payload);
 
 }
