@@ -94,13 +94,14 @@ public class AutoBindServicesModule extends AbstractModule {
                     throw new RuntimeException(e);
                 }
 
+                final javax.inject.Provider autoBoundProvider =
+                        new AutoBoundProvider((Class<? extends javax.inject.Provider>) providerClazz);
                 final AnnotatedBindingBuilder<?> bindingBuilder = binder.bind(providedType);
                 if (autoBindProvider.bindingAnnotation() != AutoBindProvider.class) {
                     bindingBuilder.annotatedWith(autoBindProvider.bindingAnnotation());
                 }
 
-                bindingBuilder.toProvider((javax.inject.Provider) new AutoBoundProvider((Class<? extends javax.inject.Provider>) providerClazz))
-                        .in(mapProviderScope(autoBindProvider.value()));
+                bindingBuilder.toProvider(autoBoundProvider).in(mapProviderScope(autoBindProvider.value()));
             });
     }
 

@@ -47,16 +47,17 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
         // Also give access to the full blown configuration
         bootstrapBinder.bind(Config.class).annotatedWith(ServiceConfig.class).toInstance(serviceConfig);
 
-        autoBindConfigs(bootstrapBinder, parseConfigs("consumer", ConsumerConfig.class));
-        autoBindConfigs(bootstrapBinder, parseConfigs("producer", ProducerConfig.class));
+        autoBindConfigs(bootstrapBinder, ConsumerConfig.class, parseConfigs("consumer", ConsumerConfig.class));
+        autoBindConfigs(bootstrapBinder, ProducerConfig.class, parseConfigs("producer", ProducerConfig.class));
     }
 
     @VisibleForTesting
     <T> void autoBindConfigs(final BootstrapBinder bootstrapBinder,
+                             final Class<T> configType,
                              final Map<String, T> configMap) {
+        final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configType);
+        // Bind the config instance in Map<String, T>...
         configMap.entrySet().stream().forEach(configEntry -> {
-            // Bind the config instance in Map<String, T>...
-            final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configEntry.getValue().getClass());
             mapBinder.addBinding(configEntry.getKey()).toInstance(configEntry.getValue());
             // ...and as a singleton annotated with the tag name
             bootstrapBinder.bind((Class<T>) configEntry.getValue().getClass()).annotatedWith(Names.named(configEntry.getKey()))
