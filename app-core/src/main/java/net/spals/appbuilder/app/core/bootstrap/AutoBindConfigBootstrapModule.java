@@ -42,12 +42,13 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
 
     @Override
     public void configure(final BootstrapBinder bootstrapBinder) {
-        bootstrapBinder.install(new ConfigurationModule());
         // This will parse the configuration and deliver its individual pieces
         // to @Configuration fields.
         bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(serviceConfig));
         // Also give access to the full blown configuration
         bootstrapBinder.bind(Config.class).annotatedWith(ServiceConfig.class).toInstance(serviceConfig);
+        // Enable @Configuration mappings
+        bootstrapBinder.install(new ConfigurationModule());
 
         autoBindConfigs(bootstrapBinder, ConsumerConfig.class, parseConfigs("consumer", ConsumerConfig.class));
         autoBindConfigs(bootstrapBinder, ProducerConfig.class, parseConfigs("producer", ProducerConfig.class));

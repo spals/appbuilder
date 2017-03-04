@@ -29,6 +29,11 @@ public class TypesafeConfigurationProvider extends DefaultConfigurationProvider 
     }
 
     @Override
+    public boolean has(final ConfigurationKey key) {
+        return config.hasPath(key.getRawKey());
+    }
+
+    @Override
     public Property<Boolean> getBooleanProperty(final ConfigurationKey key, final Boolean defaultValue) {
         return new Property<Boolean>() {
             @Override
