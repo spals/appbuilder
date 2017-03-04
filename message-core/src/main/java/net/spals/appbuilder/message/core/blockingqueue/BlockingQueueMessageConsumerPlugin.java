@@ -60,7 +60,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
         // The number of registered consumer callbacks provides an upper bound on
         // the number of executor threads that we'll need.
         this.executorService = executorServiceRegistry.registerExecutorService(getClass(),
-                Executors.newFixedThreadPool(consumerCallbackMap.size()));
+                Executors.newFixedThreadPool(Math.max(consumerCallbackMap.size(), 1)));
     }
 
     @Override
