@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
+import com.netflix.governator.ConfigurationModule;
 import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
 import com.netflix.governator.guice.BootstrapBinder;
@@ -41,6 +42,7 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
 
     @Override
     public void configure(final BootstrapBinder bootstrapBinder) {
+        bootstrapBinder.install(new ConfigurationModule());
         // This will parse the configuration and deliver its individual pieces
         // to @Configuration fields.
         bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(serviceConfig));
