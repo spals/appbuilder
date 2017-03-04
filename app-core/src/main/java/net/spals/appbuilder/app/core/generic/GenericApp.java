@@ -12,11 +12,11 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import net.spals.appbuilder.annotations.config.ApplicationName;
+import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceScanBootstrapModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
 import org.inferred.freebuilder.FreeBuilder;
@@ -39,6 +39,9 @@ public abstract class GenericApp implements App {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
 
+        private final AutoBindServicesModule.Builder servicesModuleBuilder =
+                new AutoBindServicesModule.Builder();
+
         public Builder() {
             this.lifecycleInjectorBuilder = LifecycleInjector.builder()
                     .ignoringAllAutoBindClasses()
@@ -49,22 +52,32 @@ public abstract class GenericApp implements App {
                     .withPostInjectorAction(new BindingReport());
         }
 
+        @Override
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
             lifecycleInjectorBuilder.withAdditionalBootstrapModules(bootstrapModule);
             return this;
         }
 
+        @Override
         public Builder addModule(final Module module) {
             lifecycleInjectorBuilder.withAdditionalModules(module);
             return this;
         }
 
+        @Override
+        public Builder disableErrorOnServiceLeaks() {
+            servicesModuleBuilder.setErrorOnServiceLeaks(false);
+            return this;
+        }
+
+        @Override
         public Builder enableRequestScoping(final BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration) {
             filterRegistration.apply(GuiceFilter.class.getName(), new GuiceFilter())
                     .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false /*isMatchAfter*/, "/*");
             return addModule(new ServletModule());
         }
 
+        @Override
         public Builder enableWebServerAutoBinding(final Configurable<?> configurable) {
             return addModule(new AutoBindWebServerModule(configurable));
         }
@@ -82,19 +95,25 @@ public abstract class GenericApp implements App {
             return super.setServiceConfig(serviceConfig);
         }
 
+        @Override
         public Builder setServiceConfigFromClasspath(final String serviceConfigFileName) {
             return setServiceConfig(ConfigFactory.load(serviceConfigFileName,
                     ConfigParseOptions.defaults().setAllowMissing(false),
                     ConfigResolveOptions.defaults()));
         }
 
+        @Override
         public Builder setServiceScan(final Reflections serviceScan) {
-            addBootstrapModule(new AutoBindServiceScanBootstrapModule(serviceScan));
-            addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
-            return addModule(new AutoBindServicesModule(serviceScan));
+            servicesModuleBuilder.setServiceScan(serviceScan);
+
+            addBootstrapModule(bootstrapBinder ->
+                    bootstrapBinder.bind(Reflections.class).annotatedWith(ServiceScan.class).toInstance(serviceScan));
+            return addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
         }
 
+        @Override
         public GenericApp build() {
+            addModule(servicesModuleBuilder.build());
             setLifecycleInjector(lifecycleInjectorBuilder.build());
             return super.build();
         }

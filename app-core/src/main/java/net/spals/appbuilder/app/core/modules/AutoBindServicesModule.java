@@ -9,11 +9,14 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
 import net.spals.appbuilder.annotations.service.*;
 import net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope;
+import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,13 +25,18 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * @author tkral
  */
-public class AutoBindServicesModule extends AbstractModule {
+@FreeBuilder
+public abstract class AutoBindServicesModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindServicesModule.class);
 
-    private final Reflections serviceScan;
+    public abstract Boolean getErrorOnServiceLeaks();
+    public abstract Reflections getServiceScan();
 
-    public AutoBindServicesModule(final Reflections serviceScan) {
-        this.serviceScan = serviceScan;
+    public static class Builder extends AutoBindServicesModule_Builder {
+        public Builder() {
+            setErrorOnServiceLeaks(true);
+            setServiceScan(new Reflections());
+        }
     }
 
     @Override
@@ -42,7 +50,7 @@ public class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindFactories(final Binder binder) {
-        final Set<Class<?>> factoryClasses = serviceScan.getTypesAnnotatedWith(AutoBindFactory.class);
+        final Set<Class<?>> factoryClasses = getServiceScan().getTypesAnnotatedWith(AutoBindFactory.class);
         validateFactories(factoryClasses);
 
         factoryClasses.forEach(factoryClazz -> {
@@ -53,8 +61,9 @@ public class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindMaps(final Binder binder) {
-        final Set<Class<?>> mapClasses = serviceScan.getTypesAnnotatedWith(AutoBindInMap.class);
+        final Set<Class<?>> mapClasses = getServiceScan().getTypesAnnotatedWith(AutoBindInMap.class);
         validateSingletons(mapClasses, AutoBindInMap.class);
+        checkServiceLeaks(mapClasses);
 
         mapClasses.stream()
             .forEach(mapClazz -> {
@@ -74,8 +83,9 @@ public class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindProviders(final Binder binder) {
-        final Set<Class<?>> providerClasses = serviceScan.getTypesAnnotatedWith(AutoBindProvider.class);
+        final Set<Class<?>> providerClasses = getServiceScan().getTypesAnnotatedWith(AutoBindProvider.class);
         validateProviders(providerClasses);
+        checkServiceLeaks(providerClasses);
 
         providerClasses.stream()
             .forEach(providerClazz -> {
@@ -107,8 +117,9 @@ public class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindSets(final Binder binder) {
-        final Set<Class<?>> setClasses = serviceScan.getTypesAnnotatedWith(AutoBindInSet.class);
+        final Set<Class<?>> setClasses = getServiceScan().getTypesAnnotatedWith(AutoBindInSet.class);
         validateSingletons(setClasses, AutoBindInSet.class);
+        checkServiceLeaks(setClasses);
 
         setClasses.stream()
             .forEach(setClazz -> {
@@ -122,8 +133,9 @@ public class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindSingletons(final Binder binder) {
-        final Set<Class<?>> singletonClasses = serviceScan.getTypesAnnotatedWith(AutoBindSingleton.class);
+        final Set<Class<?>> singletonClasses = getServiceScan().getTypesAnnotatedWith(AutoBindSingleton.class);
         validateSingletons(singletonClasses, AutoBindSingleton.class);
+        checkServiceLeaks(singletonClasses);
 
         singletonClasses.stream()
             .forEach(singletonClazz -> {
@@ -139,6 +151,33 @@ public class AutoBindServicesModule extends AbstractModule {
                     }
                 }
             });
+    }
+
+    @VisibleForTesting
+    void checkServiceLeaks(final Set<Class<?>> serviceClasses) {
+        final Set<Class<?>> publicServices = serviceClasses.stream()
+                .filter(serviceClass -> Modifier.isPublic(serviceClass.getModifiers())
+                    || Modifier.isProtected(serviceClass.getModifiers()))
+                .collect(Collectors.toSet());
+        LOGGER.warn("The following service classes are public or protected which may lead to service leaking. " +
+            "You should consider making them package-protected or private. {}", publicServices);
+
+        final Set<Class<?>> publicCtors = serviceClasses.stream()
+                .flatMap(serviceClass -> Arrays.asList(serviceClass.getDeclaredConstructors()).stream())
+                .filter(serviceCtor -> Modifier.isPublic(serviceCtor.getModifiers())
+                        || Modifier.isProtected(serviceCtor.getModifiers()))
+                .map(serviceCtor -> serviceCtor.getDeclaringClass())
+                .collect(Collectors.toSet());
+
+        final String serviceLeakMessage = String.format(
+                "Service leak detected! The following services have public or protected constructors, " +
+                "which means they can be instantiated outside of the appbuilder framework. " +
+                "You can fix this by making them package-protected or private. %s", publicCtors);
+        if (getErrorOnServiceLeaks()) {
+            checkState(publicCtors.isEmpty(), serviceLeakMessage);
+        } else if (!publicCtors.isEmpty()) {
+            LOGGER.warn(serviceLeakMessage);
+        }
     }
 
     @VisibleForTesting

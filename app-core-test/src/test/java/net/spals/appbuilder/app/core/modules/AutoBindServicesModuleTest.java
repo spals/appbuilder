@@ -38,7 +38,8 @@ public class AutoBindServicesModuleTest {
         when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MyFactory.class));
 
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(serviceScan);
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
+                .setServiceScan(serviceScan).build();
 
         final Binder binder = mock(Binder.class);
         autoBindModule.autoBindFactories(binder);
@@ -62,7 +63,8 @@ public class AutoBindServicesModuleTest {
         when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(providerClazz));
 
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(serviceScan);
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
+                .setServiceScan(serviceScan).build();
 
         final ScopedBindingBuilder scopedBindingBuilder = mock(ScopedBindingBuilder.class);
         final AnnotatedBindingBuilder annotatedBindingBuilder = mock(AnnotatedBindingBuilder.class);
@@ -82,7 +84,8 @@ public class AutoBindServicesModuleTest {
         when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MySingletonImplBind.class));
 
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(serviceScan);
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
+                .setServiceScan(serviceScan).build();
 
         final AnnotatedBindingBuilder annotatedBindingBuilder = mock(AnnotatedBindingBuilder.class);
         final Binder binder = mock(Binder.class);
@@ -109,7 +112,8 @@ public class AutoBindServicesModuleTest {
         when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(singletonClazz));
 
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(serviceScan);
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
+                .setServiceScan(serviceScan).build();
 
         final ScopedBindingBuilder scopedBindingBuilder = mock(ScopedBindingBuilder.class);
         final AnnotatedBindingBuilder annotatedBindingBuilder = mock(AnnotatedBindingBuilder.class);
@@ -134,7 +138,7 @@ public class AutoBindServicesModuleTest {
 
     @Test(dataProvider = "invalidFactoryClassProvider")
     public void testInvalidFactories(final Class<?> invalidFactoryClazz) {
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(mock(Reflections.class));
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder().build();
         verifyException(() -> autoBindModule.validateFactories(ImmutableSet.of(invalidFactoryClazz)), IllegalStateException.class);
     }
 
@@ -150,7 +154,7 @@ public class AutoBindServicesModuleTest {
 
     @Test(dataProvider = "invalidProviderClassProvider")
     public void testInvalidProviders(final Class<?> invalidProviderClazz) {
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(mock(Reflections.class));
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder().build();
         verifyException(() -> autoBindModule.validateProviders(ImmutableSet.of(invalidProviderClazz)), IllegalStateException.class);
     }
 
@@ -166,7 +170,7 @@ public class AutoBindServicesModuleTest {
 
     @Test(dataProvider = "invalidSingletonClassProvider")
     public void testInvalidSingletons(final Class<?> invalidSingletonClazz) {
-        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule(mock(Reflections.class));
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder().build();
         verifyException(() -> autoBindModule.validateSingletons(ImmutableSet.of(invalidSingletonClazz), AutoBindSingleton.class),
                 IllegalStateException.class);
     }

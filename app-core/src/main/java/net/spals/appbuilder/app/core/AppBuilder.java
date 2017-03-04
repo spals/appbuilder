@@ -20,6 +20,8 @@ public interface AppBuilder<A extends App> {
 
     AppBuilder<A> addModule(Module module);
 
+    AppBuilder<A> disableErrorOnServiceLeaks();
+
     AppBuilder<A> enableRequestScoping(BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration);
 
     AppBuilder<A> enableWebServerAutoBinding(Configurable<?> configurable);
