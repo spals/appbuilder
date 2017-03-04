@@ -6,7 +6,7 @@ import net.spals.appbuilder.mapstore.core.MapStore;
  * @author tkral
  */
 @FunctionalInterface
-public interface MapStoreMigration<C> {
+public interface MapStoreMigration {
 
-    void migrate(C nativeClient, MapStore mapStore);
+    void migrate(MapStore mapStore);
 }

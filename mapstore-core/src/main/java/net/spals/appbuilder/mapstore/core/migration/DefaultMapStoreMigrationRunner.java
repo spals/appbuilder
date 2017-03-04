@@ -6,7 +6,6 @@ import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.migration.AutoBindMigration;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.mapstore.core.MapStore;
-import net.spals.appbuilder.mapstore.core.annotations.MapStoreNativeClient;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import org.slf4j.Logger;
@@ -34,17 +33,14 @@ class DefaultMapStoreMigrationRunner<C> implements MapStoreMigrationRunner {
     private static final String MIGRATION_INDEX = "migrationIndex";
 
     private final String applicationName;
-    private final C nativeClient;
     private final MapStore mapStore;
-    private final Map<Integer, MapStoreMigration<C>> storeMigrations;
+    private final Map<Integer, MapStoreMigration> storeMigrations;
 
     @Inject
     DefaultMapStoreMigrationRunner(@ApplicationName final String applicationName,
-                                   @MapStoreNativeClient final C nativeClient,
                                    final MapStore mapStore,
-                                   final Map<Integer, MapStoreMigration<C>> storeMigrations) {
+                                   final Map<Integer, MapStoreMigration> storeMigrations) {
         this.applicationName = applicationName;
-        this.nativeClient = nativeClient;
         this.mapStore = mapStore;
         this.storeMigrations = storeMigrations;
     }
@@ -59,7 +55,7 @@ class DefaultMapStoreMigrationRunner<C> implements MapStoreMigrationRunner {
 
         // 3. Filter any bound migrations by index, finding those that come after
         // the last migration run
-        final List<MapStoreMigration<C>> migrationsToRun = storeMigrations.entrySet().stream()
+        final List<MapStoreMigration> migrationsToRun = storeMigrations.entrySet().stream()
                 .filter(entry -> entry.getKey() > lastMigrationIndex)
                 .sorted(Comparator.comparing(Map.Entry::getKey))
                 .map(Map.Entry::getValue)
@@ -75,7 +71,7 @@ class DefaultMapStoreMigrationRunner<C> implements MapStoreMigrationRunner {
 
             LOGGER.info("Running migration {} for {}: {}", new Object[] {autoBindMigration.index(),
                     applicationName, autoBindMigration.description()});
-            migration.migrate(nativeClient, mapStore);
+            migration.migrate(mapStore);
             mapStore.putItem(MIGRATIONS_TABLE_NAME, migrationKey,
                     ImmutableMap.of(DESCRIPTION_KEY, autoBindMigration.description()));
         });

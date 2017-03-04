@@ -6,7 +6,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
-import net.spals.appbuilder.mapstore.core.annotations.MapStoreNativeClient;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
@@ -36,7 +35,7 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     private final DB mapDB;
 
     @Inject
-    MapDBMapStorePlugin(@MapStoreNativeClient final DB mapDB) {
+    MapDBMapStorePlugin(final DB mapDB) {
         this.mapDB = mapDB;
     }
 
