@@ -16,7 +16,7 @@ import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.core.modules.AutoBindMigrationsModule;
+import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceScanBootstrapModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
 import org.inferred.freebuilder.FreeBuilder;
@@ -89,8 +89,8 @@ public abstract class GenericApp implements App {
         }
 
         public Builder setServiceScan(final Reflections serviceScan) {
+            addBootstrapModule(new AutoBindServiceScanBootstrapModule(serviceScan));
             addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
-            addModule(new AutoBindMigrationsModule(serviceScan));
             return addModule(new AutoBindServicesModule(serviceScan));
         }
 
