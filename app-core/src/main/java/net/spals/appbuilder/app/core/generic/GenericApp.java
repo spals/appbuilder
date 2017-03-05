@@ -48,8 +48,7 @@ public abstract class GenericApp implements App {
                     .withBootstrapModule(bootstrapBinder -> {
                         bootstrapBinder.disableAutoBinding();
                         bootstrapBinder.requireExactBindingAnnotations();
-                    })
-                    .withPostInjectorAction(new BindingReport());
+                    });
         }
 
         @Override
