@@ -1,0 +1,63 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>net.spals.appbuilder</groupId>
+        <artifactId>spals-appbuilder-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.spals.appbuilder</groupId>
+    <artifactId>spals-appbuilder-bom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.netflix.governator</groupId>
+            <artifactId>governator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.governator</groupId>
+            <artifactId>governator-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-app-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-executor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-filestore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-mapstore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-message-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

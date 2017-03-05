@@ -9,7 +9,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.spals.appbuilder</groupId>
-    <artifactId>spals-appbuilder-config</artifactId>
+    <artifactId>spals-appbuilder-filestore-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -19,12 +19,24 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-multibindings</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.netflix.governator</groupId>
-            <artifactId>governator</artifactId>
+            <artifactId>governator-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-annotations</artifactId>
         </dependency>
         <dependency>
             <groupId>org.inferred</groupId>

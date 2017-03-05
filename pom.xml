@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>6</version>
+        <version>9</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -21,10 +21,10 @@
 
     <developers>
         <developer>
-            <name>Jim Spagnola</name>
+            <name>Tim Kral</name>
         </developer>
         <developer>
-            <name>Tim Kral</name>
+            <name>Jim Spagnola</name>
         </developer>
     </developers>
 
@@ -43,13 +43,101 @@
     </licenses>
 
     <properties>
+        <governator.version>1.15.10</governator.version>
+        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+        <mapdb.version>3.0.3</mapdb.version>
+        <reflections.version>0.9.10</reflections.version>
+        <typesafe.config.version>1.3.1</typesafe.config.version>
     </properties>
 
     <modules>
+        <module>annotations</module>
+        <module>app-core</module>
+        <module>app-core-test</module>
+        <module>bom</module>
         <module>config</module>
+        <module>config-test</module>
+        <module>executor-core</module>
+        <module>filestore-core</module>
+        <module>mapstore-core</module>
+        <module>mapstore-core-test</module>
+        <module>message-core</module>
     </modules>
 
     <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.netflix.governator</groupId>
+                <artifactId>governator</artifactId>
+                <version>${governator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netflix.governator</groupId>
+                <artifactId>governator-api</artifactId>
+                <version>${governator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>${typesafe.config.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${javax.ws.rs-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-annotations</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-app-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-executor-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-filestore-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-mapstore-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-message-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapdb</groupId>
+                <artifactId>mapdb</artifactId>
+                <version>${mapdb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${reflections.version}</version>
+            </dependency>
+        </dependencies>
     </dependencyManagement>
 
 </project>

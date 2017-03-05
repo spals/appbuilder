@@ -9,22 +9,18 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.spals.appbuilder</groupId>
-    <artifactId>spals-appbuilder-config</artifactId>
+    <artifactId>spals-appbuilder-executor-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.netflix.governator</groupId>
-            <artifactId>governator</artifactId>
+            <artifactId>governator-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.typesafe</groupId>
-            <artifactId>config</artifactId>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-annotations</artifactId>
         </dependency>
         <dependency>
             <groupId>org.inferred</groupId>
