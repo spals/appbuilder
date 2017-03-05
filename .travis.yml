@@ -17,10 +17,6 @@ before_install:
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/deploy-lib.sh -O ${TRAVIS_BUILD_DIR}/.travis/deploy-lib.sh
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/settings.xml -O ${TRAVIS_BUILD_DIR}/.travis/settings.xml
 
-install:
-  - mvn --settings .travis/settings.xml --show-version dependency:resolve
-  - mvn --settings .travis/settings.xml --show-version dependency:resolve-plugins
-
 script:
   - mvn --batch-mode --settings .travis/settings.xml --show-version test
 
