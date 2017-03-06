@@ -72,6 +72,7 @@
         <module>mapstore-core-test</module>
         <module>mapstore-dynamodb</module>
         <module>message-core</module>
+        <module>message-kafka</module>
     </modules>
 
     <dependencyManagement>
@@ -179,6 +180,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-mapstore-dynamodb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-message-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
