@@ -1,6 +1,7 @@
 package net.spals.appbuilder.config.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.netflix.governator.configuration.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
@@ -22,7 +23,8 @@ public class TypesafeConfigurationProvider extends DefaultConfigurationProvider 
     private static final Logger LOGGER = LoggerFactory.getLogger(TypesafeConfigurationProvider.class);
 
     private final Config config;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new Jdk8Module());
 
     public TypesafeConfigurationProvider(final Config config) {
         this.config = config;

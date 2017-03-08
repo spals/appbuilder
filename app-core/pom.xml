@@ -15,12 +15,20 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.github.jlmauduy</groupId>
+            <artifactId>ascii-graphs_${scala.version}</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-assistedinject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-grapher</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.inject.extensions</groupId>

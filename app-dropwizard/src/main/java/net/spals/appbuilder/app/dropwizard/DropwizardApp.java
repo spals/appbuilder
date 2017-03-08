@@ -11,6 +11,7 @@ import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.generic.GenericApp;
+import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
 import org.glassfish.jersey.message.internal.TracingLogger;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -85,6 +86,12 @@ public abstract class DropwizardApp implements App {
         @Override
         public Builder enableRequestScoping(final BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration) {
             appBuilderDelegate.enableRequestScoping(filterRegistration);
+            return this;
+        }
+
+        @Override
+        public Builder enableServiceGrapher(final ServiceGrapher.Type serviceGrapherType) {
+            appBuilderDelegate.enableServiceGrapher(serviceGrapherType);
             return this;
         }
 

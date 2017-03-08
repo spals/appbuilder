@@ -4,12 +4,15 @@ import com.google.common.base.Preconditions;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.matcher.Matchers;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Matcher implementations for use with {@link TypeLiteral}.
@@ -47,6 +50,43 @@ public class TypeLiteralMatchers {
         }
     }
 
+    public static Matcher<TypeLiteral<?>> any() {
+        return ANY;
+    }
+
+    private static final Matcher<TypeLiteral<?>> ANY = new Any();
+
+    private static class Any extends AbstractMatcher<TypeLiteral<?>>
+            implements Serializable {
+
+        @Override
+        public boolean matches(final TypeLiteral<?> typeLiteral) {
+            return true;
+        }
+    }
+
+    public static Matcher<TypeLiteral<?>> none() {
+        return new Not(ANY);
+    }
+
+    public static Matcher<TypeLiteral<?>> not(final Matcher<TypeLiteral<?>> matcher) {
+        return new Not(matcher);
+    }
+
+    private static class Not extends AbstractMatcher<TypeLiteral<?>>
+            implements Serializable {
+        final Matcher<TypeLiteral<?>> delegate;
+
+        private Not(Matcher<TypeLiteral<?>> delegate) {
+            this.delegate = checkNotNull(delegate, "delegate");
+        }
+
+        @Override
+        public boolean matches(final TypeLiteral<?> typeLiteral) {
+            return !delegate.matches(typeLiteral);
+        }
+    }
+
     public static Matcher<TypeLiteral<?>> or(final Matcher<TypeLiteral<?>>... matchers) {
         return new Or(matchers);
     }
@@ -61,7 +101,7 @@ public class TypeLiteralMatchers {
 
         @Override
         public boolean matches(final TypeLiteral<?> typeLiteral) {
-            return Arrays.asList(delegates).parallelStream()
+            return Arrays.asList(delegates).stream()
                     .anyMatch(delegate -> delegate.matches(typeLiteral));
         }
     }

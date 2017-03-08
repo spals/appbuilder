@@ -3,8 +3,11 @@ package net.spals.appbuilder.app.core.bootstrap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
+import com.google.inject.util.Types;
 import com.netflix.governator.ConfigurationModule;
 import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
@@ -13,10 +16,14 @@ import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
+import net.spals.appbuilder.annotations.config.ServiceScan;
+import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
 import net.spals.appbuilder.config.TaggedConfig;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
+import org.inferred.freebuilder.FreeBuilder;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,24 +39,33 @@ import java.util.stream.Collectors;
  *
  * @author tkral
  */
-public class AutoBindConfigBootstrapModule implements BootstrapModule {
+@FreeBuilder
+public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindConfigBootstrapModule.class);
 
-    private final Config serviceConfig;
+    public abstract Config getServiceConfig();
+    public abstract Reflections getServiceScan();
+    public abstract ServiceGrapher getServiceGrapher();
 
-    public AutoBindConfigBootstrapModule(final Config serviceConfig) {
-        this.serviceConfig = serviceConfig;
-    }
+    public static class Builder extends AutoBindConfigBootstrapModule_Builder {  }
 
     @Override
     public void configure(final BootstrapBinder bootstrapBinder) {
         // This will parse the configuration and deliver its individual pieces
         // to @Configuration fields.
-        bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(serviceConfig));
+        bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(getServiceConfig()));
         // Also give access to the full blown configuration
-        bootstrapBinder.bind(Config.class).annotatedWith(ServiceConfig.class).toInstance(serviceConfig);
+        final Key<Config> configKey = Key.get(Config.class, ServiceConfig.class);
+        bootstrapBinder.bind(configKey).toInstance(getServiceConfig());
+        // Add a vertex for the service configuration in our service graph
+        getServiceGrapher().addVertex(configKey);
         // Enable @Configuration mappings
         bootstrapBinder.install(new ConfigurationModule());
+
+        // Bind the full ServiceScan so that it's available to other modules
+        final Key<Reflections> serviceScanKey = Key.get(Reflections.class, ServiceScan.class);
+        bootstrapBinder.bind(serviceScanKey).toInstance(getServiceScan());
+        getServiceGrapher().addVertex(serviceScanKey);
 
         autoBindConfigs(bootstrapBinder, MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
         autoBindConfigs(bootstrapBinder, MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));
@@ -60,15 +76,21 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
                                                   final Class<T> configType,
                                                   final Map<String, T> configMap) {
         final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configType);
-        // Bind the config instance in Map<String, T>...
+        // Add a vertex for the configuration map
+        final Key<?> configMapKey = Key.get(TypeLiteral.get(Types.mapOf(String.class, configType)));
+        getServiceGrapher().addVertex(configMapKey);
+
         configMap.entrySet().stream()
             .filter(taggedConfigEntry -> taggedConfigEntry.getValue().isActive())
             .forEach(configEntry -> {
+                // Bind the config instance in Map<String, T>...
                 mapBinder.addBinding(configEntry.getKey()).toInstance(configEntry.getValue());
                 // ...and as a singleton annotated with the tag name
-                bootstrapBinder.bind((Class<T>) configEntry.getValue().getClass()).annotatedWith(Names.named(configEntry.getKey()))
-                    .toInstance(configEntry.getValue());
-        });
+                bootstrapBinder.bind(configType).annotatedWith(Names.named(configEntry.getKey()))
+                        .toInstance(configEntry.getValue());
+                final Key<?> configValueKey = Key.get(configType, Names.named(configEntry.getKey()));
+                getServiceGrapher().addVertex(configValueKey).addEdge(configValueKey, configMapKey);
+            });
     }
 
     @VisibleForTesting
@@ -78,7 +100,7 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
             // Create a special configuration provider which isolates the tagged configuration object
             // and adds in the implied tag value
             final String configPath = Joiner.on('.').join(tag, configSubTag);
-            final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(serviceConfig.withOnlyPath(configPath)
+            final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(getServiceConfig().withOnlyPath(configPath)
                 .withValue(Joiner.on('.').join(tag, configSubTag, "tag"), ConfigValueFactory.fromAnyRef(tag)));
 
             final ConfigurationKey configKey = new ConfigurationKey(configPath, Collections.emptyList());
@@ -90,7 +112,7 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
 
     @VisibleForTesting
     Set<String> parseTags(final String configSubTag) {
-        return serviceConfig.entrySet().stream()
+        return getServiceConfig().entrySet().stream()
             .map(Map.Entry::getKey)
             .map(configEntryKey -> configEntryKey.split("\\."))
             .filter(parsedConfigEntryKey -> parsedConfigEntryKey.length > 1 && configSubTag.equals(parsedConfigEntryKey[1]))

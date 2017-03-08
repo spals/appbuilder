@@ -3,12 +3,13 @@ package net.spals.appbuilder.app.core.modules;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
 import net.spals.appbuilder.annotations.service.*;
 import net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope;
+import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
+import net.spals.appbuilder.app.core.grapher.noop.NoOpServiceGrapher;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ public abstract class AutoBindServicesModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindServicesModule.class);
 
     public abstract Boolean getErrorOnServiceLeaks();
+    public abstract ServiceGrapher getServiceGrapher();
     public abstract Reflections getServiceScan();
 
     public static class Builder extends AutoBindServicesModule_Builder {
@@ -73,6 +76,14 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 LOGGER.info("Binding @AutoBindInMap[{}:{}]: {}", new Object[] {autoBindInMap.key(),
                     autoBindInMap.baseClass().getSimpleName(), mapClazz});
 
+//                final Key<?> mapKey = Key.get(TypeLiteral.get(Types.mapOf(autoBindInMap.keyType(), autoBindInMap.baseClass())));
+//                final Vertex mapVertex = new Vertex.Builder().setGuiceKey(mapKey).build();
+//                getServiceGrapher().addVertex(mapVertex);
+//                final Key<?> mapValueKey = Key.get(mapClazz);
+//                final Vertex mapValueVertex = new Vertex.Builder().setGuiceKey(mapValueKey).build();
+//                getServiceGrapher().addVertex(mapValueVertex);
+//                getServiceGrapher().addEdge(mapValueVertex, mapVertex);
+
                 final MapBinder mapBinder = MapBinder.newMapBinder(binder,
                         autoBindInMap.keyType(), autoBindInMap.baseClass());
                 final Object key = autoBindInMap.keyType() == String.class ? autoBindInMap.key() :
@@ -106,12 +117,17 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
                 final javax.inject.Provider autoBoundProvider =
                         new AutoBoundProvider((Class<? extends javax.inject.Provider>) providerClazz);
-                final AnnotatedBindingBuilder<?> bindingBuilder = binder.bind(providedType);
+                final Key<?> providedTypeKey;
                 if (autoBindProvider.bindingAnnotation() != AutoBindProvider.class) {
-                    bindingBuilder.annotatedWith(autoBindProvider.bindingAnnotation());
+                    providedTypeKey = Key.get(TypeLiteral.get(providedType), autoBindProvider.bindingAnnotation());
+                } else {
+                    providedTypeKey = Key.get(TypeLiteral.get(providedType));
                 }
 
-                bindingBuilder.toProvider(autoBoundProvider).in(mapProviderScope(autoBindProvider.value()));
+//                final Vertex providedTypeVertex = new Vertex.Builder().setGuiceKey(providedTypeKey)
+//                        .setSource(providerClazz).build();
+//                getServiceGrapher().addVertex(providedTypeVertex);
+                binder.bind(providedTypeKey).toProvider(autoBoundProvider).in(mapProviderScope(autoBindProvider.value()));
             });
     }
 
@@ -126,7 +142,9 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 final AutoBindInSet autoBindInSet = setClazz.getAnnotation(AutoBindInSet.class);
                 LOGGER.info("Binding @AutoBindInSet[{}]: {}", autoBindInSet.baseClass(), setClazz);
 
-                final Multibinder multibinder = Multibinder.newSetBinder(binder, autoBindInSet.baseClass());
+                final Key<?> setValueKey = Key.get(autoBindInSet.baseClass());
+//                getServiceGrapher().addVertex(new Vertex.Builder().setGuiceKey(setValueKey).build());
+                final Multibinder multibinder = Multibinder.newSetBinder(binder, setValueKey);
                 multibinder.addBinding().to((Class) setClazz).asEagerSingleton();
             });
     }
@@ -142,13 +160,19 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 final AutoBindSingleton autoBindSingleton = singletonClazz.getAnnotation(AutoBindSingleton.class);
                 LOGGER.info("Binding @AutoBindSingleton: {}", singletonClazz);
 
-                if (autoBindSingleton.baseClass() == Void.class) {
-                    binder.bind(singletonClazz).asEagerSingleton();
-                } else {
-                    binder.bind(autoBindSingleton.baseClass()).to((Class) singletonClazz).asEagerSingleton();
-                    if (autoBindSingleton.includeImpl()) {
-                        binder.bind(singletonClazz).to((Class) singletonClazz).asEagerSingleton();
-                    }
+                // Case: Singleton binding without interface
+                if (autoBindSingleton.baseClass() == Void.class || autoBindSingleton.includeImpl()) {
+                    final Key<?> singletonKey = Key.get(singletonClazz);
+
+//                    getServiceGrapher().addVertex(new Vertex.Builder().setGuiceKey(singletonKey).build());
+                    binder.bind(singletonKey).asEagerSingleton();
+                }
+                // Case: Singleton binding with interface
+                if (autoBindSingleton.baseClass() != Void.class) {
+                    final Key<?> singletonKey = Key.get(autoBindSingleton.baseClass());
+
+//                    getServiceGrapher().addVertex(new Vertex.Builder().setGuiceKey(singletonKey).build());
+                    binder.bind(singletonKey).to((Class) singletonClazz).asEagerSingleton();
                 }
             });
     }

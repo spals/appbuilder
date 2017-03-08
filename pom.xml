@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>9</version>
+        <version>10-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -43,6 +43,7 @@
     </licenses>
 
     <properties>
+        <ascii-graphs.version>0.0.7</ascii-graphs.version>
         <aws-java-sdk.version>1.11.93</aws-java-sdk.version>
         <cassandra-driver.version>3.1.4</cassandra-driver.version>
         <dropwizard.version>1.0.6</dropwizard.version>
@@ -102,6 +103,11 @@
                 <groupId>com.datastax.cassandra</groupId>
                 <artifactId>cassandra-driver-core</artifactId>
                 <version>${cassandra-driver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.jlmauduy</groupId>
+                <artifactId>ascii-graphs_${scala.version}</artifactId>
+                <version>${ascii-graphs.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.netflix.governator</groupId>
