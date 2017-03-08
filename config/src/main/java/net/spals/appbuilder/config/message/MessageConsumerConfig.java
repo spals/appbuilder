@@ -1,8 +1,9 @@
-package net.spals.appbuilder.config;
+package net.spals.appbuilder.config.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import net.spals.appbuilder.config.TaggedConfig;
 import org.inferred.freebuilder.FreeBuilder;
 
 import java.util.Optional;
@@ -13,36 +14,37 @@ import java.util.Optional;
  * @author tkral
  */
 @FreeBuilder
-@JsonDeserialize(builder = ConsumerConfig.Builder.class)
-public interface ConsumerConfig {
+@JsonDeserialize(builder = MessageConsumerConfig.Builder.class)
+public interface MessageConsumerConfig extends TaggedConfig {
 
-    String ACTIVE_KEY = "active";
     String CHANNEL_KEY = "channel";
-    String GLOBAL_ID_KEY = "globalId";
     String FORMAT_KEY = "format";
+    String GLOBAL_ID_KEY = "globalId";
     String SOURCE_KEY = "source";
 
-    @JsonProperty(ConsumerConfig.ACTIVE_KEY)
+    @JsonProperty(TaggedConfig.ACTIVE_KEY)
     Optional<Boolean> getActive();
 
+    @Override
     @JsonIgnore
     default boolean isActive() {
         return getActive().orElse(true);
     }
 
-    @JsonProperty(ConsumerConfig.CHANNEL_KEY)
+    @JsonProperty(MessageConsumerConfig.CHANNEL_KEY)
     String getChannel();
 
-    @JsonProperty(ConsumerConfig.FORMAT_KEY)
+    @JsonProperty(MessageConsumerConfig.FORMAT_KEY)
     String getFormat();
 
-    @JsonProperty(ConsumerConfig.GLOBAL_ID_KEY)
+    @JsonProperty(MessageConsumerConfig.GLOBAL_ID_KEY)
     String getGlobalId();
 
-    @JsonProperty(ConsumerConfig.SOURCE_KEY)
+    @JsonProperty(MessageConsumerConfig.SOURCE_KEY)
     String getSource();
 
+    @Override
     String getTag();
 
-    class Builder extends ConsumerConfig_Builder {  }
+    class Builder extends MessageConsumerConfig_Builder {  }
 }

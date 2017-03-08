@@ -5,7 +5,7 @@ import com.google.inject.name.Named;
 import com.typesafe.config.Config;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
-import net.spals.appbuilder.config.ConsumerConfig;
+import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.executor.core.ManagedExecutorService;
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback;
@@ -19,8 +19,6 @@ import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * A {@link MessageConsumerPlugin} for consuming messages
@@ -64,30 +62,30 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     }
 
     @Override
-    public synchronized void start(final ConsumerConfig consumerConfig, final MessageFormatter messageFormatter) {
+    public synchronized void start(final MessageConsumerConfig consumerConfig, final MessageFormatter messageFormatter) {
         final MessageConsumerCallback consumerCallback = Optional.ofNullable(consumerCallbackMap.get(consumerConfig.getTag()))
                 .orElseThrow(() -> new IllegalArgumentException(String.format("No MessageConsumerCallback for '%s' configuration", consumerConfig.getTag())));
 
-        final Runnable consumerRunnable = new BlockingQueueConsumerRunnable(consumerConfig, messageFormatter, consumerCallback);
+        final Runnable consumerRunnable = new BlockingQueueConsumerRunnable(consumerCallback, consumerConfig, messageFormatter);
         executorService.submit(consumerRunnable);
     }
 
     @Override
-    public void stop(final ConsumerConfig consumerConfig) {
+    public void stop(final MessageConsumerConfig consumerConfig) {
         executorService.stop();
     }
 
     class BlockingQueueConsumerRunnable implements Runnable {
 
-        private final ConsumerConfig consumerConfig;
         private final MessageConsumerCallback consumerCallback;
+        private final MessageConsumerConfig consumerConfig;
         private final MessageFormatter messageFormatter;
 
-        BlockingQueueConsumerRunnable(final ConsumerConfig consumerConfig,
-                                      final MessageFormatter messageFormatter,
-                                      final MessageConsumerCallback consumerCallback) {
-            this.consumerConfig = consumerConfig;
+        BlockingQueueConsumerRunnable(final MessageConsumerCallback consumerCallback,
+                                      final MessageConsumerConfig consumerConfig,
+                                      final MessageFormatter messageFormatter) {
             this.consumerCallback = consumerCallback;
+            this.consumerConfig = consumerConfig;
             this.messageFormatter = messageFormatter;
         }
 

@@ -1,13 +1,12 @@
 package net.spals.appbuilder.message.kafka.producer
 
-import net.spals.appbuilder.config.ProducerConfig
 import org.apache.kafka.clients.producer.{Callback, RecordMetadata}
 import org.slf4j.LoggerFactory
 
 /**
   * @author tkral
   */
-private[producer] case class KafkaProducerCallback(producerConfig: ProducerConfig) extends Callback {
+private[producer] case class KafkaProducerCallback(producerConfig: MessageProducerConfig) extends Callback {
 
   private val LOGGER = LoggerFactory.getLogger(s"${classOf[KafkaMessageProducerPlugin].getName}[${producerConfig.getTag}]")
 

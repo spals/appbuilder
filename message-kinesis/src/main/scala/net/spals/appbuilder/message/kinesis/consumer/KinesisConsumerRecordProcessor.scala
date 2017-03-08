@@ -5,7 +5,6 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.ShutdownReason
 import com.amazonaws.services.kinesis.clientlibrary.types.{InitializationInput, ProcessRecordsInput, ShutdownInput}
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
-import net.spals.appbuilder.config.ConsumerConfig
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.slf4j.LoggerFactory
@@ -21,7 +20,7 @@ import scala.collection.JavaConverters._
   */
 private[consumer] class KinesisConsumerRecordProcessor @Inject()
   (@Assisted consumerCallback: MessageConsumerCallback,
-   @Assisted consumerConfig: ConsumerConfig,
+   @Assisted consumerConfig: MessageConsumerConfig,
    @Assisted messageFormatter: MessageFormatter)
   extends IRecordProcessor {
 

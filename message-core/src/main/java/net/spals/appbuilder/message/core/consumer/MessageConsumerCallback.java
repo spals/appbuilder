@@ -1,6 +1,6 @@
 package net.spals.appbuilder.message.core.consumer;
 
-import net.spals.appbuilder.config.ConsumerConfig;
+import net.spals.appbuilder.config.message.MessageConsumerConfig;
 
 import java.util.Map;
 
@@ -9,5 +9,5 @@ import java.util.Map;
  */
 public interface MessageConsumerCallback {
 
-    void processMessage(ConsumerConfig consumerConfig, Map<String, Object> payload);
+    void processMessage(MessageConsumerConfig consumerConfig, Map<String, Object> payload);
 }

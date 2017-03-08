@@ -2,13 +2,12 @@ package net.spals.appbuilder.message.kinesis.producer
 
 import com.amazonaws.services.kinesis.producer.UserRecordResult
 import com.google.common.util.concurrent.FutureCallback
-import net.spals.appbuilder.config.ProducerConfig
 import org.slf4j.LoggerFactory
 
 /**
   * @author tkral
   */
-private[producer] case class KinesisProducerCallback(producerConfig: ProducerConfig) extends FutureCallback[UserRecordResult] {
+private[producer] case class KinesisProducerCallback(producerConfig: MessageProducerConfig) extends FutureCallback[UserRecordResult] {
 
   private val LOGGER = LoggerFactory.getLogger(s"${classOf[KinesisMessageProducerPlugin].getName}[${producerConfig.getTag}]")
 

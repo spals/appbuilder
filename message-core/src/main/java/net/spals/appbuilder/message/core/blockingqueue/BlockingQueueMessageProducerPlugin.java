@@ -5,7 +5,7 @@ import com.google.inject.name.Named;
 import com.typesafe.config.Config;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
-import net.spals.appbuilder.config.ProducerConfig;
+import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ class BlockingQueueMessageProducerPlugin implements MessageProducerPlugin {
     }
 
     @Override
-    public void sendMessage(final ProducerConfig producerConfig,
+    public void sendMessage(final MessageProducerConfig producerConfig,
                             final byte[] serializedPayload) throws IOException {
         final BlockingQueueMessage message = new BlockingQueueMessage.Builder()
                 .setSerializedPayload(serializedPayload).setTag(producerConfig.getTag()).build();

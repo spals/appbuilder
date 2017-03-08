@@ -13,8 +13,9 @@ import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
-import net.spals.appbuilder.config.ConsumerConfig;
-import net.spals.appbuilder.config.ProducerConfig;
+import net.spals.appbuilder.config.TaggedConfig;
+import net.spals.appbuilder.config.message.MessageConsumerConfig;
+import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +51,14 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
         // Enable @Configuration mappings
         bootstrapBinder.install(new ConfigurationModule());
 
-        autoBindConfigs(bootstrapBinder, ConsumerConfig.class, parseConfigs("consumer", ConsumerConfig.class));
-        autoBindConfigs(bootstrapBinder, ProducerConfig.class, parseConfigs("producer", ProducerConfig.class));
+        autoBindConfigs(bootstrapBinder, MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
+        autoBindConfigs(bootstrapBinder, MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));
     }
 
     @VisibleForTesting
-    <T> void autoBindConfigs(final BootstrapBinder bootstrapBinder,
-                             final Class<T> configType,
-                             final Map<String, T> configMap) {
+    <T extends TaggedConfig> void autoBindConfigs(final BootstrapBinder bootstrapBinder,
+                                                  final Class<T> configType,
+                                                  final Map<String, T> configMap) {
         final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configType);
         // Bind the config instance in Map<String, T>...
         configMap.entrySet().stream().forEach(configEntry -> {
@@ -69,7 +70,7 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
     }
 
     @VisibleForTesting
-    <T> Map<String, T> parseConfigs(final String configSubTag, final Class<T> configType) {
+    <T extends TaggedConfig> Map<String, T> parseConfigs(final String configSubTag, final Class<T> configType) {
         final Set<String> tags = parseTags(configSubTag);
         return tags.stream().map(tag -> {
             // Create a special configuration provider which isolates the tagged configuration object
