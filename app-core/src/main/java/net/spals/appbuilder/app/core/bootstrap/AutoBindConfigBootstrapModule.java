@@ -61,10 +61,12 @@ public class AutoBindConfigBootstrapModule implements BootstrapModule {
                                                   final Map<String, T> configMap) {
         final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configType);
         // Bind the config instance in Map<String, T>...
-        configMap.entrySet().stream().forEach(configEntry -> {
-            mapBinder.addBinding(configEntry.getKey()).toInstance(configEntry.getValue());
-            // ...and as a singleton annotated with the tag name
-            bootstrapBinder.bind((Class<T>) configEntry.getValue().getClass()).annotatedWith(Names.named(configEntry.getKey()))
+        configMap.entrySet().stream()
+            .filter(taggedConfigEntry -> taggedConfigEntry.getValue().isActive())
+            .forEach(configEntry -> {
+                mapBinder.addBinding(configEntry.getKey()).toInstance(configEntry.getValue());
+                // ...and as a singleton annotated with the tag name
+                bootstrapBinder.bind((Class<T>) configEntry.getValue().getClass()).annotatedWith(Names.named(configEntry.getKey()))
                     .toInstance(configEntry.getValue());
         });
     }
