@@ -43,9 +43,15 @@
     </licenses>
 
     <properties>
+        <aws-java-sdk.version>1.11.93</aws-java-sdk.version>
+        <cassandra-driver.version>3.1.4</cassandra-driver.version>
+        <dropwizard.version>1.0.6</dropwizard.version>
         <governator.version>1.15.10</governator.version>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+        <kafka-clients.version>0.10.1.1</kafka-clients.version>
+        <kinesis-client.version>1.7.4</kinesis-client.version>
+        <kinesis-producer.version>0.12.3</kinesis-producer.version>
         <mapdb.version>3.0.3</mapdb.version>
         <reflections.version>0.9.10</reflections.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
@@ -55,18 +61,48 @@
         <module>annotations</module>
         <module>app-core</module>
         <module>app-core-test</module>
+        <module>app-dropwizard</module>
         <module>bom</module>
         <module>config</module>
         <module>config-test</module>
         <module>executor-core</module>
         <module>filestore-core</module>
+        <module>mapstore-cassandra</module>
         <module>mapstore-core</module>
         <module>mapstore-core-test</module>
+        <module>mapstore-dynamodb</module>
         <module>message-core</module>
+        <module>message-kafka</module>
+        <module>message-kinesis</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>amazon-kinesis-client</artifactId>
+                <version>${kinesis-client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>amazon-kinesis-producer</artifactId>
+                <version>${kinesis-producer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-dynamodb</artifactId>
+                <version>${aws-java-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-kinesis</artifactId>
+                <version>${aws-java-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.datastax.cassandra</groupId>
+                <artifactId>cassandra-driver-core</artifactId>
+                <version>${cassandra-driver.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.netflix.governator</groupId>
                 <artifactId>governator</artifactId>
@@ -81,6 +117,11 @@
                 <groupId>com.typesafe</groupId>
                 <artifactId>config</artifactId>
                 <version>${typesafe.config.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-core</artifactId>
+                <version>${dropwizard.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -126,6 +167,36 @@
                 <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-message-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-dropwizard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-mapstore-cassandra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-mapstore-dynamodb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-message-kafka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-message-kinesis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka-clients.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mapdb</groupId>
