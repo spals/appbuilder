@@ -1,6 +1,9 @@
-package net.spals.appbuilder.app.core.grapher;
+package net.spals.appbuilder.app.core.bootstrap;
 
-import com.google.inject.AbstractModule;
+import com.google.inject.Key;
+import com.netflix.governator.guice.BootstrapBinder;
+import com.netflix.governator.guice.BootstrapModule;
+import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
 import net.spals.appbuilder.app.core.grapher.ascii.AsciiServiceGrapher;
 import net.spals.appbuilder.app.core.grapher.noop.NoOpServiceGrapher;
 import org.inferred.freebuilder.FreeBuilder;
@@ -10,7 +13,7 @@ import org.slf4j.Logger;
  * @author tkral
  */
 @FreeBuilder
-public abstract class AutoBindServiceGrapherModule extends AbstractModule {
+public abstract class AutoBindServiceGrapherBootstrapModule implements BootstrapModule {
 
     public abstract String getFileName();
     public abstract Logger getLogger();
@@ -18,7 +21,7 @@ public abstract class AutoBindServiceGrapherModule extends AbstractModule {
 
     public abstract ServiceGrapher getServiceGrapher();
 
-    public static class Builder extends AutoBindServiceGrapherModule_Builder {
+    public static class Builder extends AutoBindServiceGrapherBootstrapModule_Builder {
         public Builder() {
             setType(ServiceGrapher.Type.NO_OP);
         }
@@ -29,7 +32,7 @@ public abstract class AutoBindServiceGrapherModule extends AbstractModule {
         }
 
         @Override
-        public AutoBindServiceGrapherModule build() {
+        public AutoBindServiceGrapherBootstrapModule build() {
             switch (getType()) {
                 case NO_OP:
                     super.setServiceGrapher(new NoOpServiceGrapher(getLogger()));
@@ -44,7 +47,9 @@ public abstract class AutoBindServiceGrapherModule extends AbstractModule {
     }
 
     @Override
-    protected void configure() {
-        bind(ServiceGrapher.class).toInstance(getServiceGrapher());
+    public void configure(final BootstrapBinder bootstrapBinder) {
+        final Key<ServiceGrapher> serviceGrapherKey = Key.get(ServiceGrapher.class);
+        bootstrapBinder.bind(serviceGrapherKey).toInstance(getServiceGrapher());
+        getServiceGrapher().addVertex(serviceGrapherKey);
     }
 }

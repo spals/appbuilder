@@ -14,7 +14,7 @@ import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.core.grapher.AutoBindServiceGrapherModule;
+import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGrapherBootstrapModule;
 import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
@@ -41,8 +41,8 @@ public abstract class GenericApp implements App {
 
         private final AutoBindConfigBootstrapModule.Builder configModuleBuilder =
                 new AutoBindConfigBootstrapModule.Builder();
-        private final AutoBindServiceGrapherModule.Builder serviceGrapherModuleBuilder =
-                new AutoBindServiceGrapherModule.Builder();
+        private final AutoBindServiceGrapherBootstrapModule.Builder serviceGrapherModuleBuilder =
+                new AutoBindServiceGrapherBootstrapModule.Builder();
         private final AutoBindServicesModule.Builder servicesModuleBuilder =
                 new AutoBindServicesModule.Builder();
         private final AutoBindWebServerModule.Builder webServerModuleBuilder =
@@ -134,8 +134,8 @@ public abstract class GenericApp implements App {
 
         @Override
         public GenericApp build() {
-            final AutoBindServiceGrapherModule serviceGrapherModule = serviceGrapherModuleBuilder.build();
-            addModule(serviceGrapherModule);
+            final AutoBindServiceGrapherBootstrapModule serviceGrapherModule = serviceGrapherModuleBuilder.build();
+            addBootstrapModule(serviceGrapherModule);
 
             configModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
             addBootstrapModule(configModuleBuilder.build());
