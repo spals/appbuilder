@@ -82,8 +82,7 @@ class AsciiVertex {
         // and standard Guice classes
         if (simpleType.getCanonicalName().startsWith("java")
                 || simpleType.getCanonicalName().startsWith("net.spals.appbuilder")
-                || simpleType.getCanonicalName().startsWith("com.google.inject")
-                || simpleType.getCanonicalName().startsWith("com.typesafe.config")) {
+                || simpleType.getCanonicalName().startsWith("com.google.inject")) {
             final List<String> nameParts = Splitter.on('.').splitToList(simpleType.getCanonicalName());
             final List<String> typeNameParts = nameParts.stream()
                     .filter(namePart -> CharMatcher.javaUpperCase().matchesAnyOf(namePart))
