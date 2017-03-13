@@ -178,8 +178,10 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 .filter(serviceClass -> Modifier.isPublic(serviceClass.getModifiers())
                     || Modifier.isProtected(serviceClass.getModifiers()))
                 .collect(Collectors.toSet());
-        LOGGER.warn("The following service classes are public or protected which may lead to service leaking. " +
-            "You should consider making them package-protected or private. {}", publicServices);
+        if (!publicServices.isEmpty()) {
+            LOGGER.warn("The following service classes are public or protected which may lead to service leaking. " +
+                    "You should consider making them package-protected or private. {}", publicServices);
+        }
 
         final Set<Class<?>> publicCtors = serviceClasses.stream()
                 .flatMap(serviceClass -> Arrays.asList(serviceClass.getDeclaredConstructors()).stream())
