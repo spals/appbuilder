@@ -10,8 +10,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
-import net.spals.appbuilder.annotations.config.ApplicationName;
-import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
@@ -104,8 +102,7 @@ public abstract class GenericApp implements App {
 
         @Override
         public Builder setName(final String name) {
-            addBootstrapModule(bootstrapBinder ->
-                    bootstrapBinder.bind(String.class).annotatedWith(ApplicationName.class).toInstance(name));
+            configModuleBuilder.setApplicationName(name);
             serviceGrapherModuleBuilder.setFileName(name + "-services-graph");
             return super.setName(name);
         }

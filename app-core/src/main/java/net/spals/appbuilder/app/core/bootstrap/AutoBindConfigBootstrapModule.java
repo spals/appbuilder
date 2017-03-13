@@ -15,6 +15,7 @@ import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
+import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindConfigBootstrapModule.class);
 
+    public abstract String getApplicationName();
     public abstract Config getServiceConfig();
     public abstract Reflections getServiceScan();
     public abstract ServiceGrapher getServiceGrapher();
@@ -51,6 +53,11 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
 
     @Override
     public void configure(final BootstrapBinder bootstrapBinder) {
+        // Bind the ApplicationName so it's available to other services/modules
+        final Key<String> appNameKey = Key.get(String.class, ApplicationName.class);
+        bootstrapBinder.bind(appNameKey).toInstance(getApplicationName());
+        getServiceGrapher().addVertex(appNameKey);
+
         // This will parse the configuration and deliver its individual pieces
         // to @Configuration fields.
         bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(getServiceConfig()));
