@@ -68,6 +68,7 @@
         <module>config-test</module>
         <module>executor-core</module>
         <module>filestore-core</module>
+        <module>graph</module>
         <module>mapstore-cassandra</module>
         <module>mapstore-core</module>
         <module>mapstore-core-test</module>
@@ -162,6 +163,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-filestore-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-graph</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

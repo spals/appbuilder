@@ -7,8 +7,7 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
-import net.spals.appbuilder.app.core.grapher.ServiceGrapher.Vertex;
+import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
@@ -33,7 +32,7 @@ public abstract class AutoBindWebServerModule extends AbstractModule implements 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindWebServerModule.class);
 
     public abstract Optional<Configurable<?>> getConfigurable();
-    public abstract ServiceGrapher getServiceGrapher();
+    public abstract ServiceGraph getServiceGraph();
 
     public final boolean isActive() {
         return getConfigurable().isPresent();
@@ -68,7 +67,7 @@ public abstract class AutoBindWebServerModule extends AbstractModule implements 
             // relate to one another
             final Key<WEBSERVER> wsKey = Key.get(WEBSERVER.class);
             final Key<I> wsComponentKey = Key.get(typeLiteral);
-            getServiceGrapher().addVertex(wsKey).addVertex(wsComponentKey).addEdge(wsComponentKey, wsKey);
+            getServiceGraph().addVertex(wsKey).addVertex(wsComponentKey).addEdge(wsComponentKey, wsKey);
 
             typeEncounter.register(this);
         }

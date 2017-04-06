@@ -63,6 +63,10 @@
             <artifactId>spals-appbuilder-config</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-graph</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.inferred</groupId>
             <artifactId>freebuilder</artifactId>
         </dependency>

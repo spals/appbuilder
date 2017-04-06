@@ -15,9 +15,9 @@ import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGrapherBootstrapModule;
-import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
+import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -83,8 +83,8 @@ public abstract class GenericApp implements App {
         }
 
         @Override
-        public Builder enableServiceGrapher(final ServiceGrapher.Type serviceGrapherType) {
-            serviceGrapherModuleBuilder.setType(serviceGrapherType);
+        public Builder enableServiceGrapher(final ServiceGraphFormat graphFormat) {
+            serviceGrapherModuleBuilder.setGraphFormat(graphFormat);
             return this;
         }
 
@@ -137,13 +137,13 @@ public abstract class GenericApp implements App {
             final AutoBindServiceGrapherBootstrapModule serviceGrapherModule = serviceGrapherModuleBuilder.build();
             addBootstrapModule(serviceGrapherModule);
 
-            configModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
+//            configModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
             addBootstrapModule(configModuleBuilder.build());
 
-            servicesModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
+//            servicesModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
             addModule(servicesModuleBuilder.build());
 
-            webServerModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
+            webServerModuleBuilder.setServiceGraph(serviceGrapherModule.getServiceGraph());
             addModule(webServerModuleBuilder.build());
 
             setLifecycleInjector(lifecycleInjectorBuilder.build());

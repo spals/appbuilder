@@ -1,11 +1,11 @@
-package net.spals.appbuilder.app.core.grapher.ascii;
+package net.spals.appbuilder.graph.writer.ascii;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.inject.TypeLiteral;
-import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
+import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 /**
  * @author tkral
  */
-class AsciiVertex {
+public class AsciiServiceGraphVertex {
 
-    private final ServiceGrapher.Vertex vertexDelegate;
+    private final ServiceGraphVertex vertexDelegate;
 
-    AsciiVertex(final ServiceGrapher.Vertex vertexDelegate) {
+    AsciiServiceGraphVertex(final ServiceGraphVertex vertexDelegate) {
         this.vertexDelegate = vertexDelegate;
     }
 
@@ -53,7 +53,7 @@ class AsciiVertex {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-            }).ifPresent(annValue -> sb.append('(').append(annValue).append(')'));
+                }).ifPresent(annValue -> sb.append('(').append(annValue).append(')'));
 
         return sb.toString();
     }
