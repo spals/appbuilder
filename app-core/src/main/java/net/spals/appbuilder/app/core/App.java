@@ -5,7 +5,7 @@ import com.google.inject.Key;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.lifecycle.LifecycleManager;
 import com.typesafe.config.Config;
-import net.spals.appbuilder.graph.ServiceGrapher;
+import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.slf4j.Logger;
 
 /**
@@ -32,9 +32,9 @@ public interface App {
         }));
         // 3. Grab the Guice injector from which we can get service references
         final Injector serviceInjecter = getLifecycleInjector().createInjector();
-        // 3a. Output the service graph
-        final ServiceGrapher serviceGrapher = serviceInjecter.getInstance(Key.get(ServiceGrapher.class));
-        serviceGrapher.graph(serviceInjecter);
+        // 4. Output the service graph
+        final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
+        serviceGraphWriter.writeServiceGraph();
 
         return serviceInjecter;
     }

@@ -14,9 +14,10 @@ import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGrapherBootstrapModule;
+import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGraphBootstrapModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
+import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
@@ -41,8 +42,8 @@ public abstract class GenericApp implements App {
 
         private final AutoBindConfigBootstrapModule.Builder configModuleBuilder =
                 new AutoBindConfigBootstrapModule.Builder();
-        private final AutoBindServiceGrapherBootstrapModule.Builder serviceGrapherModuleBuilder =
-                new AutoBindServiceGrapherBootstrapModule.Builder();
+        private final AutoBindServiceGraphBootstrapModule.Builder serviceGraphModuleBuilder =
+                new AutoBindServiceGraphBootstrapModule.Builder();
         private final AutoBindServicesModule.Builder servicesModuleBuilder =
                 new AutoBindServicesModule.Builder();
         private final AutoBindWebServerModule.Builder webServerModuleBuilder =
@@ -84,7 +85,7 @@ public abstract class GenericApp implements App {
 
         @Override
         public Builder enableServiceGrapher(final ServiceGraphFormat graphFormat) {
-            serviceGrapherModuleBuilder.setGraphFormat(graphFormat);
+            serviceGraphModuleBuilder.setGraphFormat(graphFormat);
             return this;
         }
 
@@ -96,14 +97,12 @@ public abstract class GenericApp implements App {
 
         @Override
         public Builder setLogger(final Logger logger) {
-            serviceGrapherModuleBuilder.setLogger(logger);
             return super.setLogger(logger);
         }
 
         @Override
         public Builder setName(final String name) {
             configModuleBuilder.setApplicationName(name);
-            serviceGrapherModuleBuilder.setFileName(name + "-services-graph");
             return super.setName(name);
         }
 
@@ -134,17 +133,12 @@ public abstract class GenericApp implements App {
 
         @Override
         public GenericApp build() {
-            final AutoBindServiceGrapherBootstrapModule serviceGrapherModule = serviceGrapherModuleBuilder.build();
-            addBootstrapModule(serviceGrapherModule);
-
-//            configModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
             addBootstrapModule(configModuleBuilder.build());
-
-//            servicesModuleBuilder.setServiceGrapher(serviceGrapherModule.getServiceGrapher());
             addModule(servicesModuleBuilder.build());
 
-            webServerModuleBuilder.setServiceGraph(serviceGrapherModule.getServiceGraph());
-            addModule(webServerModuleBuilder.build());
+            final ServiceGraph serviceGraph = new ServiceGraph();
+            addBootstrapModule(serviceGraphModuleBuilder.setServiceGraph(serviceGraph).build());
+            addModule(webServerModuleBuilder.setServiceGraph(serviceGraph).build());
 
             setLifecycleInjector(lifecycleInjectorBuilder.build());
             return super.build();

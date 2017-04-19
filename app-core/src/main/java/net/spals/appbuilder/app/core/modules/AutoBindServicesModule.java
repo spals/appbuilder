@@ -29,7 +29,6 @@ public abstract class AutoBindServicesModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindServicesModule.class);
 
     public abstract Boolean getErrorOnServiceLeaks();
-//    public abstract ServiceGrapher getServiceGrapher();
     public abstract Reflections getServiceScan();
 
     public static class Builder extends AutoBindServicesModule_Builder {
@@ -78,10 +77,6 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 final Object key = autoBindInMap.keyType() == String.class ? autoBindInMap.key() :
                         Enum.valueOf((Class) autoBindInMap.keyType(), autoBindInMap.key());
                 mapBinder.addBinding(key).to((Class) mapClazz).asEagerSingleton();
-
-//                final Key<?> mapKey = Key.get(TypeLiteral.get(Types.mapOf(autoBindInMap.keyType(), autoBindInMap.baseClass())));
-//                final Key<?> mapValueKey = Key.get(mapClazz);
-//                getServiceGrapher().addVertex(mapKey).addVertex(mapValueKey).addEdge(mapValueKey, mapKey);
             });
     }
 
@@ -118,8 +113,6 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 }
 
                 binder.bind(providedTypeKey).toProvider(autoBoundProvider).in(mapProviderScope(autoBindProvider.value()));
-//                getServiceGrapher().addVertex(new Vertex.Builder().setGuiceKey(providedTypeKey)
-//                        .setSource(providerClazz).build());
             });
     }
 
@@ -135,11 +128,7 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 LOGGER.info("Binding @AutoBindInSet[{}]: {}", autoBindInSet.baseClass(), setClazz);
 
                 final Multibinder multibinder = Multibinder.newSetBinder(binder, autoBindInSet.baseClass());
-                multibinder.addBinding().to((Class) setClazz).asEagerSingleton();
-
-//                final Key<?> setKey = Key.get(TypeLiteral.get(Types.setOf(autoBindInSet.baseClass())));
-//                final Key<?> setValueKey = Key.get(TypeLiteral.get(setClazz));
-//                getServiceGrapher().addVertex(setKey).addVertex(setValueKey).addEdge(setValueKey, setKey);
+                multibinder.addBinding().to((Class) setClazz).asEagerSingleton();;
             });
     }
 
@@ -158,13 +147,11 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 if (autoBindSingleton.baseClass() == Void.class || autoBindSingleton.includeImpl()) {
                     final Key<?> singletonKey = Key.get(singletonClazz);
                     binder.bind(singletonKey).asEagerSingleton();
-//                    getServiceGrapher().addVertex(singletonKey);
                 }
                 // Case: Singleton binding with interface
                 if (autoBindSingleton.baseClass() != Void.class) {
                     final Key<?> singletonKey = Key.get(autoBindSingleton.baseClass());
                     binder.bind(singletonKey).to((Class) singletonClazz).asEagerSingleton();
-//                    getServiceGrapher().addVertex(singletonKey);
                 }
             });
     }

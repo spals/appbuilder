@@ -1,13 +1,12 @@
-package net.spals.appbuilder.graph.writer.ascii;
+package net.spals.appbuilder.graph.writer;
 
 import com.github.mdr.ascii.graph.Graph;
 import com.github.mdr.ascii.java.GraphBuilder;
 import com.github.mdr.ascii.java.GraphLayouter;
 import net.spals.appbuilder.graph.model.ServiceGraph;
-import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.graph.model.ServiceGraphVertex;
-import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.stream.Stream;
@@ -15,21 +14,17 @@ import java.util.stream.Stream;
 /**
  * @author tkral
  */
-public class AsciiServiceGraphWriter implements ServiceGraphWriter {
+class AsciiServiceGraphWriter implements ServiceGraphWriter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AsciiServiceGraphWriter.class);
 
-    private final Logger logger;
+    private final ServiceGraph serviceGraph;
 
-    public AsciiServiceGraphWriter(final Logger logger) {
-        this.logger = logger;
+    AsciiServiceGraphWriter(final ServiceGraph serviceGraph) {
+        this.serviceGraph = serviceGraph;
     }
 
     @Override
-    public ServiceGraphFormat getFormat() {
-        return ServiceGraphFormat.ASCII;
-    }
-
-    @Override
-    public void writeGraph(final ServiceGraph serviceGraph) {
+    public void writeServiceGraph() {
         final GraphBuilder<AsciiServiceGraphVertex> asciiGraphBuilder = new GraphBuilder<>();
         // 1. Add all the edges to the graph builder
         final Stream<SimpleImmutableEntry<ServiceGraphVertex, ServiceGraphVertex>> singleEdges =
@@ -50,6 +45,6 @@ public class AsciiServiceGraphWriter implements ServiceGraphWriter {
         final GraphLayouter<AsciiServiceGraphVertex> asciiGraphLayouter = new GraphLayouter<>();
         asciiGraphLayouter.setVertical(false);
 
-        logger.info(String.format("%n%s", asciiGraphLayouter.layout(asciiGraph)));
+        LOGGER.info(String.format("%n%s", asciiGraphLayouter.layout(asciiGraph)));
     }
 }

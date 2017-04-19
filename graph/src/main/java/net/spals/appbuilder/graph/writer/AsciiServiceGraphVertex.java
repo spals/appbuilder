@@ -1,4 +1,4 @@
-package net.spals.appbuilder.graph.writer.ascii;
+package net.spals.appbuilder.graph.writer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * @author tkral
  */
-public class AsciiServiceGraphVertex {
+class AsciiServiceGraphVertex {
 
     private final ServiceGraphVertex vertexDelegate;
 
@@ -80,7 +80,7 @@ public class AsciiServiceGraphVertex {
     String simpleTypeName(final Class<?> simpleType) {
         // Strip off the package names for standard Java classes, standard AppBuilder classes,
         // and standard Guice classes
-        if (simpleType.getCanonicalName().startsWith("java")
+        if (simpleType.getCanonicalName().startsWith("java.lang") || simpleType.getCanonicalName().startsWith("java.util")
                 || simpleType.getCanonicalName().startsWith("net.spals.appbuilder")
                 || simpleType.getCanonicalName().startsWith("com.google.inject")) {
             final List<String> nameParts = Splitter.on('.').splitToList(simpleType.getCanonicalName());

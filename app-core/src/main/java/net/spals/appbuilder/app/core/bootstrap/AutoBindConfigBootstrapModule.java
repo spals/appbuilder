@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
-
 /**
  * A {@link BootstrapModule} which auto binds
  * micro-service configuration.
@@ -46,7 +44,6 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
     public abstract String getApplicationName();
     public abstract Config getServiceConfig();
     public abstract Reflections getServiceScan();
-//    public abstract ServiceGrapher getServiceGrapher();
 
     public static class Builder extends AutoBindConfigBootstrapModule_Builder {  }
 
@@ -55,7 +52,6 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
         // Bind the ApplicationName so it's available to other services/modules
         final Key<String> appNameKey = Key.get(String.class, ApplicationName.class);
         bootstrapBinder.bind(appNameKey).toInstance(getApplicationName());
-//        getServiceGrapher().addVertex(appNameKey);
 
         // This will parse the configuration and deliver its individual pieces
         // to @Configuration fields.
@@ -63,15 +59,12 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
         // Also give access to the full blown configuration
         final Key<Config> configKey = Key.get(Config.class, ServiceConfig.class);
         bootstrapBinder.bind(configKey).toInstance(getServiceConfig());
-        // Add a vertex for the service configuration in our service graph
-//        getServiceGrapher().addVertex(configKey);
         // Enable @Configuration mappings
         bootstrapBinder.install(new ConfigurationModule());
 
         // Bind the full ServiceScan so that it's available to other modules
         final Key<Reflections> serviceScanKey = Key.get(Reflections.class, ServiceScan.class);
         bootstrapBinder.bind(serviceScanKey).toInstance(getServiceScan());
-//        getServiceGrapher().addVertex(serviceScanKey);
 
         autoBindConfigs(bootstrapBinder, MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
         autoBindConfigs(bootstrapBinder, MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));
@@ -82,9 +75,6 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
                                                   final Class<T> configType,
                                                   final Map<String, T> configMap) {
         final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configType);
-        // Add a vertex for the configuration map
-//        final Key<?> configMapKey = Key.get(TypeLiteral.get(Types.mapOf(String.class, configType)));
-//        getServiceGrapher().addVertex(configMapKey);
 
         configMap.entrySet().stream()
             .filter(taggedConfigEntry -> taggedConfigEntry.getValue().isActive())
@@ -94,8 +84,6 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
                 // ...and as a singleton annotated with the tag name
                 bootstrapBinder.bind(configType).annotatedWith(Names.named(configEntry.getKey()))
                         .toInstance(configEntry.getValue());
-//                final Key<?> configValueKey = Key.get(configType, Names.named(configEntry.getKey()));
-//                getServiceGrapher().addVertex(configValueKey).addEdge(configValueKey, configMapKey);
             });
     }
 
