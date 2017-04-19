@@ -84,7 +84,7 @@ public abstract class GenericApp implements App {
         }
 
         @Override
-        public Builder enableServiceGrapher(final ServiceGraphFormat graphFormat) {
+        public Builder enableServiceGraph(final ServiceGraphFormat graphFormat) {
             serviceGraphModuleBuilder.setGraphFormat(graphFormat);
             return this;
         }

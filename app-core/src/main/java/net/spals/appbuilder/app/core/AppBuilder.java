@@ -1,5 +1,6 @@
 package net.spals.appbuilder.app.core;
 
+import com.google.common.annotations.Beta;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
@@ -25,7 +26,8 @@ public interface AppBuilder<A extends App> {
 
     AppBuilder<A> enableRequestScoping(BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration);
 
-    AppBuilder<A> enableServiceGrapher(ServiceGraphFormat graphFormat);
+    @Beta
+    AppBuilder<A> enableServiceGraph(ServiceGraphFormat graphFormat);
 
     AppBuilder<A> enableWebServerAutoBinding(Configurable<?> configurable);
 

@@ -90,8 +90,8 @@ public abstract class DropwizardApp implements App {
         }
 
         @Override
-        public Builder enableServiceGrapher(final ServiceGraphFormat graphFormat) {
-            appBuilderDelegate.enableServiceGrapher(graphFormat);
+        public Builder enableServiceGraph(final ServiceGraphFormat graphFormat) {
+            appBuilderDelegate.enableServiceGraph(graphFormat);
             return this;
         }
 
