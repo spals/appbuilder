@@ -1,11 +1,9 @@
-package net.spals.appbuilder.app.core.grapher.ascii;
+package net.spals.appbuilder.graph.writer;
 
 import com.google.common.base.CharMatcher;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
-import com.google.inject.grapher.Node;
-import net.spals.appbuilder.app.core.grapher.ServiceGrapher;
-import net.spals.appbuilder.app.core.grapher.ServiceGrapher.Vertex;
+import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -17,26 +15,26 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 /**
- * Unit tests for {@link AsciiVertex}.
+ * Unit tests for {@link AsciiServiceGraphVertex}.
  *
  * @author tkral
  */
-public class AsciiVertexTest {
+public class AsciiServiceGraphVertexTest {
 
     @DataProvider
     Object[][] simpleTypeNameProvider() {
         return new Object[][] {
                 {String.class, "String"},
                 {String[].class, "String[]"},
-                {AsciiVertexTest.class, "AsciiVertexTest"},
-                {AsciiVertexTest[].class, "AsciiVertexTest[]"},
+                {AsciiServiceGraphVertexTest.class, "AsciiServiceGraphVertexTest"},
+                {AsciiServiceGraphVertexTest[].class, "AsciiServiceGraphVertexTest[]"},
                 {CharMatcher.class, "com.google.common.base.CharMatcher"},
         };
     }
 
     @Test(dataProvider = "simpleTypeNameProvider")
     public void testSimpleTypeName(final Class<?> simpleType, final String expectedName) {
-        final AsciiVertex asciiVertex = new AsciiVertex(mock(Vertex.class));
+        final AsciiServiceGraphVertex asciiVertex = new AsciiServiceGraphVertex(mock(ServiceGraphVertex.class));
         assertThat(asciiVertex.simpleTypeName(simpleType), is(expectedName));
     }
 
@@ -44,7 +42,7 @@ public class AsciiVertexTest {
     Object[][] genericTypeNameProvider() {
         return new Object[][] {
                 {new TypeLiteral<Set<String>>(){}, "Set<String>"},
-                {new TypeLiteral<Set<AsciiVertexTest>>(){}, "Set<AsciiVertexTest>"},
+                {new TypeLiteral<Set<AsciiServiceGraphVertexTest>>(){}, "Set<AsciiServiceGraphVertexTest>"},
                 {new TypeLiteral<Map<String, String>>(){}, "Map<String, String>"},
                 {new TypeLiteral<Map.Entry<String, String>>(){}, "Map.Entry<String, String>"},
                 {new TypeLiteral<Set<Map.Entry<String, String>>>(){}, "Set<Map.Entry<String, String>>"},
@@ -54,7 +52,7 @@ public class AsciiVertexTest {
 
     @Test(dataProvider = "genericTypeNameProvider")
     public void testGenericTypeName(final TypeLiteral<?> typeLiteral, final String expectedName) {
-        final AsciiVertex asciiVertex = new AsciiVertex(mock(Vertex.class));
+        final AsciiServiceGraphVertex asciiVertex = new AsciiServiceGraphVertex(mock(ServiceGraphVertex.class));
         assertThat(asciiVertex.genericTypeName(typeLiteral), is(expectedName));
     }
 
@@ -68,7 +66,7 @@ public class AsciiVertexTest {
 
     @Test(dataProvider = "typeLiteralNameProvider")
     public void testTypeLiternalName(final TypeLiteral<?> typeLiteral, final String expectedName) {
-        final AsciiVertex asciiVertex = new AsciiVertex(mock(Vertex.class));
+        final AsciiServiceGraphVertex asciiVertex = new AsciiServiceGraphVertex(mock(ServiceGraphVertex.class));
         assertThat(asciiVertex.typeLiteralName(typeLiteral), is(expectedName));
     }
 }

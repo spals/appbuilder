@@ -70,10 +70,10 @@ public class AutoBindServicesModuleTest {
         final AnnotatedBindingBuilder annotatedBindingBuilder = mock(AnnotatedBindingBuilder.class);
         when(annotatedBindingBuilder.toProvider(any(javax.inject.Provider.class))).thenReturn(scopedBindingBuilder);
         final Binder binder = mock(Binder.class);
-        when(binder.bind(any(Class.class))).thenReturn(annotatedBindingBuilder);
+        when(binder.bind(any(Key.class))).thenReturn(annotatedBindingBuilder);
 
         autoBindModule.autoBindProviders(binder);
-        verify(binder).bind(eq(String.class));
+        verify(binder).bind(eq(Key.get(String.class)));
         verify(annotatedBindingBuilder).toProvider(argThat(Matchers.<javax.inject.Provider>instanceOf(AutoBoundProvider.class)));
         verify(scopedBindingBuilder).in(eq(expectedScope));
     }
@@ -97,20 +97,11 @@ public class AutoBindServicesModuleTest {
         verify(annotatedBindingBuilder).asEagerSingleton();
     }
 
-    @DataProvider
-    Object[][] autoBindSingletonsProvider() {
-        return new Object[][] {
-                {MySingletonInterfaceBind.class, ImmutableList.of(MySingleton.class)},
-                {MySingletonInterfaceAndImplBind.class,
-                        ImmutableList.of(MySingleton.class, MySingletonInterfaceAndImplBind.class)},
-        };
-    }
-
-    @Test(dataProvider = "autoBindSingletonsProvider")
-    public void testAutoBindSingletons(final Class<?> singletonClazz, final List<Class<?>> expectedBindClasses) {
+    @Test
+    public void testAutoBindSingletonWithInterface() {
         final Reflections serviceScan = mock(Reflections.class);
         when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
-                .thenReturn(ImmutableSet.of(singletonClazz));
+                .thenReturn(ImmutableSet.of(MySingletonInterfaceBind.class));
 
         final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
                 .setServiceScan(serviceScan).build();
@@ -122,10 +113,33 @@ public class AutoBindServicesModuleTest {
         when(binder.bind(any(Class.class))).thenReturn(annotatedBindingBuilder);
 
         autoBindModule.autoBindSingletons(binder);
-        expectedBindClasses.forEach(bindClazz -> verify(binder).bind(bindClazz));
+        verify(binder).bind(MySingleton.class);
         verifyNoMoreInteractions(binder);
-        verify(annotatedBindingBuilder, times(expectedBindClasses.size())).to(eq(singletonClazz));
-        verify(scopedBindingBuilder, times(expectedBindClasses.size())).asEagerSingleton();
+        verify(annotatedBindingBuilder).to(eq(MySingletonInterfaceBind.class));
+        verify(scopedBindingBuilder).asEagerSingleton();
+    }
+
+    @Test
+    public void testAutoBindSingletonWithInterfaceAndImpl() {
+        final Reflections serviceScan = mock(Reflections.class);
+        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+                .thenReturn(ImmutableSet.of(MySingletonInterfaceAndImplBind.class));
+
+        final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
+                .setServiceScan(serviceScan).build();
+
+        final ScopedBindingBuilder scopedBindingBuilder = mock(ScopedBindingBuilder.class);
+        final AnnotatedBindingBuilder annotatedBindingBuilder = mock(AnnotatedBindingBuilder.class);
+        when(annotatedBindingBuilder.to(any(Class.class))).thenReturn(scopedBindingBuilder);
+        final Binder binder = mock(Binder.class);
+        when(binder.bind(any(Class.class))).thenReturn(annotatedBindingBuilder);
+
+        autoBindModule.autoBindSingletons(binder);
+        verify(binder).bind(MySingleton.class);
+        verify(binder).bind(MySingletonInterfaceAndImplBind.class);
+        verifyNoMoreInteractions(binder);
+        verify(annotatedBindingBuilder).to(eq(MySingletonInterfaceAndImplBind.class));
+        verify(scopedBindingBuilder).asEagerSingleton();
     }
 
     @DataProvider

@@ -1,5 +1,7 @@
 package net.spals.appbuilder.message.kinesis.consumer
 
+import net.spals.appbuilder.config.message.MessageConsumerConfig
+
 /**
   * @author tkral
   */

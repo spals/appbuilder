@@ -145,13 +145,11 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
                 // Case: Singleton binding without interface
                 if (autoBindSingleton.baseClass() == Void.class || autoBindSingleton.includeImpl()) {
-                    final Key<?> singletonKey = Key.get(singletonClazz);
-                    binder.bind(singletonKey).asEagerSingleton();
+                    binder.bind(singletonClazz).asEagerSingleton();
                 }
                 // Case: Singleton binding with interface
                 if (autoBindSingleton.baseClass() != Void.class) {
-                    final Key<?> singletonKey = Key.get(autoBindSingleton.baseClass());
-                    binder.bind(singletonKey).to((Class) singletonClazz).asEagerSingleton();
+                    binder.bind(autoBindSingleton.baseClass()).to((Class) singletonClazz).asEagerSingleton();
                 }
             });
     }

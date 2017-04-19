@@ -9,6 +9,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLib
 import com.google.inject.Inject
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.config.ApplicationName
+import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter

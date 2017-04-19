@@ -27,35 +27,43 @@ public class AutoBindConfigBootstrapModuleTest {
     @DataProvider
     Object[][] parseConfigsProvider() {
         final Map<String, Object> configMapConsumer = ImmutableMap.of("myTag.consumer.channel", "myChannel",
+                "myTag.consumer.format", "json",
                 "myTag.consumer.globalId", "myId",
                 "myTag.consumer.source", "kafka");
         final MessageConsumerConfig expectedConsumerConfig = new MessageConsumerConfig.Builder().setTag("myTag")
                 .setChannel("myChannel")
+                .setFormat("json")
                 .setGlobalId("myId")
                 .setSource("kafka").build();
 
         final Map<String, Object> configMapProducer = ImmutableMap.of("myTag.producer.channel", "myChannel",
+                "myTag.producer.format", "json",
                 "myTag.producer.globalId", "myId",
                 "myTag.producer.destination", "kafka");
         final MessageProducerConfig expectedProducerConfig = new MessageProducerConfig.Builder().setTag("myTag")
                 .setChannel("myChannel")
+                .setFormat("json")
                 .setGlobalId("myId")
                 .setDestination("kafka").build();
 
         final Map<String, Object> configMapMultiConsumer = ImmutableMap.<String, Object>builder()
                 .put("myTag1.consumer.channel", "myChannel")
+                .put("myTag1.consumer.format", "json")
                 .put("myTag1.consumer.globalId", "myId1")
                 .put("myTag1.consumer.source", "kafka")
                 .put("myTag2.consumer.channel", "myChannel")
+                .put("myTag2.consumer.format", "json")
                 .put("myTag2.consumer.globalId", "myId2")
                 .put("myTag2.consumer.source", "kafka")
                 .build();
         final MessageConsumerConfig expectedConsumerConfig1 = new MessageConsumerConfig.Builder().setTag("myTag1")
                 .setChannel("myChannel")
+                .setFormat("json")
                 .setGlobalId("myId1")
                 .setSource("kafka").build();
         final MessageConsumerConfig expectedConsumerConfig2 = new MessageConsumerConfig.Builder().setTag("myTag2")
                 .setChannel("myChannel")
+                .setFormat("json")
                 .setGlobalId("myId2")
                 .setSource("kafka").build();
 
@@ -79,7 +87,8 @@ public class AutoBindConfigBootstrapModuleTest {
                                                           final String configSubTag,
                                                           final Class<T> configType,
                                                           final Map<String, T> expectedConfigMap) {
-        final AutoBindConfigBootstrapModule autoBindBootstrapModule = new AutoBindConfigBootstrapModule(serviceConfig);
+        final AutoBindConfigBootstrapModule autoBindBootstrapModule =
+                new AutoBindConfigBootstrapModule.Builder().setServiceConfig(serviceConfig).buildPartial();
         assertThat(autoBindBootstrapModule.parseConfigs(configSubTag, configType), is(expectedConfigMap));
     }
 
@@ -104,7 +113,8 @@ public class AutoBindConfigBootstrapModuleTest {
     public void testParseTags(final Config serviceConfig,
                               final String configSubTag,
                               final Set<String> expectedParsedTags) {
-        final AutoBindConfigBootstrapModule autoBindBootstrapModule = new AutoBindConfigBootstrapModule(serviceConfig);
+        final AutoBindConfigBootstrapModule autoBindBootstrapModule =
+                new AutoBindConfigBootstrapModule.Builder().setServiceConfig(serviceConfig).buildPartial();
         assertThat(autoBindBootstrapModule.parseTags(configSubTag), is(expectedParsedTags));
     }
 }
