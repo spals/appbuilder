@@ -7,7 +7,6 @@ import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
-import net.spals.appbuilder.app.core.modules.AutoBindJaxRsWebServerModule;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
@@ -32,8 +31,8 @@ public abstract class JaxRsWebApp implements App {
     public static class Builder extends JaxRsWebApp_Builder implements WebAppBuilder<JaxRsWebApp> {
 
         private final GenericSimpleApp.Builder appDelegateBuilder;
-        private final AutoBindJaxRsWebServerModule.Builder webServerModuleBuilder =
-                new AutoBindJaxRsWebServerModule.Builder();
+        private final JaxRsWebServerModule.Builder webServerModuleBuilder =
+                new JaxRsWebServerModule.Builder();
 
         public Builder(final String name, final Logger logger) {
             this.appDelegateBuilder = new GenericSimpleApp.Builder(name, logger);

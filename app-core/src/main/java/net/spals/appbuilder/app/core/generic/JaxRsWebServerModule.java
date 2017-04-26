@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.core.modules;
+package net.spals.appbuilder.app.core.generic;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -25,14 +25,14 @@ import javax.ws.rs.ext.Provider;
  * @author tkral
  */
 @FreeBuilder
-public abstract class AutoBindJaxRsWebServerModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindJaxRsWebServerModule.class);
+public abstract class JaxRsWebServerModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JaxRsWebServerModule.class);
 
     public abstract boolean isActive();
     public abstract Configurable<?> getConfigurable();
     public abstract ServiceGraph getServiceGraph();
 
-    public static class Builder extends AutoBindJaxRsWebServerModule_Builder {
+    public static class Builder extends JaxRsWebServerModule_Builder {
         public Builder() {
             setActive(true);
         }
