@@ -2,6 +2,7 @@ package net.spals.appbuilder.message.kinesis.producer
 
 import com.amazonaws.services.kinesis.producer.UserRecordResult
 import com.google.common.util.concurrent.FutureCallback
+import net.spals.appbuilder.config.message.MessageProducerConfig
 import org.slf4j.LoggerFactory
 
 /**

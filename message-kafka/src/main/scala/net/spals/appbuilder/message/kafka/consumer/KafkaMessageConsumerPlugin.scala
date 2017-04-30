@@ -6,6 +6,7 @@ import java.util.concurrent.Executors
 import com.google.inject.Inject
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
+import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter

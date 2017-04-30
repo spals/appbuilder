@@ -2,6 +2,7 @@ package net.spals.appbuilder.message.kafka.consumer
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.apache.kafka.clients.consumer.KafkaConsumer

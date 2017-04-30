@@ -5,6 +5,7 @@ import java.util.Properties
 import com.google.common.cache.{CacheBuilder, CacheLoader}
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
+import net.spals.appbuilder.config.message.MessageProducerConfig
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import org.apache.kafka.clients.producer.ProducerConfig._
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
