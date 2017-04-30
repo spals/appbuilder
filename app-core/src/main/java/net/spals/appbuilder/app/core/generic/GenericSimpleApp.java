@@ -1,9 +1,12 @@
 package net.spals.appbuilder.app.core.generic;
 
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
+import com.netflix.governator.lifecycle.LifecycleManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
@@ -16,6 +19,7 @@ import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGraphBootstrapModu
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -25,6 +29,33 @@ import org.slf4j.Logger;
  */
 @FreeBuilder
 public abstract class GenericSimpleApp implements App {
+
+    abstract LifecycleInjector getLifecycleInjector();
+
+    @Override
+    public final Injector getServiceInjector() {
+        // 1. Startup the Governator LifecycleManager
+        final LifecycleManager lifecycleManager = getLifecycleInjector().getLifecycleManager();
+        try {
+            lifecycleManager.start();
+        } catch (Exception e) {
+            getLogger().error("Error during LifecycleManager start", e);
+            throw new RuntimeException(e);
+        }
+
+        // 2. Ensure that we shut everything down properly
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            getLogger().info("Shutting down {} application.", getName());
+            lifecycleManager.close();
+        }));
+        // 3. Grab the Guice injector from which we can get service references
+        final Injector serviceInjecter = getLifecycleInjector().createInjector();
+        // 4. Output the service graph
+        final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
+        serviceGraphWriter.writeServiceGraph();
+
+        return serviceInjecter;
+    }
 
     public static class Builder extends GenericSimpleApp_Builder implements SimpleAppBuilder<GenericSimpleApp> {
 

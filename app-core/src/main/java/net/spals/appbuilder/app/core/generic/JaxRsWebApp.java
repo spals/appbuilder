@@ -64,7 +64,7 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public Builder enableRequestScoping() {
-            // TODO: Potential error here. Uf .enableRequestScoping() is called before .setFilterRegistration(...)
+            // TODO: Potential error here. If .enableRequestScoping() is called before .setFilterRegistration(...)
             getFilterRegistration().apply(GuiceFilter.class.getName(), new GuiceFilter())
                     .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false /*isMatchAfter*/, "/*");
             return addModule(new ServletModule());
@@ -107,9 +107,9 @@ public abstract class JaxRsWebApp implements App {
             final GenericSimpleApp appDelegate = appDelegateBuilder.build();
 
             super.setLogger(appDelegate.getLogger());
-            super.setLifecycleInjector(appDelegate.getLifecycleInjector());
             super.setName(appDelegate.getName());
             super.setServiceConfig(appDelegate.getServiceConfig());
+            super.setServiceInjector(appDelegate.getServiceInjector());
 
             return super.build();
         }

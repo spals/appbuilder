@@ -133,9 +133,9 @@ public abstract class DropwizardWebApp implements App {
         public DropwizardWebApp build() {
             final JaxRsWebApp appDelegate = appDelegateBuilder.build();
             super.setLogger(appDelegate.getLogger());
-            super.setLifecycleInjector(appDelegate.getLifecycleInjector());
             super.setName(appDelegate.getName());
             super.setServiceConfig(appDelegate.getServiceConfig());
+            super.setServiceInjector(appDelegate.getServiceInjector());
 
             return super.build();
         }
