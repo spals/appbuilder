@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.core.bootstrap;
+package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -18,11 +18,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 /**
- * Unit tests for {@link AutoBindConfigBootstrapModule}
+ * Unit tests for {@link AutoBindConfigModule}
  *
  * @author tkral
  */
-public class AutoBindConfigBootstrapModuleTest {
+public class AutoBindConfigModuleTest {
 
     @DataProvider
     Object[][] parseConfigsProvider() {
@@ -87,8 +87,8 @@ public class AutoBindConfigBootstrapModuleTest {
                                                           final String configSubTag,
                                                           final Class<T> configType,
                                                           final Map<String, T> expectedConfigMap) {
-        final AutoBindConfigBootstrapModule autoBindBootstrapModule =
-                new AutoBindConfigBootstrapModule.Builder().setServiceConfig(serviceConfig).buildPartial();
+        final AutoBindConfigModule autoBindBootstrapModule =
+                new AutoBindConfigModule.Builder().setServiceConfig(serviceConfig).buildPartial();
         assertThat(autoBindBootstrapModule.parseConfigs(configSubTag, configType), is(expectedConfigMap));
     }
 
@@ -113,8 +113,8 @@ public class AutoBindConfigBootstrapModuleTest {
     public void testParseTags(final Config serviceConfig,
                               final String configSubTag,
                               final Set<String> expectedParsedTags) {
-        final AutoBindConfigBootstrapModule autoBindBootstrapModule =
-                new AutoBindConfigBootstrapModule.Builder().setServiceConfig(serviceConfig).buildPartial();
+        final AutoBindConfigModule autoBindBootstrapModule =
+                new AutoBindConfigModule.Builder().setServiceConfig(serviceConfig).buildPartial();
         assertThat(autoBindBootstrapModule.parseTags(configSubTag), is(expectedParsedTags));
     }
 }

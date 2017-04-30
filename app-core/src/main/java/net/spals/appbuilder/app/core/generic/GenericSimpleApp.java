@@ -13,10 +13,12 @@ import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.SimpleAppBuilder;
-import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGraphBootstrapModule;
+import net.spals.appbuilder.app.core.bootstrap.BootstrapModuleWrapper;
+import net.spals.appbuilder.app.core.modules.AutoBindConfigModule;
+import net.spals.appbuilder.app.core.modules.AutoBindServiceGraphModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
+import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
@@ -62,10 +64,10 @@ public abstract class GenericSimpleApp implements App {
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
         final ServiceGraph serviceGraph;
 
-        private final AutoBindConfigBootstrapModule.Builder configModuleBuilder =
-                new AutoBindConfigBootstrapModule.Builder();
-        private final AutoBindServiceGraphBootstrapModule.Builder serviceGraphModuleBuilder =
-                new AutoBindServiceGraphBootstrapModule.Builder();
+        private final AutoBindConfigModule.Builder configModuleBuilder =
+                new AutoBindConfigModule.Builder();
+        private final AutoBindServiceGraphModule.Builder serviceGraphModuleBuilder =
+                new AutoBindServiceGraphModule.Builder();
         private final AutoBindServicesModule.Builder servicesModuleBuilder =
                 new AutoBindServicesModule.Builder();
 
@@ -111,6 +113,10 @@ public abstract class GenericSimpleApp implements App {
         @Override
         public Builder setServiceConfig(final Config serviceConfig) {
             configModuleBuilder.setServiceConfig(serviceConfig);
+            addBootstrapModule(bootstrapBinder ->
+                // This will parse the configuration and deliver its individual pieces
+                // to @Configuration fields.
+                bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(serviceConfig)));
             return super.setServiceConfig(serviceConfig);
         }
 
@@ -135,8 +141,10 @@ public abstract class GenericSimpleApp implements App {
 
         @Override
         public GenericSimpleApp build() {
-            addBootstrapModule(configModuleBuilder.build());
-            addBootstrapModule(serviceGraphModuleBuilder.build());
+            // Add config and serviceGraph bindings in bootstrap phase
+            // so that they can be consumed by auto bound Modules
+            addBootstrapModule(new BootstrapModuleWrapper(configModuleBuilder.build()));
+            addBootstrapModule(new BootstrapModuleWrapper(serviceGraphModuleBuilder.build()));
             addModule(servicesModuleBuilder.build());
 
             setLifecycleInjector(lifecycleInjectorBuilder.build());
