@@ -38,7 +38,6 @@ public abstract class JaxRsWebApp implements App {
             this.appDelegateBuilder = new GenericSimpleApp.Builder(name, logger);
         }
 
-        @Override
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
             appDelegateBuilder.addBootstrapModule(bootstrapModule);
             return this;

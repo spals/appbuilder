@@ -86,7 +86,6 @@ public abstract class GenericSimpleApp implements App {
             setLogger(logger);
         }
 
-        @Override
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
             lifecycleInjectorBuilder.withAdditionalBootstrapModules(bootstrapModule);
             return this;

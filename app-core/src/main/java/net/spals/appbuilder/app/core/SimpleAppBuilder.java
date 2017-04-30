@@ -27,9 +27,6 @@ import java.util.function.BiFunction;
  */
 public interface SimpleAppBuilder<A extends App> {
 
-
-    SimpleAppBuilder<A> addBootstrapModule(BootstrapModule bootstrapModule);
-
     SimpleAppBuilder<A> addModule(Module module);
 
     SimpleAppBuilder<A> disableErrorOnServiceLeaks();

@@ -9,6 +9,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
+import net.spals.appbuilder.app.core.bootstrap.BootstrapModuleWrapper;
 import net.spals.appbuilder.app.core.generic.JaxRsWebApp;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.glassfish.jersey.message.internal.TracingLogger;
@@ -40,10 +41,9 @@ public abstract class DropwizardWebApp implements App {
         public Builder(final Bootstrap<?> bootstrap, final Logger logger) {
             this.appDelegateBuilder = new JaxRsWebApp.Builder(bootstrap.getApplication().getName(), logger);
             setBootstrap(bootstrap);
-            addBootstrapModule(new DropwizardBootstrapBootstrapModule(bootstrap));
+            addBootstrapModule(new BootstrapModuleWrapper(new DropwizardBootstrapModule(bootstrap)));
         }
 
-        @Override
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
             appDelegateBuilder.addBootstrapModule(bootstrapModule);
             return this;
@@ -101,7 +101,7 @@ public abstract class DropwizardWebApp implements App {
             appDelegateBuilder.setConfigurable(env.jersey().getResourceConfig());
             appDelegateBuilder.setFilterRegistration((filterName, filter) -> env.servlets().addFilter(filterName, filter));
 
-            addBootstrapModule(new DropwizardEnvironmentBootstrapModule(env));
+            addBootstrapModule(new BootstrapModuleWrapper(new DropwizardEnvironmentModule(env)));
             enableApiRequestTracing(env);
 
             return this;
