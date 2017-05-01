@@ -1,6 +1,6 @@
 package net.spals.appbuilder.message.core.consumer;
 
-import net.spals.appbuilder.config.ConsumerConfig;
+import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.message.core.formatter.MessageFormatter;
 
 /**
@@ -8,7 +8,7 @@ import net.spals.appbuilder.message.core.formatter.MessageFormatter;
  */
 public interface MessageConsumerPlugin {
 
-    void start(ConsumerConfig consumerConfig, MessageFormatter messageFormatter);
+    void start(MessageConsumerConfig consumerConfig, MessageFormatter messageFormatter);
 
-    void stop(ConsumerConfig consumerConfig);
+    void stop(MessageConsumerConfig consumerConfig);
 }

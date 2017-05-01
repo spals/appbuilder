@@ -23,7 +23,7 @@ import static net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.max;
  * @author tkral
  */
 @AutoBindSingleton(baseClass = MapStoreMigrationRunner.class)
-class DefaultMapStoreMigrationRunner<C> implements MapStoreMigrationRunner {
+class DefaultMapStoreMigrationRunner implements MapStoreMigrationRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultMapStoreMigrationRunner.class);
 
     private static final String MIGRATIONS_TABLE_NAME = "migrations";

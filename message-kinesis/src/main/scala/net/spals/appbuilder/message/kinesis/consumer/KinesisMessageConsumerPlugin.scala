@@ -9,7 +9,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLib
 import com.google.inject.Inject
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.config.ApplicationName
-import net.spals.appbuilder.config.ConsumerConfig
+import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
@@ -36,7 +36,7 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   @Configuration("kinesis.messageConsumer.numThreads")
   private var numThreads: Int = 2
 
-  override def start(consumerConfig: ConsumerConfig, messageFormatter: MessageFormatter): Unit = {
+  override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
     require(consumerCallbackMap.containsKey(consumerConfig.getTag),
       s"No MessageConsumerCallback for '${consumerConfig.getTag}' configuration")
 
@@ -60,8 +60,8 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
       executorService.submit(worker)
   }
 
-  override def stop(consumerConfig: ConsumerConfig): Unit = {
-    // Stop the thread executor registered under the ConsumerConfig tag
+  override def stop(consumerConfig: MessageConsumerConfig): Unit = {
+    // Stop the thread executor registered under the MessageConsumerConfig tag
     executorServiceRegistry.stop(getClass, consumerConfig.getTag)
   }
 }

@@ -2,7 +2,6 @@ package net.spals.appbuilder.message.kafka.consumer
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import net.spals.appbuilder.config.ConsumerConfig
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -15,7 +14,7 @@ import scala.collection.JavaConverters._
   */
 private[consumer] class KafkaConsumerRunnable (consumer: KafkaConsumer[String, Array[Byte]],
                                                consumerCallback: MessageConsumerCallback,
-                                               consumerConfig: ConsumerConfig,
+                                               consumerConfig: MessageConsumerConfig,
                                                messageFormatter: MessageFormatter) extends Runnable {
 
   private val closed = new AtomicBoolean(false)

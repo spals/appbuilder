@@ -24,6 +24,10 @@
         </dependency>
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-grapher</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
         </dependency>
         <dependency>
@@ -53,6 +57,10 @@
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-graph</artifactId>
         </dependency>
         <dependency>
             <groupId>org.inferred</groupId>

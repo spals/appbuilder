@@ -3,7 +3,7 @@ package net.spals.appbuilder.message.core.consumer;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
-import net.spals.appbuilder.config.ConsumerConfig;
+import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.message.core.formatter.MessageFormatter;
 
 import java.util.Map;
@@ -15,13 +15,13 @@ import java.util.Optional;
 @AutoBindSingleton(baseClass = MessageConsumer.class)
 class DefaultMessageConsumer implements MessageConsumer {
 
-    private final Map<String, ConsumerConfig> consumerConfigMap;
-
+    private final Map<String, MessageConsumerConfig> consumerConfigMap;
     private final Map<String, MessageFormatter> formatterMap;
+
     private final Map<String, MessageConsumerPlugin> consumerPluginMap;
 
     @Inject
-    DefaultMessageConsumer(final Map<String, ConsumerConfig> consumerConfigMap,
+    DefaultMessageConsumer(final Map<String, MessageConsumerConfig> consumerConfigMap,
                            final Map<String, MessageFormatter> formatterMap,
                            final Map<String, MessageConsumerPlugin> consumerPluginMap) {
         this.consumerConfigMap = consumerConfigMap;
@@ -36,7 +36,7 @@ class DefaultMessageConsumer implements MessageConsumer {
             .filter(consumerConfigEntry -> consumerConfigEntry.getValue().isActive())
             .forEach(consumerConfigEntry -> {
                 final String tag = consumerConfigEntry.getKey();
-                final ConsumerConfig consumerConfig = consumerConfigEntry.getValue();
+                final MessageConsumerConfig consumerConfig = consumerConfigEntry.getValue();
 
                 final MessageConsumerPlugin consumerPlugin = Optional.ofNullable(consumerPluginMap.get(consumerConfig.getSource()))
                     .orElseThrow(() -> new ConfigException.BadValue(tag + ".consumer.source",
@@ -55,7 +55,7 @@ class DefaultMessageConsumer implements MessageConsumer {
         consumerConfigMap.entrySet().stream()
             .filter(consumerConfigEntry -> consumerConfigEntry.getValue().isActive())
             .forEach(consumerConfigEntry -> {
-                final ConsumerConfig consumerConfig = consumerConfigEntry.getValue();
+                final MessageConsumerConfig consumerConfig = consumerConfigEntry.getValue();
                 // Assuming start() is called before stop() so these are guaranteed to be non-null
                 final MessageConsumerPlugin consumerPlugin = consumerPluginMap.get(consumerConfig.getSource());
 

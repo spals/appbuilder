@@ -6,7 +6,6 @@ import java.util.concurrent.Executors
 import com.google.inject.Inject
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
-import net.spals.appbuilder.config.ConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
@@ -35,7 +34,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
   @Configuration("kafka.messageConsumer.numThreads")
   private var numThreads: Int = 2
 
-  private val consumerRunnableCache = mutable.Map[ConsumerConfig, KafkaConsumerRunnable]()
+  private val consumerRunnableCache = mutable.Map[MessageConsumerConfig, KafkaConsumerRunnable]()
 
   private[consumer] def createConsumerProps(kafkaConsumerConfig: KafkaConsumerConfig): Properties = {
     val props = new Properties()
@@ -50,7 +49,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     props
   }
 
-  override def start(consumerConfig: ConsumerConfig, messageFormatter: MessageFormatter): Unit = {
+  override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
     require(consumerCallbackMap.containsKey(consumerConfig.getTag),
       s"No MessageConsumerCallback for '${consumerConfig.getTag}' configuration")
 
@@ -70,10 +69,10 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     executorService.submit(consumerRunnable)
   }
 
-  override def stop(consumerConfig: ConsumerConfig): Unit = {
+  override def stop(consumerConfig: MessageConsumerConfig): Unit = {
     // Shutdown the native Kafka consumer within the KafkaConsumerRunnable
     consumerRunnableCache.get(consumerConfig).foreach(_.shutdown())
-    // Stop the thread executor registered under the ConsumerConfig tag
+    // Stop the thread executor registered under the MessageConsumerConfig tag
     executorServiceRegistry.stop(getClass, consumerConfig.getTag)
   }
 }

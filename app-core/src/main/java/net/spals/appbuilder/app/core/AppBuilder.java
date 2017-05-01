@@ -1,8 +1,10 @@
 package net.spals.appbuilder.app.core;
 
+import com.google.common.annotations.Beta;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
+import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 
@@ -24,6 +26,9 @@ public interface AppBuilder<A extends App> {
 
     AppBuilder<A> enableRequestScoping(BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration);
 
+    @Beta
+    AppBuilder<A> enableServiceGraph(ServiceGraphFormat graphFormat);
+
     AppBuilder<A> enableWebServerAutoBinding(Configurable<?> configurable);
 
     AppBuilder<A> setLogger(Logger logger);
@@ -34,7 +39,7 @@ public interface AppBuilder<A extends App> {
 
     AppBuilder<A> setServiceConfigFromClasspath(String serviceConfigFileName);
 
-    AppBuilder<A> setServiceScan(final Reflections serviceScan);
+    AppBuilder<A> setServiceScan(Reflections serviceScan);
 
     A build();
 }

@@ -1,8 +1,9 @@
-package net.spals.appbuilder.config;
+package net.spals.appbuilder.config.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import net.spals.appbuilder.config.TaggedConfig;
 import org.inferred.freebuilder.FreeBuilder;
 
 import java.util.Optional;
@@ -13,36 +14,36 @@ import java.util.Optional;
  * @author tkral
  */
 @FreeBuilder
-@JsonDeserialize(builder = ProducerConfig.Builder.class)
-public interface ProducerConfig {
+@JsonDeserialize(builder = MessageProducerConfig.Builder.class)
+public interface MessageProducerConfig extends TaggedConfig {
 
-    String ACTIVE_KEY = "active";
     String CHANNEL_KEY = "channel";
     String DESTINATION_KEY = "destination";
     String FORMAT_KEY = "format";
     String GLOBAL_ID_KEY = "globalId";
 
-    @JsonProperty(ProducerConfig.ACTIVE_KEY)
+    @JsonProperty(TaggedConfig.ACTIVE_KEY)
     Optional<Boolean> getActive();
 
+    @Override
     @JsonIgnore
     default boolean isActive() {
         return getActive().orElse(true);
     }
 
-    @JsonProperty(ProducerConfig.CHANNEL_KEY)
+    @JsonProperty(MessageProducerConfig.CHANNEL_KEY)
     String getChannel();
 
-    @JsonProperty(ProducerConfig.DESTINATION_KEY)
+    @JsonProperty(MessageProducerConfig.DESTINATION_KEY)
     String getDestination();
 
-    @JsonProperty(ProducerConfig.FORMAT_KEY)
+    @JsonProperty(MessageProducerConfig.FORMAT_KEY)
     String getFormat();
 
-    @JsonProperty(ProducerConfig.GLOBAL_ID_KEY)
+    @JsonProperty(MessageProducerConfig.GLOBAL_ID_KEY)
     String getGlobalId();
 
     String getTag();
 
-    class Builder extends ProducerConfig_Builder {  }
+    class Builder extends MessageProducerConfig_Builder {  }
 }

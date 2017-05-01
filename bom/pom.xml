@@ -48,6 +48,10 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-graph</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-mapstore-core</artifactId>
         </dependency>
         <dependency>

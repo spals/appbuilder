@@ -3,7 +3,6 @@ package net.spals.appbuilder.app.core.modules;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
@@ -106,12 +105,14 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
                 final javax.inject.Provider autoBoundProvider =
                         new AutoBoundProvider((Class<? extends javax.inject.Provider>) providerClazz);
-                final AnnotatedBindingBuilder<?> bindingBuilder = binder.bind(providedType);
+                final Key<?> providedTypeKey;
                 if (autoBindProvider.bindingAnnotation() != AutoBindProvider.class) {
-                    bindingBuilder.annotatedWith(autoBindProvider.bindingAnnotation());
+                    providedTypeKey = Key.get(TypeLiteral.get(providedType), autoBindProvider.bindingAnnotation());
+                } else {
+                    providedTypeKey = Key.get(TypeLiteral.get(providedType));
                 }
 
-                bindingBuilder.toProvider(autoBoundProvider).in(mapProviderScope(autoBindProvider.value()));
+                binder.bind(providedTypeKey).toProvider(autoBoundProvider).in(mapProviderScope(autoBindProvider.value()));
             });
     }
 
@@ -127,7 +128,7 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 LOGGER.info("Binding @AutoBindInSet[{}]: {}", autoBindInSet.baseClass(), setClazz);
 
                 final Multibinder multibinder = Multibinder.newSetBinder(binder, autoBindInSet.baseClass());
-                multibinder.addBinding().to((Class) setClazz).asEagerSingleton();
+                multibinder.addBinding().to((Class) setClazz).asEagerSingleton();;
             });
     }
 
@@ -142,13 +143,13 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 final AutoBindSingleton autoBindSingleton = singletonClazz.getAnnotation(AutoBindSingleton.class);
                 LOGGER.info("Binding @AutoBindSingleton: {}", singletonClazz);
 
-                if (autoBindSingleton.baseClass() == Void.class) {
+                // Case: Singleton binding without interface
+                if (autoBindSingleton.baseClass() == Void.class || autoBindSingleton.includeImpl()) {
                     binder.bind(singletonClazz).asEagerSingleton();
-                } else {
+                }
+                // Case: Singleton binding with interface
+                if (autoBindSingleton.baseClass() != Void.class) {
                     binder.bind(autoBindSingleton.baseClass()).to((Class) singletonClazz).asEagerSingleton();
-                    if (autoBindSingleton.includeImpl()) {
-                        binder.bind(singletonClazz).to((Class) singletonClazz).asEagerSingleton();
-                    }
                 }
             });
     }
@@ -159,8 +160,10 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 .filter(serviceClass -> Modifier.isPublic(serviceClass.getModifiers())
                     || Modifier.isProtected(serviceClass.getModifiers()))
                 .collect(Collectors.toSet());
-        LOGGER.warn("The following service classes are public or protected which may lead to service leaking. " +
-            "You should consider making them package-protected or private. {}", publicServices);
+        if (!publicServices.isEmpty()) {
+            LOGGER.warn("The following service classes are public or protected which may lead to service leaking. " +
+                    "You should consider making them package-protected or private. {}", publicServices);
+        }
 
         final Set<Class<?>> publicCtors = serviceClasses.stream()
                 .flatMap(serviceClass -> Arrays.asList(serviceClass.getDeclaredConstructors()).stream())

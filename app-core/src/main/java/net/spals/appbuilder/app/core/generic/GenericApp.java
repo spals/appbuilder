@@ -6,21 +6,22 @@ import com.google.inject.servlet.ServletModule;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
-import com.netflix.governator.guice.actions.BindingReport;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
-import net.spals.appbuilder.annotations.config.ApplicationName;
-import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.AppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
+import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGraphBootstrapModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
+import net.spals.appbuilder.graph.model.ServiceGraph;
+import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -39,8 +40,14 @@ public abstract class GenericApp implements App {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
 
+        private final AutoBindConfigBootstrapModule.Builder configModuleBuilder =
+                new AutoBindConfigBootstrapModule.Builder();
+        private final AutoBindServiceGraphBootstrapModule.Builder serviceGraphModuleBuilder =
+                new AutoBindServiceGraphBootstrapModule.Builder();
         private final AutoBindServicesModule.Builder servicesModuleBuilder =
                 new AutoBindServicesModule.Builder();
+        private final AutoBindWebServerModule.Builder webServerModuleBuilder =
+                new AutoBindWebServerModule.Builder();
 
         public Builder() {
             this.lifecycleInjectorBuilder = LifecycleInjector.builder()
@@ -77,20 +84,31 @@ public abstract class GenericApp implements App {
         }
 
         @Override
+        public Builder enableServiceGraph(final ServiceGraphFormat graphFormat) {
+            serviceGraphModuleBuilder.setGraphFormat(graphFormat);
+            return this;
+        }
+
+        @Override
         public Builder enableWebServerAutoBinding(final Configurable<?> configurable) {
-            return addModule(new AutoBindWebServerModule(configurable));
+            webServerModuleBuilder.setConfigurable(configurable);
+            return this;
+        }
+
+        @Override
+        public Builder setLogger(final Logger logger) {
+            return super.setLogger(logger);
         }
 
         @Override
         public Builder setName(final String name) {
-            addBootstrapModule(bootstrapBinder ->
-                    bootstrapBinder.bind(String.class).annotatedWith(ApplicationName.class).toInstance(name));
+            configModuleBuilder.setApplicationName(name);
             return super.setName(name);
         }
 
         @Override
         public Builder setServiceConfig(final Config serviceConfig) {
-            addBootstrapModule(new AutoBindConfigBootstrapModule(serviceConfig));
+            configModuleBuilder.setServiceConfig(serviceConfig);
             return super.setServiceConfig(serviceConfig);
         }
 
@@ -103,16 +121,25 @@ public abstract class GenericApp implements App {
 
         @Override
         public Builder setServiceScan(final Reflections serviceScan) {
+            // 1. Bind the serviceScan as part of the overall application configuration
+            configModuleBuilder.setServiceScan(serviceScan);
+            // 2. Use the serviceScan to find auto bound modules
+            addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
+            // 3. Use the serviceScan to find auto bound services
             servicesModuleBuilder.setServiceScan(serviceScan);
 
-            addBootstrapModule(bootstrapBinder ->
-                    bootstrapBinder.bind(Reflections.class).annotatedWith(ServiceScan.class).toInstance(serviceScan));
-            return addBootstrapModule(new AutoBindModulesBootstrapModule(serviceScan));
+            return this;
         }
 
         @Override
         public GenericApp build() {
+            addBootstrapModule(configModuleBuilder.build());
             addModule(servicesModuleBuilder.build());
+
+            final ServiceGraph serviceGraph = new ServiceGraph();
+            addBootstrapModule(serviceGraphModuleBuilder.setServiceGraph(serviceGraph).build());
+            addModule(webServerModuleBuilder.setServiceGraph(serviceGraph).build());
+
             setLifecycleInjector(lifecycleInjectorBuilder.build());
             return super.build();
         }

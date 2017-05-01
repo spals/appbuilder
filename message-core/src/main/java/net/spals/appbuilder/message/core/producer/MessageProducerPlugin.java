@@ -1,6 +1,6 @@
 package net.spals.appbuilder.message.core.producer;
 
-import net.spals.appbuilder.config.ProducerConfig;
+import net.spals.appbuilder.config.message.MessageProducerConfig;
 
 import java.io.IOException;
 
@@ -9,5 +9,5 @@ import java.io.IOException;
  */
 public interface MessageProducerPlugin {
 
-    void sendMessage(final ProducerConfig producerConfig, final byte[] serializedPayload) throws IOException;
+    void sendMessage(final MessageProducerConfig producerConfig, final byte[] serializedPayload) throws IOException;
 }
