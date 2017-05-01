@@ -2,16 +2,9 @@ package net.spals.appbuilder.app.core;
 
 import com.google.common.annotations.Beta;
 import com.google.inject.Module;
-import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.reflections.Reflections;
-import org.slf4j.Logger;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.ws.rs.core.Configurable;
-import java.util.function.BiFunction;
 
 /**
  * Contract definition for a builder which produces
