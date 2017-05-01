@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.google.inject.TypeLiteral
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
-import com.twitter.finagle
+import com.twitter.finagle.{http => finaglehttp}
 import com.twitter.finagle.Filter
 import com.twitter.finatra.http.Controller
 import com.twitter.finatra.http.exceptions.{ExceptionMapper, ExceptionMapperCollection}
@@ -34,7 +34,7 @@ case class FinatraWebServerModule(serviceGraph: ServiceGraph) extends TwitterMod
     val typeMatcher = TypeLiteralMatchers.subclassesOf(classOf[Controller])
         .or(TypeLiteralMatchers.subclassesOf(classOf[ExceptionMapper[_]]))
         .or(TypeLiteralMatchers.subclassesOf(classOf[ExceptionMapperCollection]))
-        .or(TypeLiteralMatchers.subclassesOf(classOf[Filter[finagle.http.Request, finagle.http.Response, finagle.http.Request, finagle.http.Response]]))
+        .or(TypeLiteralMatchers.subclassesOf(classOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]))
 
     bindListener(typeMatcher, this)
   }
@@ -46,19 +46,19 @@ case class FinatraWebServerModule(serviceGraph: ServiceGraph) extends TwitterMod
   private[finatra] def runWebServerAutoBind(router: HttpRouter): Unit = {
     Option(addCommonFilters.get).filter(b => b).foreach(router.filter[CommonFilters])
     Option(addRequestScopeFilter.get).filter(b => b)
-      .foreach(router.filter[FinagleRequestScopeFilter[finagle.http.Request, finagle.http.Response]])
+      .foreach(router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
 
-//    Option(runWebServerAutoBinding.get).filter(_).foreach(
-//      wsComponents.foreach(wsComponent => {
-//        wsComponent match {
-//          case controller: Controller => router.add(controller)
-//          case mapper: ExceptionMapper[_] => router.exceptionMapper(mapper)
-//          case mappers: ExceptionMapperCollection => router.exceptionMapper(mappers)
-//          case filter: Filter[finagle.http.Request, finagle.http.Response, finagle.http.Request, finagle.http.Response] =>
-//            router.filter(filter)
-//        }
-//      })
-//    }
+    Option(runWebServerAutoBinding.get).filter(b => b).foreach(b => wsComponents.foreach(
+      wsComponent => {
+        wsComponent match {
+          case controller: Controller => router.add(controller)
+          case mapper: ExceptionMapper[_] => router.exceptionMapper(mapper)
+          case mappers: ExceptionMapperCollection => router.exceptionMapper(mappers)
+          case filter: Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response] =>
+            router.filter(filter)
+        }
+      }
+    ))
   }
 
   private def wsComponents: Seq[AnyRef] = Seq()
