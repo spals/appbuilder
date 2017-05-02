@@ -12,7 +12,7 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import net.spals.appbuilder.app.core.App;
-import net.spals.appbuilder.app.core.SimpleAppBuilder;
+import net.spals.appbuilder.app.core.WorkerAppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
 import net.spals.appbuilder.app.core.bootstrap.BootstrapModuleWrapper;
 import net.spals.appbuilder.app.core.modules.AutoBindConfigModule;
@@ -30,7 +30,7 @@ import org.slf4j.Logger;
  * @author tkral
  */
 @FreeBuilder
-public abstract class GenericSimpleApp implements App {
+public abstract class GenericWorkerApp implements App {
 
     abstract LifecycleInjector getLifecycleInjector();
 
@@ -59,7 +59,7 @@ public abstract class GenericSimpleApp implements App {
         return serviceInjecter;
     }
 
-    public static class Builder extends GenericSimpleApp_Builder implements SimpleAppBuilder<GenericSimpleApp> {
+    public static class Builder extends GenericWorkerApp_Builder implements WorkerAppBuilder<GenericWorkerApp> {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
         final ServiceGraph serviceGraph;
@@ -139,7 +139,7 @@ public abstract class GenericSimpleApp implements App {
         }
 
         @Override
-        public GenericSimpleApp build() {
+        public GenericWorkerApp build() {
             // Add config and serviceGraph bindings in bootstrap phase
             // so that they can be consumed by auto bound Modules
             addBootstrapModule(new BootstrapModuleWrapper(configModuleBuilder.build()));

@@ -30,12 +30,12 @@ public abstract class JaxRsWebApp implements App {
 
     public static class Builder extends JaxRsWebApp_Builder implements WebAppBuilder<JaxRsWebApp> {
 
-        private final GenericSimpleApp.Builder appDelegateBuilder;
+        private final GenericWorkerApp.Builder appDelegateBuilder;
         private final JaxRsWebServerModule.Builder webServerModuleBuilder =
                 new JaxRsWebServerModule.Builder();
 
         public Builder(final String name, final Logger logger) {
-            this.appDelegateBuilder = new GenericSimpleApp.Builder(name, logger);
+            this.appDelegateBuilder = new GenericWorkerApp.Builder(name, logger);
         }
 
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
@@ -103,7 +103,7 @@ public abstract class JaxRsWebApp implements App {
         public JaxRsWebApp build() {
             webServerModuleBuilder.setServiceGraph(appDelegateBuilder.serviceGraph);
             appDelegateBuilder.addModule(webServerModuleBuilder.build());
-            final GenericSimpleApp appDelegate = appDelegateBuilder.build();
+            final GenericWorkerApp appDelegate = appDelegateBuilder.build();
 
             super.setLogger(appDelegate.getLogger());
             super.setName(appDelegate.getName());
