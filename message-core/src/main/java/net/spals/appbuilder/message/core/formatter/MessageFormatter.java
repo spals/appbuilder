@@ -7,7 +7,7 @@ import java.io.IOException;
  */
 public interface MessageFormatter {
 
-    <P> P deserializePayload(final byte[] serializedPayload) throws IOException;
+    Object deserializePayload(final byte[] serializedPayload) throws IOException;
 
     byte[] serializePayload(final Object payload) throws IOException;
 }

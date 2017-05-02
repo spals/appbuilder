@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage;
 
 /**
  * A {@link MessageConsumerPlugin} for consuming messages
@@ -33,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockingQueueMessageConsumerPlugin.class);
 
-    private final Map<String, MessageConsumerCallback> consumerCallbackMap;
+    private final Set<MessageConsumerCallback<?>> consumerCallbackSet;
     private final BlockingQueue<BlockingQueueMessage> blockingMessageQueue;
 
     private final ManagedExecutorService executorService;
@@ -43,7 +46,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
 
     @Inject
     BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
-                                       final Map<String, MessageConsumerCallback> consumerCallbackMap,
+                                       final Set<MessageConsumerCallback<?>> consumerCallbackSet,
                                        final ManagedExecutorServiceRegistry executorServiceRegistry,
                                        @Named("blockingMessageQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
@@ -53,20 +56,21 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
                 .filter(config -> config.hasPath("blockingQueue.messageConsumer.pollTimeoutUnit"))
                 .map(config -> config.getEnum(TimeUnit.class, "blockingQueue.messageConsumer.pollTimeoutUnit")).orElse(TimeUnit.MILLISECONDS);
 
-        this.consumerCallbackMap = consumerCallbackMap;
+        this.consumerCallbackSet = consumerCallbackSet;
         this.blockingMessageQueue = blockingMessageQueue;
         // The number of registered consumer callbacks provides an upper bound on
         // the number of executor threads that we'll need.
         this.executorService = executorServiceRegistry.registerExecutorService(getClass(),
-                Executors.newFixedThreadPool(Math.max(consumerCallbackMap.size(), 1)));
+                Executors.newFixedThreadPool(Math.max(consumerCallbackSet.size(), 1)));
     }
 
     @Override
     public synchronized void start(final MessageConsumerConfig consumerConfig, final MessageFormatter messageFormatter) {
-        final MessageConsumerCallback consumerCallback = Optional.ofNullable(consumerCallbackMap.get(consumerConfig.getTag()))
-                .orElseThrow(() -> new IllegalArgumentException(String.format("No MessageConsumerCallback for '%s' configuration", consumerConfig.getTag())));
+        final Map<Class<?>, MessageConsumerCallback<?>> consumerCallbacks =
+                MessageConsumerCallback.loadCallbacksForTag(consumerConfig.getTag(), consumerCallbackSet);
 
-        final Runnable consumerRunnable = new BlockingQueueConsumerRunnable(consumerCallback, consumerConfig, messageFormatter);
+        final Runnable consumerRunnable =
+                new BlockingQueueConsumerRunnable(consumerCallbacks, consumerConfig, messageFormatter);
         executorService.submit(consumerRunnable);
     }
 
@@ -77,14 +81,14 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
 
     class BlockingQueueConsumerRunnable implements Runnable {
 
-        private final MessageConsumerCallback consumerCallback;
+        private final Map<Class<?>, MessageConsumerCallback<?>> consumerCallbacks;
         private final MessageConsumerConfig consumerConfig;
         private final MessageFormatter messageFormatter;
 
-        BlockingQueueConsumerRunnable(final MessageConsumerCallback consumerCallback,
+        BlockingQueueConsumerRunnable(final Map<Class<?>, MessageConsumerCallback<?>> consumerCallbacks,
                                       final MessageConsumerConfig consumerConfig,
                                       final MessageFormatter messageFormatter) {
-            this.consumerCallback = consumerCallback;
+            this.consumerCallbacks = consumerCallbacks;
             this.consumerConfig = consumerConfig;
             this.messageFormatter = messageFormatter;
         }
@@ -95,9 +99,15 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
                 while (!Thread.interrupted()) {
                     final BlockingQueueMessage message = blockingMessageQueue.poll(pollTimeout, pollTimeoutUnit);
                     if (message != null) {
-                        final Map<String, Object> payload = messageFormatter.deserializePayload(message.getSerializedPayload());
+                        final Object payload = messageFormatter.deserializePayload(message.getSerializedPayload());
                         LOGGER.trace("Received '{}' message: {}", message.getTag(), payload);
-                        consumerCallback.processMessage(consumerConfig, payload);
+                        final Optional<MessageConsumerCallback> consumerCallback =
+                                Optional.ofNullable(consumerCallbacks.get(payload.getClass()));
+                        if (consumerCallback.isPresent()) {
+                            consumerCallback.get().processMessage(consumerConfig, payload);
+                        } else {
+                            LOGGER.warn(unregisteredCallbackMessage(consumerConfig.getTag(), payload.getClass()));
+                        }
                     }
                 }
             } catch (InterruptedException e) {

@@ -1,5 +1,6 @@
 package net.spals.appbuilder.message.core.producer;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
@@ -35,6 +36,9 @@ class DefaultMessageProducer implements MessageProducer {
 
     @Override
     public void sendMessage(final String tag, final Object payload) {
+        Preconditions.checkNotNull(tag, "Cannot send Message with null tag");
+        Preconditions.checkNotNull(payload, "Cannot send Messag with null payload");
+
         final MessageProducerConfig producerConfig = loadProducerConfig(tag);
         final Logger logger = loadLogger(producerConfig);
         final MessageFormatter messageFormatter = loadMessageFormatter(producerConfig);
