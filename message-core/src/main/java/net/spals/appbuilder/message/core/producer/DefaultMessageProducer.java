@@ -34,7 +34,7 @@ class DefaultMessageProducer implements MessageProducer {
     }
 
     @Override
-    public void sendMessage(final String tag, final Map<String, Object> payload) {
+    public void sendMessage(final String tag, final Object payload) {
         final MessageProducerConfig producerConfig = loadProducerConfig(tag);
         final Logger logger = loadLogger(producerConfig);
         final MessageFormatter messageFormatter = loadMessageFormatter(producerConfig);

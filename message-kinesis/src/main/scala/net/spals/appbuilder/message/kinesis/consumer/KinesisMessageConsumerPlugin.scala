@@ -14,12 +14,14 @@ import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 
+import scala.collection.JavaConverters._
+
 /**
   * @author tkral
   */
 private[consumer] class KinesisMessageConsumerPlugin @Inject()
   (@ApplicationName applicationName: String,
-   consumerCallbackMap: java.util.Map[String, MessageConsumerCallback],
+   consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
    executorServiceRegistry: ManagedExecutorServiceRegistry,
    kinesisConsumerRecordProcessorFactory: KinesisConsumerRecordProcessorFactory)
   extends MessageConsumerPlugin {
@@ -37,11 +39,8 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   private var numThreads: Int = 2
 
   override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
-    require(consumerCallbackMap.containsKey(consumerConfig.getTag),
-      s"No MessageConsumerCallback for '${consumerConfig.getTag}' configuration")
-
     val kinesisConsumerConfig = KinesisConsumerConfig(consumerConfig)
-    val consumerCallback = consumerCallbackMap.get(consumerConfig.getTag)
+    val consumerCallbacks = loadCallbacks(consumerConfig)
 
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val workerId = s"${kinesisConsumerConfig.getWorkerId}:${UUID.randomUUID()}"
@@ -51,7 +50,7 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
         new AWSStaticCredentialsProvider(awsCredentials), workerId))
       .recordProcessorFactory(new IRecordProcessorFactory() {
         override def createProcessor(): IRecordProcessor =
-          kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallback, consumerConfig, messageFormatter)
+          kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallbacks, consumerConfig, messageFormatter)
       })
       .build()
 
@@ -63,5 +62,10 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   override def stop(consumerConfig: MessageConsumerConfig): Unit = {
     // Stop the thread executor registered under the MessageConsumerConfig tag
     executorServiceRegistry.stop(getClass, consumerConfig.getTag)
+  }
+
+  private[kinesis] def loadCallbacks(consumerConfig: MessageConsumerConfig): Map[Class[_], MessageConsumerCallback[_]] = {
+    consumerCallbackSet.asScala.filter(_.getTag.equals(consumerConfig.getTag))
+      .map(callback => (callback.getPayloadType, callback)).toMap
   }
 }

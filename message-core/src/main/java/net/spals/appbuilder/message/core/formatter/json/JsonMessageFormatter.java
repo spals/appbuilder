@@ -6,7 +6,6 @@ import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.message.core.formatter.MessageFormatter;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Default {@link MessageFormatter} which formats
@@ -20,12 +19,12 @@ class JsonMessageFormatter implements MessageFormatter {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public Map<String, Object> deserializePayload(final byte[] serializedPayload) throws IOException {
-        return objectMapper.readValue(serializedPayload, new TypeReference<Map<String, Object>>() {});
+    public <P> P deserializePayload(final byte[] serializedPayload) throws IOException {
+        return objectMapper.readValue(serializedPayload, new TypeReference<P>() {});
     }
 
     @Override
-    public byte[] serializePayload(final Map<String, Object> payload) throws IOException {
+    public byte[] serializePayload(final Object payload) throws IOException {
         return objectMapper.writeValueAsBytes(payload);
     }
 }

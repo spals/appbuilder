@@ -20,7 +20,7 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 private[consumer] class KinesisConsumerRecordProcessor @Inject()
-  (@Assisted consumerCallback: MessageConsumerCallback,
+  (@Assisted consumerCallbacks: Map[Class[_], MessageConsumerCallback[_]],
    @Assisted consumerConfig: MessageConsumerConfig,
    @Assisted messageFormatter: MessageFormatter)
   extends IRecordProcessor {
@@ -33,7 +33,11 @@ private[consumer] class KinesisConsumerRecordProcessor @Inject()
     val records = processRecordsInput.getRecords
     records.asScala.foreach(record => {
       val deserializedPayload = messageFormatter.deserializePayload(record.getData.array())
-      consumerCallback.processMessage(consumerConfig, deserializedPayload)
+      val consumerCallback = consumerCallbacks.get(deserializedPayload.getClass)
+      consumerCallback match {
+        case Some(callback) => callback.processMessage(consumerConfig, deserializedPayload)
+        case None => LOGGER.warn(s"Received payload type ${deserializedPayload.getClass} for consumer ${consumerConfig.getTag}, but no callback is registered")
+      }
 
       LOGGER.trace(s"Checkpointing record ${record.getSequenceNumber} on partition ${record.getPartitionKey}")
       processRecordsInput.getCheckpointer().checkpoint(record)

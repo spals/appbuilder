@@ -7,6 +7,7 @@ import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.WakeupException
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
@@ -14,10 +15,11 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 private[consumer] class KafkaConsumerRunnable (consumer: KafkaConsumer[String, Array[Byte]],
-                                               consumerCallback: MessageConsumerCallback,
+                                               consumerCallbacks: Map[Class[_], MessageConsumerCallback[_]],
                                                consumerConfig: MessageConsumerConfig,
                                                messageFormatter: MessageFormatter) extends Runnable {
 
+  private val LOGGER = LoggerFactory.getLogger(classOf[KafkaConsumerRunnable])
   private val closed = new AtomicBoolean(false)
 
   override def run(): Unit = {
@@ -26,7 +28,11 @@ private[consumer] class KafkaConsumerRunnable (consumer: KafkaConsumer[String, A
         val records = consumer.poll(500L)
         records.iterator().asScala.foreach(record => {
           val deserializedPayload = messageFormatter.deserializePayload(record.value())
-          consumerCallback.processMessage(consumerConfig, deserializedPayload)
+          val consumerCallback = consumerCallbacks.get(deserializedPayload.getClass)
+          consumerCallback match {
+            case Some(callback) => callback.processMessage(consumerConfig, deserializedPayload)
+            case None => LOGGER.warn(s"Received payload type ${deserializedPayload.getClass} for consumer ${consumerConfig.getTag}, but no callback is registered")
+          }
         })
       }
     } catch {

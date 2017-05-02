@@ -11,7 +11,7 @@ import net.spals.appbuilder.message.core.formatter.MessageFormatter
 @AutoBindFactory
 trait KinesisConsumerRecordProcessorFactory {
 
-  def createRecordProcessor(consumerCallback: MessageConsumerCallback,
+  def createRecordProcessor(consumerCallbacks: Map[Class[_], MessageConsumerCallback[_]],
                             consumerConfig: MessageConsumerConfig,
                             messageFormatter: MessageFormatter): KinesisConsumerRecordProcessor
 }

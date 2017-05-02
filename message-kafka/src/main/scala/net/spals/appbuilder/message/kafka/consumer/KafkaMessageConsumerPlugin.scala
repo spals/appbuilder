@@ -25,7 +25,7 @@ import scala.collection.mutable
   */
 @AutoBindInMap(baseClass = classOf[MessageConsumerPlugin], key = "kafka")
 private[consumer] class KafkaMessageConsumerPlugin @Inject()
-  (consumerCallbackMap: java.util.Map[String, MessageConsumerCallback],
+  (consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
    executorServiceRegistry: ManagedExecutorServiceRegistry)
   extends MessageConsumerPlugin {
 
@@ -51,9 +51,6 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
   }
 
   override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
-    require(consumerCallbackMap.containsKey(consumerConfig.getTag),
-      s"No MessageConsumerCallback for '${consumerConfig.getTag}' configuration")
-
     val kafkaConsumerConfig = KafkaConsumerConfig(consumerConfig)
 
     val consumerProps = createConsumerProps(kafkaConsumerConfig)
@@ -61,7 +58,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     consumer.subscribe(List(kafkaConsumerConfig.getTopic).asJava)
 
     val consumerRunnable = new KafkaConsumerRunnable(consumer,
-      consumerCallback = consumerCallbackMap.get(consumerConfig.getTag),
+      consumerCallbacks = loadCallbacks(consumerConfig),
       consumerConfig, messageFormatter)
     consumerRunnableCache ++= Map(consumerConfig -> consumerRunnable)
 
@@ -75,5 +72,10 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     consumerRunnableCache.get(consumerConfig).foreach(_.shutdown())
     // Stop the thread executor registered under the MessageConsumerConfig tag
     executorServiceRegistry.stop(getClass, consumerConfig.getTag)
+  }
+
+  private[kafka] def loadCallbacks(consumerConfig: MessageConsumerConfig): Map[Class[_], MessageConsumerCallback[_]] = {
+    consumerCallbackSet.asScala.filter(_.getTag.equals(consumerConfig.getTag))
+      .map(callback => (callback.getPayloadType, callback)).toMap
   }
 }
