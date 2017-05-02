@@ -1,5 +1,7 @@
 package net.spals.appbuilder.message.kinesis.producer
 
+import net.spals.appbuilder.config.message.MessageProducerConfig
+
 /**
   * @author tkral
   */

@@ -1,5 +1,6 @@
 package net.spals.appbuilder.message.kafka.producer
 
+import net.spals.appbuilder.config.message.MessageProducerConfig
 import org.apache.kafka.clients.producer.{Callback, RecordMetadata}
 import org.slf4j.LoggerFactory
 

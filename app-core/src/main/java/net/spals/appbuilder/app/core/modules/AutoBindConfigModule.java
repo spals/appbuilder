@@ -1,15 +1,16 @@
-package net.spals.appbuilder.app.core.bootstrap;
+package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
+import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
 import com.netflix.governator.ConfigurationModule;
 import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
-import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
@@ -38,43 +39,40 @@ import java.util.stream.Collectors;
  * @author tkral
  */
 @FreeBuilder
-public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindConfigBootstrapModule.class);
+public abstract class AutoBindConfigModule extends AbstractModule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindConfigModule.class);
 
     public abstract String getApplicationName();
     public abstract Config getServiceConfig();
     public abstract Reflections getServiceScan();
 
-    public static class Builder extends AutoBindConfigBootstrapModule_Builder {  }
+    public static class Builder extends AutoBindConfigModule_Builder {  }
 
     @Override
-    public void configure(final BootstrapBinder bootstrapBinder) {
+    public void configure() {
         // Bind the ApplicationName so it's available to other services/modules
         final Key<String> appNameKey = Key.get(String.class, ApplicationName.class);
-        bootstrapBinder.bind(appNameKey).toInstance(getApplicationName());
+        binder().bind(appNameKey).toInstance(getApplicationName());
 
-        // This will parse the configuration and deliver its individual pieces
-        // to @Configuration fields.
-        bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(getServiceConfig()));
         // Also give access to the full blown configuration
         final Key<Config> configKey = Key.get(Config.class, ServiceConfig.class);
-        bootstrapBinder.bind(configKey).toInstance(getServiceConfig());
+        binder().bind(configKey).toInstance(getServiceConfig());
         // Enable @Configuration mappings
-        bootstrapBinder.install(new ConfigurationModule());
+        binder().install(new ConfigurationModule());
 
         // Bind the full ServiceScan so that it's available to other modules
         final Key<Reflections> serviceScanKey = Key.get(Reflections.class, ServiceScan.class);
-        bootstrapBinder.bind(serviceScanKey).toInstance(getServiceScan());
+        binder().bind(serviceScanKey).toInstance(getServiceScan());
 
-        autoBindConfigs(bootstrapBinder, MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
-        autoBindConfigs(bootstrapBinder, MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));
+        autoBindConfigs(binder(), MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
+        autoBindConfigs(binder(), MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));
     }
 
     @VisibleForTesting
-    <T extends TaggedConfig> void autoBindConfigs(final BootstrapBinder bootstrapBinder,
+    <T extends TaggedConfig> void autoBindConfigs(final Binder binder,
                                                   final Class<T> configType,
                                                   final Map<String, T> configMap) {
-        final MapBinder mapBinder = MapBinder.newMapBinder(bootstrapBinder, String.class, configType);
+        final MapBinder mapBinder = MapBinder.newMapBinder(binder, String.class, configType);
 
         configMap.entrySet().stream()
             .filter(taggedConfigEntry -> taggedConfigEntry.getValue().isActive())
@@ -82,7 +80,7 @@ public abstract class AutoBindConfigBootstrapModule implements BootstrapModule {
                 // Bind the config instance in Map<String, T>...
                 mapBinder.addBinding(configEntry.getKey()).toInstance(configEntry.getValue());
                 // ...and as a singleton annotated with the tag name
-                bootstrapBinder.bind(configType).annotatedWith(Names.named(configEntry.getKey()))
+                binder.bind(configType).annotatedWith(Names.named(configEntry.getKey()))
                         .toInstance(configEntry.getValue());
             });
     }

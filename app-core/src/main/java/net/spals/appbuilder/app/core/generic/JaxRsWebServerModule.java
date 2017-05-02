@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.core.modules;
+package net.spals.appbuilder.app.core.generic;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -7,8 +7,8 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers;
+import net.spals.appbuilder.graph.model.ServiceGraph;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,25 +20,23 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.util.Optional;
-
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * @author tkral
  */
 @FreeBuilder
-public abstract class AutoBindWebServerModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindWebServerModule.class);
+public abstract class JaxRsWebServerModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JaxRsWebServerModule.class);
 
-    public abstract Optional<Configurable<?>> getConfigurable();
+    public abstract boolean isActive();
+    public abstract Configurable<?> getConfigurable();
     public abstract ServiceGraph getServiceGraph();
 
-    public final boolean isActive() {
-        return getConfigurable().isPresent();
+    public static class Builder extends JaxRsWebServerModule_Builder {
+        public Builder() {
+            setActive(true);
+        }
     }
-
-    public static class Builder extends AutoBindWebServerModule_Builder {  }
 
     @Override
     protected void configure() {
@@ -53,10 +51,8 @@ public abstract class AutoBindWebServerModule extends AbstractModule implements 
 
     @Override
     public void afterInjection(final Object wsComponent) {
-        checkState(getConfigurable().isPresent());
-
         LOGGER.info("Registering WebServer component: {}", wsComponent);
-        getConfigurable().get().register(wsComponent);
+        getConfigurable().register(wsComponent);
     }
 
     @Override

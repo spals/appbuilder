@@ -1,64 +1,91 @@
 package net.spals.appbuilder.app.core.generic;
 
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.servlet.GuiceFilter;
-import com.google.inject.servlet.ServletModule;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
+import com.netflix.governator.lifecycle.LifecycleManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigParseOptions;
 import com.typesafe.config.ConfigResolveOptions;
 import net.spals.appbuilder.app.core.App;
-import net.spals.appbuilder.app.core.AppBuilder;
-import net.spals.appbuilder.app.core.bootstrap.AutoBindConfigBootstrapModule;
+import net.spals.appbuilder.app.core.WorkerAppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.AutoBindModulesBootstrapModule;
-import net.spals.appbuilder.app.core.bootstrap.AutoBindServiceGraphBootstrapModule;
+import net.spals.appbuilder.app.core.bootstrap.BootstrapModuleWrapper;
+import net.spals.appbuilder.app.core.modules.AutoBindConfigModule;
+import net.spals.appbuilder.app.core.modules.AutoBindServiceGraphModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
-import net.spals.appbuilder.app.core.modules.AutoBindWebServerModule;
+import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.ws.rs.core.Configurable;
-import java.util.EnumSet;
-import java.util.function.BiFunction;
 
 /**
  * @author tkral
  */
 @FreeBuilder
-public abstract class GenericApp implements App {
+public abstract class GenericWorkerApp implements App {
 
-    public static class Builder extends GenericApp_Builder implements AppBuilder<GenericApp> {
+    abstract LifecycleInjector getLifecycleInjector();
+
+    @Override
+    public final Injector getServiceInjector() {
+        // 1. Startup the Governator LifecycleManager
+        final LifecycleManager lifecycleManager = getLifecycleInjector().getLifecycleManager();
+        try {
+            lifecycleManager.start();
+        } catch (Exception e) {
+            getLogger().error("Error during LifecycleManager start", e);
+            throw new RuntimeException(e);
+        }
+
+        // 2. Ensure that we shut everything down properly
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            getLogger().info("Shutting down {} application.", getName());
+            lifecycleManager.close();
+        }));
+        // 3. Grab the Guice injector from which we can get service references
+        final Injector serviceInjecter = getLifecycleInjector().createInjector();
+        // 4. Output the service graph
+        final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
+        serviceGraphWriter.writeServiceGraph();
+
+        return serviceInjecter;
+    }
+
+    public static class Builder extends GenericWorkerApp_Builder implements WorkerAppBuilder<GenericWorkerApp> {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
+        final ServiceGraph serviceGraph;
 
-        private final AutoBindConfigBootstrapModule.Builder configModuleBuilder =
-                new AutoBindConfigBootstrapModule.Builder();
-        private final AutoBindServiceGraphBootstrapModule.Builder serviceGraphModuleBuilder =
-                new AutoBindServiceGraphBootstrapModule.Builder();
+        private final AutoBindConfigModule.Builder configModuleBuilder =
+                new AutoBindConfigModule.Builder();
+        private final AutoBindServiceGraphModule.Builder serviceGraphModuleBuilder =
+                new AutoBindServiceGraphModule.Builder();
         private final AutoBindServicesModule.Builder servicesModuleBuilder =
                 new AutoBindServicesModule.Builder();
-        private final AutoBindWebServerModule.Builder webServerModuleBuilder =
-                new AutoBindWebServerModule.Builder();
 
-        public Builder() {
+        public Builder(final String name, final Logger logger) {
+            this.configModuleBuilder.setApplicationName(name);
             this.lifecycleInjectorBuilder = LifecycleInjector.builder()
                     .ignoringAllAutoBindClasses()
                     .withBootstrapModule(bootstrapBinder -> {
                         bootstrapBinder.disableAutoBinding();
                         bootstrapBinder.requireExactBindingAnnotations();
                     });
+            this.serviceGraph = new ServiceGraph();
+            this.serviceGraphModuleBuilder.setServiceGraph(serviceGraph);
+
+            setName(name);
+            setLogger(logger);
         }
 
-        @Override
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
             lifecycleInjectorBuilder.withAdditionalBootstrapModules(bootstrapModule);
             return this;
@@ -77,38 +104,18 @@ public abstract class GenericApp implements App {
         }
 
         @Override
-        public Builder enableRequestScoping(final BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration) {
-            filterRegistration.apply(GuiceFilter.class.getName(), new GuiceFilter())
-                    .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false /*isMatchAfter*/, "/*");
-            return addModule(new ServletModule());
-        }
-
-        @Override
         public Builder enableServiceGraph(final ServiceGraphFormat graphFormat) {
             serviceGraphModuleBuilder.setGraphFormat(graphFormat);
             return this;
         }
 
         @Override
-        public Builder enableWebServerAutoBinding(final Configurable<?> configurable) {
-            webServerModuleBuilder.setConfigurable(configurable);
-            return this;
-        }
-
-        @Override
-        public Builder setLogger(final Logger logger) {
-            return super.setLogger(logger);
-        }
-
-        @Override
-        public Builder setName(final String name) {
-            configModuleBuilder.setApplicationName(name);
-            return super.setName(name);
-        }
-
-        @Override
         public Builder setServiceConfig(final Config serviceConfig) {
             configModuleBuilder.setServiceConfig(serviceConfig);
+            addBootstrapModule(bootstrapBinder ->
+                // This will parse the configuration and deliver its individual pieces
+                // to @Configuration fields.
+                bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(serviceConfig)));
             return super.setServiceConfig(serviceConfig);
         }
 
@@ -132,13 +139,12 @@ public abstract class GenericApp implements App {
         }
 
         @Override
-        public GenericApp build() {
-            addBootstrapModule(configModuleBuilder.build());
+        public GenericWorkerApp build() {
+            // Add config and serviceGraph bindings in bootstrap phase
+            // so that they can be consumed by auto bound Modules
+            addBootstrapModule(new BootstrapModuleWrapper(configModuleBuilder.build()));
+            addBootstrapModule(new BootstrapModuleWrapper(serviceGraphModuleBuilder.build()));
             addModule(servicesModuleBuilder.build());
-
-            final ServiceGraph serviceGraph = new ServiceGraph();
-            addBootstrapModule(serviceGraphModuleBuilder.setServiceGraph(serviceGraph).build());
-            addModule(webServerModuleBuilder.setServiceGraph(serviceGraph).build());
 
             setLifecycleInjector(lifecycleInjectorBuilder.build());
             return super.build();

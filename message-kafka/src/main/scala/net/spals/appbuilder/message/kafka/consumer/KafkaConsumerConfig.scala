@@ -1,5 +1,7 @@
 package net.spals.appbuilder.message.kafka.consumer
 
+import net.spals.appbuilder.config.message.MessageConsumerConfig
+
 /**
   * @author tkral
   */

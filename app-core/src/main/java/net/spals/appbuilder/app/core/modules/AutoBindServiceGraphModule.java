@@ -1,6 +1,7 @@
-package net.spals.appbuilder.app.core.bootstrap;
+package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.multibindings.MapBinderBinding;
@@ -8,8 +9,6 @@ import com.google.inject.multibindings.MultibinderBinding;
 import com.google.inject.multibindings.MultibindingsTargetVisitor;
 import com.google.inject.multibindings.OptionalBinderBinding;
 import com.google.inject.spi.*;
-import com.netflix.governator.guice.BootstrapBinder;
-import com.netflix.governator.guice.BootstrapModule;
 import net.spals.appbuilder.app.core.matcher.BindingMatchers;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
@@ -26,30 +25,30 @@ import java.util.Optional;
  * @author tkral
  */
 @FreeBuilder
-public abstract class AutoBindServiceGraphBootstrapModule implements BootstrapModule {
+public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
     public abstract ServiceGraphFormat getGraphFormat();
     public abstract ServiceGraph getServiceGraph();
 
-    public static class Builder extends AutoBindServiceGraphBootstrapModule_Builder {
+    public static class Builder extends AutoBindServiceGraphModule_Builder {
         public Builder() {
             setGraphFormat(ServiceGraphFormat.NONE);
         }
     }
 
     @Override
-    public void configure(final BootstrapBinder bootstrapBinder) {
+    public void configure() {
         // 1. Add a listener for all service provisioning
         final ServiceGraphBindingTargetVisitor serviceGraphTargetVisitor =
                 new ServiceGraphBindingTargetVisitor(getServiceGraph());
         final ServiceGraphProvisionListener serviceGraphProvisionListener =
                 new ServiceGraphProvisionListener(serviceGraphTargetVisitor);
-        bootstrapBinder.bindListener(BindingMatchers.any(), serviceGraphProvisionListener);
+        binder().bindListener(BindingMatchers.any(), serviceGraphProvisionListener);
 
         // 2. Bind the serviceGraphWriter instance
         final ServiceGraphWriterProvider serviceGraphWriterProvider =
                 new ServiceGraphWriterProvider(getServiceGraph(), getGraphFormat());
-        bootstrapBinder.bind(ServiceGraphWriter.class).toProvider(serviceGraphWriterProvider).asEagerSingleton();
+        binder().bind(ServiceGraphWriter.class).toProvider(serviceGraphWriterProvider).asEagerSingleton();
     }
 
     @VisibleForTesting

@@ -6,6 +6,7 @@ import com.amazonaws.services.kinesis.producer.KinesisProducer
 import com.google.common.util.concurrent.Futures
 import com.google.inject.Inject
 import net.spals.appbuilder.annotations.config.ApplicationName
+import net.spals.appbuilder.config.message.MessageProducerConfig
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 
 private[producer] class KinesisMessageProducerPlugin @Inject() (@ApplicationName applicationName: String,
