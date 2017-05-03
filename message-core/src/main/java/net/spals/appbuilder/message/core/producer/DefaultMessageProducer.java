@@ -37,7 +37,7 @@ class DefaultMessageProducer implements MessageProducer {
     @Override
     public void sendMessage(final String tag, final Object payload) {
         Preconditions.checkNotNull(tag, "Cannot send Message with null tag");
-        Preconditions.checkNotNull(payload, "Cannot send Messag with null payload");
+        Preconditions.checkNotNull(payload, "Cannot send Message with null payload");
 
         final MessageProducerConfig producerConfig = loadProducerConfig(tag);
         final Logger logger = loadLogger(producerConfig);
