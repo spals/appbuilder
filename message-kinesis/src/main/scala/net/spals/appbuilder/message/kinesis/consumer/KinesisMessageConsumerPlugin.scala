@@ -11,6 +11,7 @@ import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.config.ApplicationName
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 
@@ -40,7 +41,7 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
 
   override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
     val kinesisConsumerConfig = KinesisConsumerConfig(consumerConfig)
-    val consumerCallbacks = loadCallbacks(consumerConfig)
+    val consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap
 
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val workerId = s"${kinesisConsumerConfig.getWorkerId}:${UUID.randomUUID()}"
@@ -62,10 +63,5 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   override def stop(consumerConfig: MessageConsumerConfig): Unit = {
     // Stop the thread executor registered under the MessageConsumerConfig tag
     executorServiceRegistry.stop(getClass, consumerConfig.getTag)
-  }
-
-  private[kinesis] def loadCallbacks(consumerConfig: MessageConsumerConfig): Map[Class[_], MessageConsumerCallback[_]] = {
-    consumerCallbackSet.asScala.filter(_.getTag.equals(consumerConfig.getTag))
-      .map(callback => (callback.getPayloadType, callback)).toMap
   }
 }

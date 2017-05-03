@@ -7,6 +7,7 @@ import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.slf4j.LoggerFactory
 
@@ -35,8 +36,9 @@ private[consumer] class KinesisConsumerRecordProcessor @Inject()
       val deserializedPayload = messageFormatter.deserializePayload(record.getData.array())
       val consumerCallback = consumerCallbacks.get(deserializedPayload.getClass)
       consumerCallback match {
-        case Some(callback) => callback.processMessage(consumerConfig, deserializedPayload)
-        case None => LOGGER.warn(s"Received payload type ${deserializedPayload.getClass} for consumer ${consumerConfig.getTag}, but no callback is registered")
+        case Some(callback) =>
+          callback.asInstanceOf[MessageConsumerCallback[AnyRef]].processMessage(consumerConfig, deserializedPayload)
+        case None => LOGGER.warn(unregisteredCallbackMessage(consumerConfig.getTag, deserializedPayload.getClass))
       }
 
       LOGGER.trace(s"Checkpointing record ${record.getSequenceNumber} on partition ${record.getPartitionKey}")

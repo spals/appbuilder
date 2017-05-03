@@ -8,6 +8,7 @@ import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.apache.kafka.clients.consumer.ConsumerConfig._
@@ -58,7 +59,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     consumer.subscribe(List(kafkaConsumerConfig.getTopic).asJava)
 
     val consumerRunnable = new KafkaConsumerRunnable(consumer,
-      consumerCallbacks = loadCallbacks(consumerConfig),
+      consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap,
       consumerConfig, messageFormatter)
     consumerRunnableCache ++= Map(consumerConfig -> consumerRunnable)
 
@@ -72,10 +73,5 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     consumerRunnableCache.get(consumerConfig).foreach(_.shutdown())
     // Stop the thread executor registered under the MessageConsumerConfig tag
     executorServiceRegistry.stop(getClass, consumerConfig.getTag)
-  }
-
-  private[kafka] def loadCallbacks(consumerConfig: MessageConsumerConfig): Map[Class[_], MessageConsumerCallback[_]] = {
-    consumerCallbackSet.asScala.filter(_.getTag.equals(consumerConfig.getTag))
-      .map(callback => (callback.getPayloadType, callback)).toMap
   }
 }

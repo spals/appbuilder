@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage
 import net.spals.appbuilder.message.core.formatter.MessageFormatter
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.WakeupException
@@ -30,8 +31,9 @@ private[consumer] class KafkaConsumerRunnable (consumer: KafkaConsumer[String, A
           val deserializedPayload = messageFormatter.deserializePayload(record.value())
           val consumerCallback = consumerCallbacks.get(deserializedPayload.getClass)
           consumerCallback match {
-            case Some(callback) => callback.processMessage(consumerConfig, deserializedPayload)
-            case None => LOGGER.warn(s"Received payload type ${deserializedPayload.getClass} for consumer ${consumerConfig.getTag}, but no callback is registered")
+            case Some(callback) =>
+              callback.asInstanceOf[MessageConsumerCallback[AnyRef]].processMessage(consumerConfig, deserializedPayload)
+            case None => LOGGER.warn(unregisteredCallbackMessage(consumerConfig.getTag, deserializedPayload.getClass))
           }
         })
       }
