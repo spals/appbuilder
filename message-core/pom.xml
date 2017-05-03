@@ -47,6 +47,10 @@
             <artifactId>spals-appbuilder-executor-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-model-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.inferred</groupId>
             <artifactId>freebuilder</artifactId>
         </dependency>

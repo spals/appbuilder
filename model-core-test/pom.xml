@@ -9,11 +9,15 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.spals.appbuilder</groupId>
-    <artifactId>spals-appbuilder-message-core-test</artifactId>
+    <artifactId>spals-appbuilder-model-core-test</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+        </dependency>
         <dependency>
             <groupId>eu.codearte.catch-exception</groupId>
             <artifactId>catch-exception</artifactId>
@@ -24,11 +28,15 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-message-core</artifactId>
+            <artifactId>spals-appbuilder-model-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.inferred</groupId>
+            <artifactId>freebuilder</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

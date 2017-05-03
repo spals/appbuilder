@@ -13,7 +13,7 @@ import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
-import net.spals.appbuilder.message.core.formatter.MessageFormatter
+import net.spals.appbuilder.model.core.ModelSerializer
 
 import scala.collection.JavaConverters._
 
@@ -39,7 +39,7 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   @Configuration("kinesis.messageConsumer.numThreads")
   private var numThreads: Int = 2
 
-  override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
+  override def start(consumerConfig: MessageConsumerConfig, modelSerializer: ModelSerializer): Unit = {
     val kinesisConsumerConfig = KinesisConsumerConfig(consumerConfig)
     val consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap
 
@@ -51,7 +51,7 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
         new AWSStaticCredentialsProvider(awsCredentials), workerId))
       .recordProcessorFactory(new IRecordProcessorFactory() {
         override def createProcessor(): IRecordProcessor =
-          kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallbacks, consumerConfig, messageFormatter)
+          kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallbacks, consumerConfig, modelSerializer)
       })
       .build()
 

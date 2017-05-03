@@ -10,7 +10,7 @@ import net.spals.appbuilder.executor.core.ManagedExecutorService;
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
-import net.spals.appbuilder.message.core.formatter.MessageFormatter;
+import net.spals.appbuilder.model.core.ModelSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +65,12 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     }
 
     @Override
-    public synchronized void start(final MessageConsumerConfig consumerConfig, final MessageFormatter messageFormatter) {
+    public synchronized void start(final MessageConsumerConfig consumerConfig, final ModelSerializer modelSerializer) {
         final Map<Class<?>, MessageConsumerCallback<?>> consumerCallbacks =
                 MessageConsumerCallback.loadCallbacksForTag(consumerConfig.getTag(), consumerCallbackSet);
 
         final Runnable consumerRunnable =
-                new BlockingQueueConsumerRunnable(consumerCallbacks, consumerConfig, messageFormatter);
+                new BlockingQueueConsumerRunnable(consumerCallbacks, consumerConfig, modelSerializer);
         executorService.submit(consumerRunnable);
     }
 
@@ -83,14 +83,14 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
 
         private final Map<Class<?>, MessageConsumerCallback<?>> consumerCallbacks;
         private final MessageConsumerConfig consumerConfig;
-        private final MessageFormatter messageFormatter;
+        private final ModelSerializer modelSerializer;
 
         BlockingQueueConsumerRunnable(final Map<Class<?>, MessageConsumerCallback<?>> consumerCallbacks,
                                       final MessageConsumerConfig consumerConfig,
-                                      final MessageFormatter messageFormatter) {
+                                      final ModelSerializer modelSerializer) {
             this.consumerCallbacks = consumerCallbacks;
             this.consumerConfig = consumerConfig;
-            this.messageFormatter = messageFormatter;
+            this.modelSerializer = modelSerializer;
         }
 
         @Override
@@ -99,7 +99,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
                 while (!Thread.interrupted()) {
                     final BlockingQueueMessage message = blockingMessageQueue.poll(pollTimeout, pollTimeoutUnit);
                     if (message != null) {
-                        final Object payload = messageFormatter.deserializePayload(message.getSerializedPayload());
+                        final Object payload = modelSerializer.deserialize(message.getSerializedPayload());
                         LOGGER.trace("Received '{}' message: {}", message.getTag(), payload);
                         final Optional<MessageConsumerCallback> consumerCallback =
                                 Optional.ofNullable(consumerCallbacks.get(payload.getClass()));

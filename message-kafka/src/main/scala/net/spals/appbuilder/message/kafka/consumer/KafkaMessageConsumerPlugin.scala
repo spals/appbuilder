@@ -10,7 +10,7 @@ import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
-import net.spals.appbuilder.message.core.formatter.MessageFormatter
+import net.spals.appbuilder.model.core.ModelSerializer
 import org.apache.kafka.clients.consumer.ConsumerConfig._
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
@@ -51,7 +51,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     props
   }
 
-  override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
+  override def start(consumerConfig: MessageConsumerConfig, modelSerializer: ModelSerializer): Unit = {
     val kafkaConsumerConfig = KafkaConsumerConfig(consumerConfig)
 
     val consumerProps = createConsumerProps(kafkaConsumerConfig)
@@ -60,7 +60,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
 
     val consumerRunnable = new KafkaConsumerRunnable(consumer,
       consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap,
-      consumerConfig, messageFormatter)
+      consumerConfig, modelSerializer)
     consumerRunnableCache ++= Map(consumerConfig -> consumerRunnable)
 
     val executorService = executorServiceRegistry.registerExecutorService(getClass,

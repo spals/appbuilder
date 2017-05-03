@@ -8,7 +8,7 @@ import com.google.inject.assistedinject.Assisted
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
 import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage
-import net.spals.appbuilder.message.core.formatter.MessageFormatter
+import net.spals.appbuilder.model.core.ModelSerializer
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 private[consumer] class KinesisConsumerRecordProcessor @Inject()
   (@Assisted consumerCallbacks: Map[Class[_], MessageConsumerCallback[_]],
    @Assisted consumerConfig: MessageConsumerConfig,
-   @Assisted messageFormatter: MessageFormatter)
+   @Assisted modelSerializer: ModelSerializer)
   extends IRecordProcessor {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[KinesisConsumerRecordProcessor])
@@ -33,7 +33,7 @@ private[consumer] class KinesisConsumerRecordProcessor @Inject()
   override def processRecords(processRecordsInput: ProcessRecordsInput): Unit = {
     val records = processRecordsInput.getRecords
     records.asScala.foreach(record => {
-      val deserializedPayload = messageFormatter.deserializePayload(record.getData.array())
+      val deserializedPayload = modelSerializer.deserialize(record.getData.array())
       val consumerCallback = consumerCallbacks.get(deserializedPayload.getClass)
       consumerCallback match {
         case Some(callback) =>

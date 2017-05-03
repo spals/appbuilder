@@ -1,4 +1,4 @@
-package net.spals.appbuilder.message.core.formatter.serializable;
+package net.spals.appbuilder.model.core.serializable;
 
 import com.google.auto.value.AutoValue;
 

@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
-import net.spals.appbuilder.message.core.formatter.MessageFormatter;
+import net.spals.appbuilder.model.core.ModelSerializer;
 
 import java.util.Map;
 import java.util.Optional;
@@ -16,17 +16,17 @@ import java.util.Optional;
 class DefaultMessageConsumer implements MessageConsumer {
 
     private final Map<String, MessageConsumerConfig> consumerConfigMap;
-    private final Map<String, MessageFormatter> formatterMap;
+    private final Map<String, ModelSerializer> serializerMap;
 
     private final Map<String, MessageConsumerPlugin> consumerPluginMap;
 
     @Inject
     DefaultMessageConsumer(final Map<String, MessageConsumerConfig> consumerConfigMap,
-                           final Map<String, MessageFormatter> formatterMap,
+                           final Map<String, ModelSerializer> serializerMap,
                            final Map<String, MessageConsumerPlugin> consumerPluginMap) {
         this.consumerConfigMap = consumerConfigMap;
 
-        this.formatterMap = formatterMap;
+        this.serializerMap = serializerMap;
         this.consumerPluginMap = consumerPluginMap;
     }
 
@@ -42,11 +42,11 @@ class DefaultMessageConsumer implements MessageConsumer {
                     .orElseThrow(() -> new ConfigException.BadValue(tag + ".consumer.source",
                         "No message consumer plugin found for source: " + consumerConfig.getSource()));
 
-                final MessageFormatter formatter = Optional.ofNullable(formatterMap.get(consumerConfig.getFormat()))
+                final ModelSerializer serializer = Optional.ofNullable(serializerMap.get(consumerConfig.getFormat()))
                     .orElseThrow(() -> new ConfigException.BadValue(tag + ".consumer.format",
                         "No message formatter plugin found for format: " + consumerConfig.getFormat()));
 
-                consumerPlugin.start(consumerConfig, formatter);
+                consumerPlugin.start(consumerConfig, serializer);
             });
     }
 

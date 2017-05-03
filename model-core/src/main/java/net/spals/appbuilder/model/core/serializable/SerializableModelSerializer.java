@@ -1,14 +1,13 @@
-package net.spals.appbuilder.message.core.formatter.serializable;
+package net.spals.appbuilder.model.core.serializable;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.*;
-import com.google.inject.Inject;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.*;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
-import net.spals.appbuilder.message.core.formatter.MessageFormatter;
+import net.spals.appbuilder.model.core.ModelSerializer;
 
 import java.net.URI;
 import java.util.*;
@@ -17,12 +16,11 @@ import java.util.regex.Pattern;
 /**
  * @author tkral
  */
-@AutoBindInMap(baseClass = MessageFormatter.class, key = "serializable")
-class SerializableMessageFormatter implements MessageFormatter {
-
+@AutoBindInMap(baseClass = ModelSerializer.class, key = "serializable")
+class SerializableModelSerializer implements ModelSerializer {
     private final Kryo kryo;
 
-    SerializableMessageFormatter() {
+    SerializableModelSerializer() {
         kryo = new KryoReflectionFactorySupport();
         registerExtendedJDKSerializers(kryo);
         registerGuavaSerializers(kryo);
@@ -59,16 +57,16 @@ class SerializableMessageFormatter implements MessageFormatter {
     }
 
     @Override
-    public Object deserializePayload(final byte[] serializedPayload) {
-        try (final Input kryoInput = new Input(serializedPayload)) {
+    public Object deserialize(final byte[] serializedModelObject) {
+        try (final Input kryoInput = new Input(serializedModelObject)) {
             return kryo.readClassAndObject(kryoInput);
         }
     }
 
     @Override
-    public byte[] serializePayload(final Object payload) {
+    public byte[] serialize(final Object modelObject) {
         try (final Output kryoOutput = new Output(32 /*bufferSize*/, -1 /*maxBufferSize*/)) {
-            kryo.writeClassAndObject(kryoOutput, payload);
+            kryo.writeClassAndObject(kryoOutput, modelObject);
             return kryoOutput.getBuffer();
         }
     }
