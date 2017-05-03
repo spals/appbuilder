@@ -49,6 +49,7 @@ private[consumer] class KinesisConsumerRecordProcessor @Inject()
   override def shutdown(shutdownInput: ShutdownInput): Unit = {
     shutdownInput.getShutdownReason match {
       case ShutdownReason.TERMINATE => shutdownInput.getCheckpointer.checkpoint()
+      case _ => ()
     }
   }
 }
