@@ -1,19 +1,16 @@
 package net.spals.appbuilder.message.core.formatter.serializable;
 
-import com.google.auto.value.AutoValue;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Unit tests for {@link SerializableMesssageFormatter}
+ * Unit tests for {@link SerializableMessageFormatter}
  *
  * @author tkral
  */
@@ -28,8 +25,8 @@ public class SerializableMessageFormatterTest {
     }
 
     @Test(dataProvider = "basicPayloadProvider")
-    public void testBasicPayload(final Object payload) throws IOException {
-        final SerializableMesssageFormatter messsageFormatter = new SerializableMesssageFormatter();
+    public void testBasicPayload(final Object payload) {
+        final SerializableMessageFormatter messsageFormatter = new SerializableMessageFormatter();
 
         final byte[] serializedPayload = messsageFormatter.serializePayload(payload);
         assertThat(serializedPayload, is(notNullValue()));
@@ -48,8 +45,8 @@ public class SerializableMessageFormatterTest {
     }
 
     @Test(dataProvider = "payloadEqualityProvider")
-    public void testPayloadEquality(final Object payload) throws IOException {
-        final SerializableMesssageFormatter messsageFormatter = new SerializableMesssageFormatter();
+    public void testPayloadEquality(final Object payload) {
+        final SerializableMessageFormatter messsageFormatter = new SerializableMessageFormatter();
 
         final byte[] serializedPayload = messsageFormatter.serializePayload(payload);
         assertThat(serializedPayload, is(notNullValue()));

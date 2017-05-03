@@ -4,12 +4,12 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.*;
+import com.google.inject.Inject;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.*;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.message.core.formatter.MessageFormatter;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -18,11 +18,11 @@ import java.util.regex.Pattern;
  * @author tkral
  */
 @AutoBindInMap(baseClass = MessageFormatter.class, key = "serializable")
-class SerializableMesssageFormatter implements MessageFormatter {
+class SerializableMessageFormatter implements MessageFormatter {
 
     private final Kryo kryo;
 
-    SerializableMesssageFormatter() {
+    SerializableMessageFormatter() {
         kryo = new KryoReflectionFactorySupport();
         registerExtendedJDKSerializers(kryo);
         registerGuavaSerializers(kryo);
@@ -59,14 +59,14 @@ class SerializableMesssageFormatter implements MessageFormatter {
     }
 
     @Override
-    public Object deserializePayload(final byte[] serializedPayload) throws IOException {
+    public Object deserializePayload(final byte[] serializedPayload) {
         try (final Input kryoInput = new Input(serializedPayload)) {
             return kryo.readClassAndObject(kryoInput);
         }
     }
 
     @Override
-    public byte[] serializePayload(final Object payload) throws IOException {
+    public byte[] serializePayload(final Object payload) {
         try (final Output kryoOutput = new Output(32 /*bufferSize*/, -1 /*maxBufferSize*/)) {
             kryo.writeClassAndObject(kryoOutput, payload);
             return kryoOutput.getBuffer();
