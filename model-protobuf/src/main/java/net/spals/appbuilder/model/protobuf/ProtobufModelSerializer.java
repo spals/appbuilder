@@ -4,7 +4,10 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.inject.Inject;
 import com.google.protobuf.MessageLite;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.model.core.ModelSerializer;
@@ -15,13 +18,29 @@ import net.spals.appbuilder.model.core.ModelSerializer;
 @AutoBindInMap(baseClass = ModelSerializer.class, key = "protobuf")
 class ProtobufModelSerializer implements ModelSerializer {
 
-    private final Kryo kryo =
-        new Kryo() {
+    private final MessageLiteSerializer defaultSerializer;
+    private final Kryo kryo;
+
+    @Inject
+    ProtobufModelSerializer() {
+        this(CacheBuilder.newBuilder());
+    }
+
+    @VisibleForTesting
+    ProtobufModelSerializer(final CacheBuilder cacheBuilder) {
+        this.defaultSerializer = new MessageLiteSerializer(cacheBuilder);
+        this.kryo = new Kryo() {
             @Override
             public Serializer getDefaultSerializer(final Class type) {
-                return new MessageLiteSerializer();
+                return defaultSerializer;
             }
         };
+    }
+
+    @VisibleForTesting
+    MessageLiteSerializer getDefaultSerializer() {
+        return defaultSerializer;
+    }
 
     @Override
     public Object deserialize(final byte[] serializedModelObject) {

@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -28,15 +29,23 @@ import static com.esotericsoftware.kryo.Kryo.NULL;
  */
 class MessageLiteSerializer extends Serializer<MessageLite> {
 
-    private final LoadingCache<Class<MessageLite>, Parser<? extends MessageLite>> parserCache =
-            CacheBuilder.newBuilder()
-                    .build(new CacheLoader<Class<MessageLite>, Parser<? extends MessageLite>>() {
-                        @Override
-                        public Parser<? extends MessageLite> load(final Class<MessageLite> type) throws Exception {
-                            final Method parserMethod = type.getMethod("parser");
-                            return (Parser<? extends MessageLite>)parserMethod.invoke(type);
-                        }
-                    });
+    private final LoadingCache<Class<MessageLite>, Parser<? extends MessageLite>> parserCache;
+
+    MessageLiteSerializer(final CacheBuilder parserCacheBuilder) {
+        this.parserCache = parserCacheBuilder.build(
+                new CacheLoader<Class<MessageLite>, Parser<? extends MessageLite>>() {
+                    @Override
+                    public Parser<? extends MessageLite> load(final Class<MessageLite> type) throws Exception {
+                        final Method parserMethod = type.getMethod("parser");
+                        return (Parser<? extends MessageLite>)parserMethod.invoke(type);
+                    }
+                });
+    }
+
+    @VisibleForTesting
+    LoadingCache<Class<MessageLite>, Parser<? extends MessageLite>> getParserCache() {
+        return parserCache;
+    }
 
     @Override
     public void write(final Kryo kryo, final Output output, final MessageLite protobufMessage) {

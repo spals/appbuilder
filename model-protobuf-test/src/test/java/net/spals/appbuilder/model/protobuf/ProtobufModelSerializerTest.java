@@ -1,9 +1,15 @@
 package net.spals.appbuilder.model.protobuf;
 
-import net.spals.appbuilder.message.protobuf.AddressBook;
-import net.spals.appbuilder.message.protobuf.Person;
-import net.spals.appbuilder.message.protobuf.Person.PhoneNumber;
-import net.spals.appbuilder.message.protobuf.Person.PhoneType;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
+import net.spals.appbuilder.message.protobuf.AddressBookV2;
+import net.spals.appbuilder.message.protobuf.AddressBookV3;
+import net.spals.appbuilder.message.protobuf.PersonV2;
+import net.spals.appbuilder.message.protobuf.PersonV2.PhoneNumberV2;
+import net.spals.appbuilder.message.protobuf.PersonV2.PhoneTypeV2;
+import net.spals.appbuilder.message.protobuf.PersonV3;
+import net.spals.appbuilder.message.protobuf.PersonV3.PhoneNumberV3;
+import net.spals.appbuilder.message.protobuf.PersonV3.PhoneTypeV3;
 import org.hamcrest.Matcher;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -20,15 +26,23 @@ public class ProtobufModelSerializerTest {
 
     @DataProvider
     Object[][] modelEqualityProvider() {
-        final Person person1 = Person.newBuilder().setId(1).setName("Tim").build();
-        final Person person2 = Person.newBuilder().setId(2).setName("Jim")
+        final PersonV2 personV2_1 = PersonV2.newBuilder().setId(1).setName("Tim").build();
+        final PersonV2 personV2_2 = PersonV2.newBuilder().setId(2).setName("Jim")
                 .setEmail("jim@spals.net")
-                .addPhones(PhoneNumber.newBuilder().setNumber("123-456-7890").setType(PhoneType.MOBILE))
+                .addPhones(PhoneNumberV2.newBuilder().setNumber("123-456-7890").setType(PhoneTypeV2.MOBILE))
+                .build();
+
+        final PersonV3 personV3_1 = PersonV3.newBuilder().setId(3).setName("Tim").build();
+        final PersonV3 personV3_2 = PersonV3.newBuilder().setId(4).setName("Jim")
+                .setEmail("jim@spals.net")
+                .addPhones(PhoneNumberV3.newBuilder().setNumber("123-456-7890").setType(PhoneTypeV3.MOBILE))
                 .build();
 
         return new Object[][] {
-                {person1},
-                {AddressBook.newBuilder().addPeople(person1).addPeople(person2).build()},
+                {personV2_1},
+                {personV3_1},
+                {AddressBookV2.newBuilder().addPeople(personV2_1).addPeople(personV2_2).build()},
+                {AddressBookV3.newBuilder().addPeople(personV3_1).addPeople(personV3_2).build()},
         };
     }
 
@@ -42,5 +56,20 @@ public class ProtobufModelSerializerTest {
 
         final Object deserializedModelObject = modelSerializer.deserialize(serializedModelObject);
         assertThat(deserializedModelObject, is(modelObject));
+    }
+
+    @Test
+    public void testParserCaching() {
+        final PersonV2 personV2_1 = PersonV2.newBuilder().setId(1).setName("Tim").build();
+        final PersonV2 personV2_2 = PersonV2.newBuilder().setId(2).setName("Jim").build();
+
+        final ProtobufModelSerializer modelSerializer =
+                new ProtobufModelSerializer(CacheBuilder.newBuilder().recordStats());
+        modelSerializer.deserialize(modelSerializer.serialize(personV2_1));
+        modelSerializer.deserialize(modelSerializer.serialize(personV2_2));
+
+        final CacheStats parserCacheStats = modelSerializer.getDefaultSerializer().getParserCache().stats();
+        assertThat(parserCacheStats.requestCount(), is(2L));
+        assertThat(parserCacheStats.hitCount(), is(1L));
     }
 }
