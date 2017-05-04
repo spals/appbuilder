@@ -56,7 +56,9 @@
         <kryo.version>4.0.0</kryo.version>
         <kryo-serializers.version>0.41</kryo-serializers.version>
         <mapdb.version>3.0.3</mapdb.version>
+        <protobuf.version>3.3.0</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
+        <scalapb.version>0.5.47</scalapb.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
     </properties>
 
@@ -81,6 +83,8 @@
         <module>message-kinesis</module>
         <module>model-core</module>
         <module>model-core-test</module>
+        <module>model-protobuf</module>
+        <module>model-protobuf-test</module>
     </modules>
 
     <dependencyManagement>
@@ -116,6 +120,11 @@
                 <version>${kryo.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.github.jlmauduy</groupId>
                 <artifactId>ascii-graphs_${scala.version}</artifactId>
                 <version>${ascii-graphs.version}</version>
@@ -129,6 +138,16 @@
                 <groupId>com.netflix.governator</groupId>
                 <artifactId>governator-api</artifactId>
                 <version>${governator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.trueaccord.scalapb</groupId>
+                <artifactId>scalapbc_${scala.version}</artifactId>
+                <version>${scalapb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.trueaccord.scalapb</groupId>
+                <artifactId>scalapb-runtime_${scala.version}</artifactId>
+                <version>${scalapb.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.typesafe</groupId>
@@ -223,6 +242,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-message-kinesis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-model-protobuf</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
