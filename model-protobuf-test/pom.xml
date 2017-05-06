@@ -13,18 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <properties>
-        <protobuf-java.outputDirectory>${project.build.directory}/generated-sources/protobuf/java</protobuf-java.outputDirectory>
-        <protobuf-scala.outputDirectory>${project.build.directory}/generated-sources/protobuf/scala</protobuf-scala.outputDirectory>
-
-        <protobuf-maven-plugin.version>0.5.0</protobuf-maven-plugin.version>
-    </properties>
-
     <dependencies>
-        <dependency>
-            <groupId>com.trueaccord.scalapb</groupId>
-            <artifactId>scalapb-runtime_${scala.version}</artifactId>
-        </dependency>
         <dependency>
             <groupId>eu.codearte.catch-exception</groupId>
             <artifactId>catch-exception</artifactId>
@@ -58,120 +47,36 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>${protobuf-maven-plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
-                </configuration>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>protobuf-java-generate</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${protobuf-java.outputDirectory}</outputDirectory>
-                        </configuration>
-                    </execution>
-<!--
-                    <execution>
-                        <id>protobuf-scala-generate</id>
-                        <goals>
-                            <goal>compile-custom</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${protobuf-scala.outputDirectory}</outputDirectory>
-                            <pluginId>scala</pluginId>
-                            <protocPlugins>
-                                <protocPlugin>
-                                    <id>scala</id>
-                                    <groupId>com.trueaccord.scalapb</groupId>
-                                    <artifactId>scalapbc_${scala.version}</artifactId>
-                                    <version>${scalapb.version}</version>
-                                    <mainClass>com.trueaccord.scalapb.ScalaPBC</mainClass>
-                                </protocPlugin>
-                            </protocPlugins>
-                        </configuration>
-                    </execution>
--->
-                </executions>
-            </plugin>
-
-            <!-- Create the folder for generated Scala Protobufs
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>mkdir-protobuf-scala-generated</id>
+                        <id>generate-protobuf-java</id>
                         <goals>
                             <goal>run</goal>
                         </goals>
-                        <phase>generate-sources</phase>
                         <configuration>
-                            <target>
-                                <mkdir dir="${protobuf-scala.outputDirectory}"/>
-                            </target>
+                            <outputTargets>
+                                <outputTarget>
+                                    <type>java</type>
+                                    <outputDirectorySuffix>protobuf/java</outputDirectorySuffix>
+                                </outputTarget>
+                            </outputTargets>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
--->
-            <!-- Add generated Scala Protobufs folder as a source
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
                     <execution>
-                        <phase>generate-sources</phase>
+                        <id>generate-protobuf-scala</id>
                         <goals>
-                            <goal>add-source</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <sources>
-                                <source>${protobuf-scala.outputDirectory}</source>
-                            </sources>
+                            <type>scala</type>
+                            <outputDirectorySuffix>protobuf/scala</outputDirectorySuffix>
+                            <protocCommand>/Users/tkral/Downloads/scalapbc-0.5.47/bin/scalapbc</protocCommand>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
--->
-            <!-- Generate Scala Protobufs
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>protobuf-scala-generate</id>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <mainClass>com.trueaccord.scalapb.ScalaPBC</mainClass>
-                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
-                            <includePluginDependencies>true</includePluginDependencies>
-                            <classpathScope>compile</classpathScope>
-                            <executableDependency>
-                                <groupId>com.trueaccord.scalapb</groupId>
-                                <artifactId>scalapbc_${scala.version}</artifactId>
-                            </executableDependency>
-                            <arguments>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.trueaccord.scalapb</groupId>
-                        <artifactId>scalapbc_${scala.version}</artifactId>
-                        <version>${scalapb.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
--->
 
             <plugin>
                 <groupId>net.alchim31.maven</groupId>

@@ -1,7 +1,5 @@
 package net.spals.appbuilder.model.protobuf;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheStats;
 import net.spals.appbuilder.message.protobuf.AddressBookV2;
 import net.spals.appbuilder.message.protobuf.AddressBookV3;
 import net.spals.appbuilder.message.protobuf.PersonV2;
@@ -22,7 +20,7 @@ import static org.hamcrest.Matchers.*;
  *
  * @author tkral
  */
-public class ProtobufModelSerializerTest {
+public class ProtobufJavaModelSerializerTest {
 
     @DataProvider
     Object[][] modelEqualityProvider() {
@@ -56,20 +54,5 @@ public class ProtobufModelSerializerTest {
 
         final Object deserializedModelObject = modelSerializer.deserialize(serializedModelObject);
         assertThat(deserializedModelObject, is(modelObject));
-    }
-
-    @Test
-    public void testParserCaching() {
-        final PersonV2 personV2_1 = PersonV2.newBuilder().setId(1).setName("Tim").build();
-        final PersonV2 personV2_2 = PersonV2.newBuilder().setId(2).setName("Jim").build();
-
-        final ProtobufModelSerializer modelSerializer =
-                new ProtobufModelSerializer(CacheBuilder.newBuilder().recordStats());
-        modelSerializer.deserialize(modelSerializer.serialize(personV2_1));
-        modelSerializer.deserialize(modelSerializer.serialize(personV2_2));
-
-        final CacheStats parserCacheStats = modelSerializer.getDefaultSerializer().getParserCache().stats();
-        assertThat(parserCacheStats.requestCount(), is(2L));
-        assertThat(parserCacheStats.hitCount(), is(1L));
     }
 }

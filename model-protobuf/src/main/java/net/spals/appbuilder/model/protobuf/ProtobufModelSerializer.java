@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
 import com.google.protobuf.MessageLite;
+import com.trueaccord.scalapb.GeneratedMessage;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.model.core.ModelSerializer;
 
@@ -18,28 +19,22 @@ import net.spals.appbuilder.model.core.ModelSerializer;
 @AutoBindInMap(baseClass = ModelSerializer.class, key = "protobuf")
 class ProtobufModelSerializer implements ModelSerializer {
 
-    private final MessageLiteSerializer defaultSerializer;
     private final Kryo kryo;
 
     @Inject
     ProtobufModelSerializer() {
-        this(CacheBuilder.newBuilder());
-    }
-
-    @VisibleForTesting
-    ProtobufModelSerializer(final CacheBuilder cacheBuilder) {
-        this.defaultSerializer = new MessageLiteSerializer(cacheBuilder);
         this.kryo = new Kryo() {
             @Override
             public Serializer getDefaultSerializer(final Class type) {
-                return defaultSerializer;
+                // Case: Java
+                if (MessageLite.class.isAssignableFrom(type)) {
+                    return MessageLiteSerializer.create(type);
+                }
+
+                // Case: Scala
+                return ScalaPBGeneratedMessageSerializer.create(type);
             }
         };
-    }
-
-    @VisibleForTesting
-    MessageLiteSerializer getDefaultSerializer() {
-        return defaultSerializer;
     }
 
     @Override
@@ -51,7 +46,7 @@ class ProtobufModelSerializer implements ModelSerializer {
 
     @Override
     public byte[] serialize(final Object modelObject) {
-        Preconditions.checkArgument(modelObject instanceof MessageLite,
+        Preconditions.checkArgument(modelObject instanceof MessageLite || modelObject instanceof GeneratedMessage,
                 "Cannot serialize non Protobuf object %s", modelObject.getClass());
 
         try (final Output kryoOutput = new Output(32 /*bufferSize*/, -1 /*maxBufferSize*/)) {

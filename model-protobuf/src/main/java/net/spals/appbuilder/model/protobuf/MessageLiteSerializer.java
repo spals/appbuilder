@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -27,24 +28,25 @@ import static com.esotericsoftware.kryo.Kryo.NULL;
  *
  * @author tkral
  */
-class MessageLiteSerializer extends Serializer<MessageLite> {
+@AutoValue
+abstract class MessageLiteSerializer extends Serializer<MessageLite> {
 
-    private final LoadingCache<Class<MessageLite>, Parser<? extends MessageLite>> parserCache;
+    abstract Parser<? extends MessageLite> getParser();
 
-    MessageLiteSerializer(final CacheBuilder parserCacheBuilder) {
-        this.parserCache = parserCacheBuilder.build(
-                new CacheLoader<Class<MessageLite>, Parser<? extends MessageLite>>() {
-                    @Override
-                    public Parser<? extends MessageLite> load(final Class<MessageLite> type) throws Exception {
-                        final Method parserMethod = type.getMethod("parser");
-                        return (Parser<? extends MessageLite>)parserMethod.invoke(type);
-                    }
-                });
+    static MessageLiteSerializer create(final Class type) {
+        final Parser<? extends MessageLite> parser;
+        try {
+            final Method parserMethod = type.getMethod("parser");
+            parser = (Parser<? extends MessageLite>) parserMethod.invoke(type);
+        } catch (Exception e) {
+            throw new RuntimeException("Using MessageLiteSerializer on non-Java Protobuf type: " + type);
+        }
+
+        return create(parser);
     }
 
-    @VisibleForTesting
-    LoadingCache<Class<MessageLite>, Parser<? extends MessageLite>> getParserCache() {
-        return parserCache;
+    static MessageLiteSerializer create(final Parser<? extends MessageLite> parser) {
+        return new AutoValue_MessageLiteSerializer(parser);
     }
 
     @Override
@@ -84,9 +86,8 @@ class MessageLiteSerializer extends Serializer<MessageLite> {
         byte[] bytes = input.readBytes(length - 1);
 
         // Deserialize protobuf
-        final Parser<? extends MessageLite> parser = parserCache.getUnchecked(type);
         try {
-            return parser.parseFrom(bytes);
+            return getParser().parseFrom(bytes);
         } catch (InvalidProtocolBufferException e) {
             throw new RuntimeException("Unable to deserialize protobuf "+e.getMessage(), e);
         }
