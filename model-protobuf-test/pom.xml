@@ -56,25 +56,21 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <outputTargets>
-                                <outputTarget>
-                                    <type>java</type>
-                                    <outputDirectorySuffix>protobuf/java</outputDirectorySuffix>
-                                </outputTarget>
-                            </outputTargets>
+                            <type>java</type>
+                            <outputDirectorySuffix>protobuf/java</outputDirectorySuffix>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>generate-protobuf-scala</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <type>scala</type>
-                            <outputDirectorySuffix>protobuf/scala</outputDirectorySuffix>
-                            <protocCommand>/Users/tkral/Downloads/scalapbc-0.5.47/bin/scalapbc</protocCommand>
-                        </configuration>
-                    </execution>
+                    <!--<execution>-->
+                        <!--<id>generate-protobuf-scala</id>-->
+                        <!--<goals>-->
+                            <!--<goal>run</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<type>scala</type>-->
+                            <!--<outputDirectorySuffix>protobuf/scala</outputDirectorySuffix>-->
+                            <!--<protocCommand>/Users/tkral/Downloads/scalapbc-0.5.47/bin/scalapbc</protocCommand>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
                 </executions>
             </plugin>
 
