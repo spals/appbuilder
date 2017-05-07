@@ -1,4 +1,4 @@
-package net.spals.appbuilder.model.core.serializable;
+package net.spals.appbuilder.model.core.pojo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -14,13 +14,18 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
+ * A {@link ModelSerializer} implementation based
+ * on Plain Old Java Objects.
+ *
+ * This will also handle Plain Old Scala Objects.
+ *
  * @author tkral
  */
-@AutoBindInMap(baseClass = ModelSerializer.class, key = "serializable")
-class SerializableModelSerializer implements ModelSerializer {
+@AutoBindInMap(baseClass = ModelSerializer.class, key = "pojo")
+class PojoModelSerializer implements ModelSerializer {
     private final Kryo kryo;
 
-    SerializableModelSerializer() {
+    PojoModelSerializer() {
         kryo = new KryoReflectionFactorySupport();
         registerExtendedJDKSerializers(kryo);
         registerGuavaSerializers(kryo);

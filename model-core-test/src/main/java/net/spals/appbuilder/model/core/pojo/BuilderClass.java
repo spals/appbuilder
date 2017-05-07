@@ -1,4 +1,4 @@
-package net.spals.appbuilder.model.core.serializable;
+package net.spals.appbuilder.model.core.pojo;
 
 import org.inferred.freebuilder.FreeBuilder;
 

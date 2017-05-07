@@ -1,4 +1,4 @@
-package net.spals.appbuilder.model.core.serializable;
+package net.spals.appbuilder.model.core.pojo;
 
 import org.hamcrest.Matcher;
 import org.testng.annotations.DataProvider;
@@ -10,11 +10,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Unit tests for {@link SerializableModelSerializer}
+ * Unit tests for {@link PojoModelSerializer}
  *
  * @author tkral
  */
-public class SerializableModelSerializerTest {
+public class PojoModelSerializerTest {
 
     @DataProvider
     Object[][] basicModelProvider() {
@@ -26,7 +26,7 @@ public class SerializableModelSerializerTest {
 
     @Test(dataProvider = "basicModelProvider")
     public void testBasicModel(final Object modelObject) {
-        final SerializableModelSerializer modelSerializer = new SerializableModelSerializer();
+        final PojoModelSerializer modelSerializer = new PojoModelSerializer();
 
         final byte[] serializedModelObject = modelSerializer.serialize(modelObject);
         assertThat(serializedModelObject, is(notNullValue()));
@@ -46,7 +46,7 @@ public class SerializableModelSerializerTest {
 
     @Test(dataProvider = "modelEqualityProvider")
     public void testModelEquality(final Object modelObject) {
-        final SerializableModelSerializer modelSerializer = new SerializableModelSerializer();
+        final PojoModelSerializer modelSerializer = new PojoModelSerializer();
 
         final byte[] serializedModelObject = modelSerializer.serialize(modelObject);
         assertThat(serializedModelObject, is(notNullValue()));
