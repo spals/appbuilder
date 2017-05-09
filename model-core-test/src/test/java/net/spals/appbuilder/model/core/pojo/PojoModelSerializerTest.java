@@ -1,5 +1,7 @@
 package net.spals.appbuilder.model.core.pojo;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -41,6 +43,8 @@ public class PojoModelSerializerTest {
         return new Object[][] {
                 {AutoValueClass.create("MyString")},
                 {new BuilderClass.Builder().setStringValue("MyString").build()},
+                {ImmutableList.of("value1", "value2")},
+                {ImmutableMap.of("key", "value")},
         };
     }
 

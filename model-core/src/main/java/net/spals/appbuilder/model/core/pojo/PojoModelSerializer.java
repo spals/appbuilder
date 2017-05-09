@@ -1,6 +1,7 @@
 package net.spals.appbuilder.model.core.pojo;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.*;
@@ -19,6 +20,13 @@ import java.util.regex.Pattern;
  *
  * This will also handle Plain Old Scala Objects.
  *
+ * IMPORTANT NOTE: Kryo serializer registration order
+ * is important (see {@link Kryo#register(Class, Serializer)}).
+ * This means that the same version of {@link PojoModelSerializer}
+ * must be used for both serialization and deserialization.
+ * This is particularly relevant for asynchronous APIs delivered
+ * over message queues.
+ *
  * @author tkral
  */
 @AutoBindInMap(baseClass = ModelSerializer.class, key = "pojo")
@@ -27,8 +35,8 @@ class PojoModelSerializer implements ModelSerializer {
 
     PojoModelSerializer() {
         kryo = new KryoReflectionFactorySupport();
-        registerExtendedJDKSerializers(kryo);
         registerGuavaSerializers(kryo);
+        registerExtendedJDKSerializers(kryo);
     }
 
     private void registerExtendedJDKSerializers(final Kryo kryo) {
@@ -48,16 +56,16 @@ class PojoModelSerializer implements ModelSerializer {
     }
 
     private void registerGuavaSerializers(final Kryo kryo) {
-        kryo.register(ArrayListMultimap.class, new ArrayListMultimapSerializer());
-        kryo.register(HashMultimap.class, new HashMultimapSerializer());
-        kryo.register(ImmutableList.class, new ImmutableListSerializer());
-        kryo.register(ImmutableMap.class, new ImmutableMapSerializer());
-        kryo.register(ImmutableMultimap.class, new ImmutableMultimapSerializer());
-        kryo.register(ImmutableSet.class, new ImmutableSetSerializer());
-        kryo.register(ImmutableSortedSet.class, new ImmutableSortedSetSerializer());
-        kryo.register(LinkedHashMultimap.class, new LinkedHashMultimapSerializer());
-        kryo.register(LinkedListMultimap.class, new LinkedListMultimapSerializer());
-        kryo.register(TreeMultimap.class, new TreeMultimapSerializer());
+        ArrayListMultimapSerializer.registerSerializers(kryo);
+        HashMultimapSerializer.registerSerializers(kryo);
+        ImmutableListSerializer.registerSerializers(kryo);
+        ImmutableMapSerializer.registerSerializers(kryo);
+        ImmutableMultimapSerializer.registerSerializers(kryo);
+        ImmutableSetSerializer.registerSerializers(kryo);
+        ImmutableSortedSetSerializer.registerSerializers(kryo);
+        LinkedHashMultimapSerializer.registerSerializers(kryo);
+        LinkedListMultimapSerializer.registerSerializers(kryo);
+        TreeMultimapSerializer.registerSerializers(kryo);
         UnmodifiableNavigableSetSerializer.registerSerializers(kryo);
     }
 
