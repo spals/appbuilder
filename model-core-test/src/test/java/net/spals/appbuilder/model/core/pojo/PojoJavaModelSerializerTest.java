@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.*;
  *
  * @author tkral
  */
-public class PojoModelSerializerTest {
+public class PojoJavaModelSerializerTest {
 
     @DataProvider
     Object[][] basicModelProvider() {

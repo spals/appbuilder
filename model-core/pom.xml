@@ -15,8 +15,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
+            <groupId>com.twitter</groupId>
+            <artifactId>chill_${scala.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>chill-java</artifactId>
         </dependency>
         <dependency>
             <groupId>de.javakaffee</groupId>

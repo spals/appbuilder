@@ -5,6 +5,9 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.*;
+import com.twitter.chill.AllScalaRegistrar;
+import com.twitter.chill.KryoInstantiator;
+import com.twitter.chill.config.ReflectingInstantiator;
 import de.javakaffee.kryoserializers.*;
 import de.javakaffee.kryoserializers.guava.*;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
@@ -35,38 +38,9 @@ class PojoModelSerializer implements ModelSerializer {
 
     PojoModelSerializer() {
         kryo = new KryoReflectionFactorySupport();
-        registerGuavaSerializers(kryo);
-        registerExtendedJDKSerializers(kryo);
-    }
-
-    private void registerExtendedJDKSerializers(final Kryo kryo) {
-        kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
-        kryo.register(BitSet.class, new BitSetSerializer());
-        kryo.register(Collections.singletonList("").getClass(), new CollectionsSingletonListSerializer());
-        kryo.register(Collections.singleton("").getClass(), new CollectionsSingletonSetSerializer());
-        kryo.register(Collections.singletonMap("","").getClass(), new CollectionsSingletonMapSerializer());
-        kryo.register(EnumMap.class, new EnumMapSerializer());
-        kryo.register(EnumSet.class, new EnumSetSerializer());
-        kryo.register(GregorianCalendar.class, new GregorianCalendarSerializer());
-        kryo.register(Pattern.class, new RegexSerializer());
-        kryo.register(URI.class, new URISerializer());
-        kryo.register(UUID.class, new UUIDSerializer());
-        SynchronizedCollectionsSerializer.registerSerializers(kryo);
-        UnmodifiableCollectionsSerializer.registerSerializers(kryo);
-    }
-
-    private void registerGuavaSerializers(final Kryo kryo) {
-        ArrayListMultimapSerializer.registerSerializers(kryo);
-        HashMultimapSerializer.registerSerializers(kryo);
-        ImmutableListSerializer.registerSerializers(kryo);
-        ImmutableMapSerializer.registerSerializers(kryo);
-        ImmutableMultimapSerializer.registerSerializers(kryo);
-        ImmutableSetSerializer.registerSerializers(kryo);
-        ImmutableSortedSetSerializer.registerSerializers(kryo);
-        LinkedHashMultimapSerializer.registerSerializers(kryo);
-        LinkedListMultimapSerializer.registerSerializers(kryo);
-        TreeMultimapSerializer.registerSerializers(kryo);
-        UnmodifiableNavigableSetSerializer.registerSerializers(kryo);
+        new ExtendedJDKKryoRegistrar().apply(kryo);
+        new GuavaKryoRegistrar().apply(kryo);
+        new AllScalaRegistrar().apply(kryo);
     }
 
     @Override
