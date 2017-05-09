@@ -1,10 +1,11 @@
 package net.spals.appbuilder.message.core.producer;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
-import net.spals.appbuilder.message.core.formatter.MessageFormatter;
+import net.spals.appbuilder.model.core.ModelSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,30 +20,33 @@ import java.util.Optional;
 class DefaultMessageProducer implements MessageProducer {
 
     private final Map<String, MessageProducerConfig> producerConfigMap;
-    private final Map<String, MessageFormatter> formatterMap;
+    private final Map<String, ModelSerializer> serializerMap;
 
     private final Map<String, MessageProducerPlugin> producerPluginMap;
 
     @Inject
     DefaultMessageProducer(final Map<String, MessageProducerConfig> producerConfigMap,
-                           final Map<String, MessageFormatter> formatterMap,
+                           final Map<String, ModelSerializer> serializerMap,
                            final Map<String, MessageProducerPlugin> producerPluginMap) {
         this.producerConfigMap = producerConfigMap;
 
-        this.formatterMap = formatterMap;
+        this.serializerMap = serializerMap;
         this.producerPluginMap = producerPluginMap;
     }
 
     @Override
-    public void sendMessage(final String tag, final Map<String, Object> payload) {
+    public void sendMessage(final String tag, final Object payload) {
+        Preconditions.checkNotNull(tag, "Cannot send Message with null tag");
+        Preconditions.checkNotNull(payload, "Cannot send Message with null payload");
+
         final MessageProducerConfig producerConfig = loadProducerConfig(tag);
         final Logger logger = loadLogger(producerConfig);
-        final MessageFormatter messageFormatter = loadMessageFormatter(producerConfig);
+        final ModelSerializer modelSerializer = loadModelSerializer(producerConfig);
         final MessageProducerPlugin messageProducerPlugin = loadMessageProducerPlugin(producerConfig);
 
         final byte[] serializedPayload;
         try {
-            serializedPayload = messageFormatter.serializePayload(payload);
+            serializedPayload = modelSerializer.serialize(payload);
         } catch (IOException e) {
             logger.error("Error while serializing message payload with " + producerConfig.getFormat(), e);
             return;
@@ -60,10 +64,10 @@ class DefaultMessageProducer implements MessageProducer {
         return LoggerFactory.getLogger(DefaultMessageProducer.class.getName() + "[" + producerConfig.getTag() + "]");
     }
 
-    MessageFormatter loadMessageFormatter(final MessageProducerConfig producerConfig) {
-        return Optional.ofNullable(formatterMap.get(producerConfig.getFormat()))
+    ModelSerializer loadModelSerializer(final MessageProducerConfig producerConfig) {
+        return Optional.ofNullable(serializerMap.get(producerConfig.getFormat()))
                 .orElseThrow(() -> new ConfigException.BadValue(producerConfig.getTag() + ".producer.format",
-                        "No message formatter plugin found for format: " + producerConfig.getFormat()));
+                        "No model serializer plugin found for format: " + producerConfig.getFormat()));
     }
 
     MessageProducerPlugin loadMessageProducerPlugin(final MessageProducerConfig producerConfig) {

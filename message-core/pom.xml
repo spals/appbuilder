@@ -15,12 +15,20 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>de.javakaffee</groupId>
+            <artifactId>kryo-serializers</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
@@ -33,6 +41,10 @@
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-executor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-model-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.inferred</groupId>

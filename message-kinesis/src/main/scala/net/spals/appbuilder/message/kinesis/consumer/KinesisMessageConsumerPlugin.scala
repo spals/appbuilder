@@ -11,15 +11,18 @@ import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.config.ApplicationName
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
-import net.spals.appbuilder.message.core.formatter.MessageFormatter
+import net.spals.appbuilder.model.core.ModelSerializer
+
+import scala.collection.JavaConverters._
 
 /**
   * @author tkral
   */
 private[consumer] class KinesisMessageConsumerPlugin @Inject()
   (@ApplicationName applicationName: String,
-   consumerCallbackMap: java.util.Map[String, MessageConsumerCallback],
+   consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
    executorServiceRegistry: ManagedExecutorServiceRegistry,
    kinesisConsumerRecordProcessorFactory: KinesisConsumerRecordProcessorFactory)
   extends MessageConsumerPlugin {
@@ -36,12 +39,9 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   @Configuration("kinesis.messageConsumer.numThreads")
   private var numThreads: Int = 2
 
-  override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
-    require(consumerCallbackMap.containsKey(consumerConfig.getTag),
-      s"No MessageConsumerCallback for '${consumerConfig.getTag}' configuration")
-
+  override def start(consumerConfig: MessageConsumerConfig, modelSerializer: ModelSerializer): Unit = {
     val kinesisConsumerConfig = KinesisConsumerConfig(consumerConfig)
-    val consumerCallback = consumerCallbackMap.get(consumerConfig.getTag)
+    val consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap
 
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val workerId = s"${kinesisConsumerConfig.getWorkerId}:${UUID.randomUUID()}"
@@ -51,7 +51,7 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
         new AWSStaticCredentialsProvider(awsCredentials), workerId))
       .recordProcessorFactory(new IRecordProcessorFactory() {
         override def createProcessor(): IRecordProcessor =
-          kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallback, consumerConfig, messageFormatter)
+          kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallbacks, consumerConfig, modelSerializer)
       })
       .build()
 
