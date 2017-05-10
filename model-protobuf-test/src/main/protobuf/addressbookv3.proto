@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package protobuf_test;
+
+option java_multiple_files = true;
+option java_package = "net.spals.appbuilder.message.protobuf";
+option java_outer_classname = "AddressBookProtosV3";
+
+message PersonV3 {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+
+  enum PhoneTypeV3 {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumberV3 {
+    string number = 1;
+    PhoneTypeV3 type = 2;
+  }
+
+  repeated PhoneNumberV3 phones = 4;
+}
+
+message AddressBookV3 {
+  repeated PersonV3 people = 1;
+}

@@ -11,7 +11,6 @@ import com.google.inject.name.Names;
 import com.netflix.governator.ConfigurationModule;
 import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
-import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;

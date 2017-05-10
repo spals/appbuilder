@@ -9,11 +9,11 @@ package net.spals.appbuilder.app.core;
  * API requests and responses).
  *
  * For applications which do not require a web server, see
- * {@link SimpleAppBuilder}.
+ * {@link WorkerAppBuilder}.
  *
  * @author tkral
  */
-public interface WebAppBuilder<A extends App> extends SimpleAppBuilder<A> {
+public interface WebAppBuilder<A extends App> extends WorkerAppBuilder<A> {
 
     WebAppBuilder<A> disableWebServerAutoBinding();
 

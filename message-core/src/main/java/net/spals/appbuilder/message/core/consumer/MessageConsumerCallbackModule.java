@@ -2,7 +2,7 @@ package net.spals.appbuilder.message.core.consumer;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import net.spals.appbuilder.annotations.service.AutoBindModule;
 
 /**
@@ -21,7 +21,7 @@ class MessageConsumerCallbackModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        MapBinder.newMapBinder(binder(), String.class, MessageConsumerCallback.class);
+        Multibinder.newSetBinder(binder(), MessageConsumerCallback.class);
     }
 }
 

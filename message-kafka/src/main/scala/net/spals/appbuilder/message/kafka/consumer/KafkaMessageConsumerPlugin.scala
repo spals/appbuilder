@@ -8,8 +8,9 @@ import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
-import net.spals.appbuilder.message.core.formatter.MessageFormatter
+import net.spals.appbuilder.model.core.ModelSerializer
 import org.apache.kafka.clients.consumer.ConsumerConfig._
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
@@ -25,7 +26,7 @@ import scala.collection.mutable
   */
 @AutoBindInMap(baseClass = classOf[MessageConsumerPlugin], key = "kafka")
 private[consumer] class KafkaMessageConsumerPlugin @Inject()
-  (consumerCallbackMap: java.util.Map[String, MessageConsumerCallback],
+  (consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
    executorServiceRegistry: ManagedExecutorServiceRegistry)
   extends MessageConsumerPlugin {
 
@@ -50,10 +51,7 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     props
   }
 
-  override def start(consumerConfig: MessageConsumerConfig, messageFormatter: MessageFormatter): Unit = {
-    require(consumerCallbackMap.containsKey(consumerConfig.getTag),
-      s"No MessageConsumerCallback for '${consumerConfig.getTag}' configuration")
-
+  override def start(consumerConfig: MessageConsumerConfig, modelSerializer: ModelSerializer): Unit = {
     val kafkaConsumerConfig = KafkaConsumerConfig(consumerConfig)
 
     val consumerProps = createConsumerProps(kafkaConsumerConfig)
@@ -61,8 +59,8 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
     consumer.subscribe(List(kafkaConsumerConfig.getTopic).asJava)
 
     val consumerRunnable = new KafkaConsumerRunnable(consumer,
-      consumerCallback = consumerCallbackMap.get(consumerConfig.getTag),
-      consumerConfig, messageFormatter)
+      consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap,
+      consumerConfig, modelSerializer)
     consumerRunnableCache ++= Map(consumerConfig -> consumerRunnable)
 
     val executorService = executorServiceRegistry.registerExecutorService(getClass,
