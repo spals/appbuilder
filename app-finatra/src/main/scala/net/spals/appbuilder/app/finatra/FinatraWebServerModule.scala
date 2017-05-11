@@ -52,10 +52,10 @@ case class FinatraWebServerModule(serviceGraph: ServiceGraph) extends TwitterMod
       wsComponent => {
         wsComponent match {
           case controller: Controller => router.add(controller)
-          case mapper: ExceptionMapper[_] => router.exceptionMapper(mapper)
+//          case mapper: ExceptionMapper[_] => router.exceptionMapper(mapper)
           case mappers: ExceptionMapperCollection => router.exceptionMapper(mappers)
-          case filter: Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response] =>
-            router.filter(filter)
+//          case filter: Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response] =>
+//            router.filter(filter)
         }
       }
     ))
