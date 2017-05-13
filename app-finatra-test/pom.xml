@@ -52,6 +52,10 @@
             <artifactId>catch-throwable</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-model-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-app-finatra</artifactId>
         </dependency>

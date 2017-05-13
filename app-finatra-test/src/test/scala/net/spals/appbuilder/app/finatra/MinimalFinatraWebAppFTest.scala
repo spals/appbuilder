@@ -10,7 +10,7 @@ import org.slf4j
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
 
 /**
-  * Functional tests for [[FinatraWebApp]]
+  * Functional tests for a minimal [[FinatraWebApp]]
   *
   * @author tkral
   */
