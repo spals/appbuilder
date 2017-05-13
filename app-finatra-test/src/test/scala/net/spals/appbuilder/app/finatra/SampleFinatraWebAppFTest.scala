@@ -4,10 +4,10 @@ import com.google.inject.name.Names
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
-import net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp
+import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.{hasKey, is}
+import org.hamcrest.Matchers.{hasKey, is, notNullValue}
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
 
 /**
@@ -56,6 +56,11 @@ class SampleFinatraWebAppFTest {
       is("net.spals.appbuilder.app.finatra.sample.SampleGuiceModule"))
     assertThat(serviceInjector.getInstance(Key.get(classOf[String], Names.named("TwitterModule"))),
       is("net.spals.appbuilder.app.finatra.sample.SampleTwitterModule"))
+  }
+
+  @Test def testCustomServiceInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[SampleCustomService]), notNullValue())
   }
 
   @Test def testModelInjection() {
