@@ -18,6 +18,7 @@ import org.slf4j
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable.ListBuffer
 import scala.util.Try
 
 /**
@@ -27,6 +28,8 @@ trait FinatraWebApp extends HttpServer
   with Logging
   with spals.App
   with spals.WebAppBuilder[FinatraWebApp] {
+
+  private val customModules = new ListBuffer[Module]
 
   private val EXCLUDED_FLAGS = Set(
     "log.async" // log.async is both a value and a prefix which breaks Typesafe config parsing
@@ -54,6 +57,8 @@ trait FinatraWebApp extends HttpServer
   override protected def configureHttp(router: HttpRouter): Unit = {
     webServerModule.runWebServerAutoBind(router)
   }
+
+  override def modules = customModules
 
   @Lifecycle
   override protected def postInjectorStartup(): Unit = {
@@ -85,7 +90,7 @@ trait FinatraWebApp extends HttpServer
   private val webServerModule = FinatraWebServerModule(serviceGraph)
 
   override def addModule(module: Module): FinatraWebApp = {
-    modules ++ Seq(module)
+    customModules += module
     this
   }
 

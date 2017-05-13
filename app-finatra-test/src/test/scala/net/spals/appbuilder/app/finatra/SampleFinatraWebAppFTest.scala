@@ -42,7 +42,7 @@ class SampleFinatraWebAppFTest {
     assertThat(serviceConfig.getAnyRef(configKey), is(expectedConfigValue))
   }
 
-  @Test(enabled = false) def testCustomModuleInjection() {
+  @Test def testCustomModuleInjection() {
     val serviceInjector = sampleApp.getServiceInjector
     assertThat(serviceInjector.getInstance(Key.get(classOf[String], Names.named("GuiceModule"))),
       is("net.spals.appbuilder.app.finatra.sample.SampleGuiceModule"))
