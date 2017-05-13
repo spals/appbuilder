@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.core.generic;
+package net.spals.appbuilder.app.core.jaxrs;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;

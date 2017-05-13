@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.core.generic;
+package net.spals.appbuilder.app.core.jaxrs;
 
 import com.google.inject.Module;
 import com.google.inject.servlet.GuiceFilter;
@@ -7,6 +7,7 @@ import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
+import net.spals.appbuilder.app.core.generic.GenericWorkerApp;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
@@ -101,7 +102,7 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public JaxRsWebApp build() {
-            webServerModuleBuilder.setServiceGraph(appDelegateBuilder.serviceGraph);
+            webServerModuleBuilder.setServiceGraph(appDelegateBuilder.getServiceGraph());
             appDelegateBuilder.addModule(webServerModuleBuilder.build());
             final GenericWorkerApp appDelegate = appDelegateBuilder.build();
 

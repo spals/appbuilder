@@ -62,7 +62,7 @@ public abstract class GenericWorkerApp implements App {
     public static class Builder extends GenericWorkerApp_Builder implements WorkerAppBuilder<GenericWorkerApp> {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
-        final ServiceGraph serviceGraph;
+        private final ServiceGraph serviceGraph;
 
         private final AutoBindConfigModule.Builder configModuleBuilder =
                 new AutoBindConfigModule.Builder();
@@ -107,6 +107,10 @@ public abstract class GenericWorkerApp implements App {
         public Builder enableServiceGraph(final ServiceGraphFormat graphFormat) {
             serviceGraphModuleBuilder.setGraphFormat(graphFormat);
             return this;
+        }
+
+        public ServiceGraph getServiceGraph() {
+            return serviceGraph;
         }
 
         @Override

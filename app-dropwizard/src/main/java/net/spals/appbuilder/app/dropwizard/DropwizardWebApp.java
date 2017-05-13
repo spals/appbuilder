@@ -10,7 +10,7 @@ import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.BootstrapModuleWrapper;
-import net.spals.appbuilder.app.core.generic.JaxRsWebApp;
+import net.spals.appbuilder.app.core.jaxrs.JaxRsWebApp;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.glassfish.jersey.message.internal.TracingLogger;
 import org.glassfish.jersey.server.ServerProperties;
