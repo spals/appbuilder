@@ -2,6 +2,7 @@ package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -13,6 +14,7 @@ import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
@@ -46,7 +48,12 @@ public abstract class AutoBindConfigModule extends AbstractModule {
     public abstract Config getServiceConfig();
     public abstract Reflections getServiceScan();
 
-    public static class Builder extends AutoBindConfigModule_Builder {  }
+    public static class Builder extends AutoBindConfigModule_Builder {
+        public Builder() {
+            // By default, use an empty service scan
+            setServiceScan(new Reflections(Predicates.alwaysFalse()));
+        }
+    }
 
     @Override
     public void configure() {
@@ -58,7 +65,7 @@ public abstract class AutoBindConfigModule extends AbstractModule {
         final Key<Config> configKey = Key.get(Config.class, ServiceConfig.class);
         binder().bind(configKey).toInstance(getServiceConfig());
         // Enable @Configuration mappings
-        binder().install(new ConfigurationModule());
+//        binder().install(new ConfigurationModule());
 
         // Bind the full ServiceScan so that it's available to other modules
         final Key<Reflections> serviceScanKey = Key.get(Reflections.class, ServiceScan.class);

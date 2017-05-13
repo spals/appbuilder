@@ -1,19 +1,24 @@
 package net.spals.appbuilder.app.finatra
 
+import java.time.temporal.ChronoUnit
+
 import com.google.inject.{Injector, Module}
 import com.twitter.finatra.http.HttpServer
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.Logging
 import com.twitter.inject.annotations.Lifecycle
-import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
+import com.twitter.util.StorageUnit
+import com.typesafe.config._
 import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServiceGraphModule, AutoBindServicesModule}
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.graph.model.{ServiceGraph, ServiceGraphFormat}
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter
 import org.reflections.Reflections
 import org.slf4j
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   * @author tkral
@@ -23,9 +28,25 @@ trait FinatraWebApp extends HttpServer
   with spals.App
   with spals.WebAppBuilder[FinatraWebApp] {
 
+  private val EXCLUDED_FLAGS = Set(
+    "log.async" // log.async is both a value and a prefix which breaks Typesafe config parsing
+  )
   private lazy val flagConfig = {
-    val flagMap = flag.getAll().map(flag => (flag.name, flag.apply())).toMap
-    ConfigFactory.parseMap(flagMap.asJava)
+    // Filter out all flags which don't have an assigned or default value
+    val flagsWithValues = flag.getAll().filter(flag => {
+        flag.parse()
+        flag.getWithDefault.isDefined
+      })
+      // Filter out explicitly excluded flags
+      .filter(flag => !EXCLUDED_FLAGS.contains(flag.name))
+    // Convert flags to types parseable by ConfigFactory
+    val flagValueMap = flagsWithValues.map(flag => flag.apply() match {
+      case duration: com.twitter.util.Duration => (flag.name, java.time.Duration.of(duration.inNanoseconds, ChronoUnit.NANOS))
+      case iterable: Iterable[_] => (flag.name, iterable.asJava)
+      case storageUnit: StorageUnit => (flag.name, ConfigMemorySize.ofBytes(storageUnit.bytes))
+      case _ => (flag.name, Try(ConfigValueFactory.fromAnyRef(flag.apply())).getOrElse(flag.apply().toString))
+    }).toMap
+    ConfigFactory.parseMap(flagValueMap.asJava)
   }
 
   // ========== Twitter HttpServer ==========
@@ -43,7 +64,7 @@ trait FinatraWebApp extends HttpServer
 
   // ========== Spals App ==========
 
-  override def getLogger: slf4j.Logger = logger.asInstanceOf[slf4j.Logger]
+  override def getLogger: slf4j.Logger = LoggerFactory.getLogger(loggerName)
 
   override def getName: String = name
 

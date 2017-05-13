@@ -1,6 +1,7 @@
 package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
@@ -34,7 +35,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
     public static class Builder extends AutoBindServicesModule_Builder {
         public Builder() {
             setErrorOnServiceLeaks(true);
-            setServiceScan(new Reflections());
+            // By default, use an empty service scan
+            setServiceScan(new Reflections(Predicates.alwaysFalse()));
         }
     }
 

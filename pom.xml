@@ -56,6 +56,7 @@
         <kinesis-client.version>1.7.4</kinesis-client.version>
         <kinesis-producer.version>0.12.3</kinesis-producer.version>
         <kryo-serializers.version>0.41</kryo-serializers.version>
+        <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
         <protobuf.version>3.3.0</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
@@ -69,6 +70,7 @@
         <module>app-core-test</module>
         <module>app-dropwizard</module>
         <module>app-finatra</module>
+        <module>app-finatra-test</module>
         <module>bom</module>
         <module>config</module>
         <module>config-test</module>
@@ -91,6 +93,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>amazon-kinesis-client</artifactId>
@@ -115,6 +122,12 @@
                 <groupId>com.datastax.cassandra</groupId>
                 <artifactId>cassandra-driver-core</artifactId>
                 <version>${cassandra-driver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-testlib</artifactId>
+                <version>${guice.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
@@ -163,8 +176,43 @@
             </dependency>
             <dependency>
                 <groupId>com.twitter</groupId>
+                <artifactId>finatra-http_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-app_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-core_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-modules_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
                 <artifactId>inject-request-scope_${scala.version}</artifactId>
                 <version>${finatra.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-server_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.typesafe</groupId>
