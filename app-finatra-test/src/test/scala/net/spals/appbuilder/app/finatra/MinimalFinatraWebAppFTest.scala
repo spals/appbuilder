@@ -35,7 +35,7 @@ class MinimalFinatraWebAppFTest {
     assertThat(minimalApp.getLogger, instanceOf[slf4j.Logger](classOf[slf4j.Logger]))
   }
 
-  @DataProvider def serviceConfigProvider(): Array[Array[AnyRef]] = {
+  @DataProvider def defaultServiceConfigProvider(): Array[Array[AnyRef]] = {
     Array(
       Array("http.port", ":8888"),
       Array("log.append", Boolean.box(true)),
@@ -48,13 +48,13 @@ class MinimalFinatraWebAppFTest {
     )
   }
 
-  @Test(dataProvider = "serviceConfigProvider")
-  def testMinimalAppServiceConfig(configKey: String, expectedConfigValue: AnyRef) {
+  @Test(dataProvider = "defaultServiceConfigProvider")
+  def testDefaultServiceConfig(configKey: String, expectedConfigValue: AnyRef) {
     val serviceConfig = minimalApp.getServiceConfig
     assertThat(serviceConfig.getAnyRef(configKey), is(expectedConfigValue))
   }
 
-  @Test def testMinimalAppServiceInjector() {
+  @Test def testDefaultServiceInjector() {
     val serviceInjector = minimalApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[StatsReceiver]), notNullValue())
   }

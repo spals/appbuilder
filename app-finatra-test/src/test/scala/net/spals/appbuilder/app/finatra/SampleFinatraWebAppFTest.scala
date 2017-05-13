@@ -3,6 +3,7 @@ package net.spals.appbuilder.app.finatra
 import com.google.inject.name.Names
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
+import com.twitter.inject.annotations.FlagImpl
 import net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
@@ -37,9 +38,16 @@ class SampleFinatraWebAppFTest {
   }
 
   @Test(dataProvider = "serviceConfigProvider")
-  def testSampleAppServiceConfig(configKey: String, expectedConfigValue: AnyRef) {
+  def testServiceConfig(configKey: String, expectedConfigValue: AnyRef) {
     val serviceConfig = sampleApp.getServiceConfig
     assertThat(serviceConfig.getAnyRef(configKey), is(expectedConfigValue))
+  }
+
+  @Test(dataProvider = "serviceConfigProvider")
+  def testServiceConfigInjection(configKey: String, expectedConfigValue: AnyRef) {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(Key.get(classOf[String], new FlagImpl(configKey))),
+      is(String.valueOf(expectedConfigValue)))
   }
 
   @Test def testCustomModuleInjection() {

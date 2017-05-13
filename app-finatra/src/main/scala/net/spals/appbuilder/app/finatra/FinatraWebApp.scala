@@ -10,6 +10,7 @@ import com.twitter.inject.annotations.Lifecycle
 import com.twitter.util.StorageUnit
 import com.typesafe.config._
 import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServiceGraphModule, AutoBindServicesModule}
+import net.spals.appbuilder.app.finatra.modules.AutoBindConfigFlagsModule
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.graph.model.{ServiceGraph, ServiceGraphFormat}
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter
@@ -148,6 +149,10 @@ trait FinatraWebApp extends HttpServer
       servicesModuleBuilder.build(),
       webServerModule
     )
+    // Bind alternate config values under @Flag annotations
+    altConfig.foreach(config =>
+      addFrameworkModules(AutoBindConfigFlagsModule(config)))
+
 
     this
   }
