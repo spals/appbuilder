@@ -10,7 +10,8 @@ import com.twitter.inject.annotations.Lifecycle
 import com.twitter.util.StorageUnit
 import com.typesafe.config._
 import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServiceGraphModule, AutoBindServicesModule}
-import net.spals.appbuilder.app.finatra.modules.AutoBindConfigFlagsModule
+import net.spals.appbuilder.app.finatra.bootstrap.FinatraBootstrapModule
+import net.spals.appbuilder.app.finatra.modules.{AutoBindConfigFlagsModule, FinatraWebServerModule}
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.graph.model.{ServiceGraph, ServiceGraphFormat}
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter
@@ -85,6 +86,7 @@ trait FinatraWebApp extends HttpServer
   private var altConfig: Option[Config] = None
   private val serviceGraph = new ServiceGraph()
 
+  private var bootstrapModule = new FinatraBootstrapModule()
   private val configModuleBuilder = new AutoBindConfigModule.Builder
   private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder
   private val servicesModuleBuilder = new AutoBindServicesModule.Builder
@@ -132,6 +134,7 @@ trait FinatraWebApp extends HttpServer
   }
 
   override def setServiceScan(serviceScan: Reflections): FinatraWebApp = {
+    bootstrapModule = bootstrapModule.copy(serviceScan = serviceScan)
     configModuleBuilder.setServiceScan(serviceScan)
     servicesModuleBuilder.setServiceScan(serviceScan)
     this
@@ -139,20 +142,20 @@ trait FinatraWebApp extends HttpServer
 
   override def build(): FinatraWebApp = {
     addFrameworkModules(
-      configModuleBuilder
-        .setApplicationName(getName)
-        .setServiceConfig(getServiceConfig)
-        .build(),
-      serviceGraphModuleBuilder
-        .setServiceGraph(serviceGraph)
-        .build(),
+      bootstrapModule.copy(staticBootstrapModules = List(
+        configModuleBuilder
+          .setApplicationName(getName)
+          .setServiceConfig(getServiceConfig)
+          .build(),
+        serviceGraphModuleBuilder
+          .setServiceGraph(serviceGraph)
+          .build())),
       servicesModuleBuilder.build(),
       webServerModule
     )
     // Bind alternate config values under @Flag annotations
     altConfig.foreach(config =>
       addFrameworkModules(AutoBindConfigFlagsModule(config)))
-
 
     this
   }

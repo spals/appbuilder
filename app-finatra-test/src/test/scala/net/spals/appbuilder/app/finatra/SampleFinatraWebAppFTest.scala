@@ -50,12 +50,20 @@ class SampleFinatraWebAppFTest {
       is(String.valueOf(expectedConfigValue)))
   }
 
-  @Test def testCustomModuleInjection() {
+  @DataProvider def customModuleInjectionProvider(): Array[Array[AnyRef]] = {
+    Array(
+      Array("AutoBoundModule",
+        "net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp:net.spals.appbuilder.app.finatra.sample.SampleAutoBoundModule"),
+      Array("GuiceModule", "net.spals.appbuilder.app.finatra.sample.SampleGuiceModule"),
+      Array("TwitterModule", "net.spals.appbuilder.app.finatra.sample.SampleTwitterModule")
+    )
+  }
+
+  @Test(dataProvider = "customModuleInjectionProvider")
+  def testCustomModuleInjection(keyName: String, expectedBindValue: String) {
     val serviceInjector = sampleApp.getServiceInjector
-    assertThat(serviceInjector.getInstance(Key.get(classOf[String], Names.named("GuiceModule"))),
-      is("net.spals.appbuilder.app.finatra.sample.SampleGuiceModule"))
-    assertThat(serviceInjector.getInstance(Key.get(classOf[String], Names.named("TwitterModule"))),
-      is("net.spals.appbuilder.app.finatra.sample.SampleTwitterModule"))
+    assertThat(serviceInjector.getInstance(Key.get(classOf[String], Names.named(keyName))),
+      is(expectedBindValue))
   }
 
   @Test def testCustomServiceInjection() {

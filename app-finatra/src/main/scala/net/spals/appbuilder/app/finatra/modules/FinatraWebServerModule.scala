@@ -1,11 +1,10 @@
-package net.spals.appbuilder.app.finatra
+package net.spals.appbuilder.app.finatra.modules
 
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.google.inject.TypeLiteral
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
-import com.twitter.finagle.{http => finaglehttp}
-import com.twitter.finagle.Filter
+import com.twitter.finagle.{Filter, http => finaglehttp}
 import com.twitter.finatra.http.Controller
 import com.twitter.finatra.http.exceptions.{ExceptionMapper, ExceptionMapperCollection}
 import com.twitter.finatra.http.filters.CommonFilters
@@ -18,7 +17,7 @@ import net.spals.appbuilder.graph.model.ServiceGraph
 /**
   * @author tkral
   */
-case class FinatraWebServerModule(serviceGraph: ServiceGraph) extends TwitterModule
+private[finatra] case class FinatraWebServerModule(serviceGraph: ServiceGraph) extends TwitterModule
   with InjectionListener[AnyRef]
   with TypeListener {
 
