@@ -90,7 +90,7 @@ trait FinatraWebApp extends HttpServer
   private val configModuleBuilder = new AutoBindConfigModule.Builder
   private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder
   private val servicesModuleBuilder = new AutoBindServicesModule.Builder
-  private val webServerModule = FinatraWebServerModule(serviceGraph)
+  private var webServerModule = FinatraWebServerModule(serviceGraph)
 
   override def addModule(module: Module): FinatraWebApp = {
     customModules += module
@@ -98,7 +98,7 @@ trait FinatraWebApp extends HttpServer
   }
 
   def disableCommonFilters(): FinatraWebApp = {
-    webServerModule.addCommonFilters.set(false)
+    webServerModule = webServerModule.copy(addCommonFilters = false)
     this
   }
 
@@ -108,12 +108,12 @@ trait FinatraWebApp extends HttpServer
   }
 
   override def disableWebServerAutoBinding(): FinatraWebApp = {
-    webServerModule.runWebServerAutoBinding.set(false)
+    webServerModule = webServerModule.copy(runWebServerAutoBinding = false)
     this
   }
 
   override def enableRequestScoping(): FinatraWebApp = {
-    webServerModule.addRequestScopeFilter.set(true)
+    webServerModule = webServerModule.copy(addRequestScopeFilter = true)
     this
   }
 

@@ -1,7 +1,5 @@
 package net.spals.appbuilder.app.finatra.modules
 
-import java.util.concurrent.atomic.AtomicBoolean
-
 import com.google.inject.TypeLiteral
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
 import com.twitter.finagle.{Filter, http => finaglehttp}
@@ -14,19 +12,24 @@ import com.twitter.inject.requestscope.FinagleRequestScopeFilter
 import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers
 import net.spals.appbuilder.graph.model.ServiceGraph
 
+import scala.collection.mutable.ListBuffer
+
 /**
   * @author tkral
   */
-private[finatra] case class FinatraWebServerModule(serviceGraph: ServiceGraph) extends TwitterModule
+private[finatra] case class FinatraWebServerModule(
+    serviceGraph: ServiceGraph,
+    addCommonFilters: Boolean = true,
+    addRequestScopeFilter: Boolean = false,
+    runWebServerAutoBinding: Boolean = true
+  ) extends TwitterModule
   with InjectionListener[AnyRef]
   with TypeListener {
 
-  private[finatra] val addCommonFilters = new AtomicBoolean(true)
-  private[finatra] val addRequestScopeFilter = new AtomicBoolean(false)
-  private[finatra] val runWebServerAutoBinding = new AtomicBoolean(true)
+  private lazy val wsComponents = new ListBuffer[AnyRef]
 
   override def afterInjection(wsComponent: AnyRef): Unit = {
-    wsComponents ++ Seq(wsComponent)
+//    wsComponents += wsComponent
   }
 
   override def configure(): Unit = {
@@ -43,11 +46,11 @@ private[finatra] case class FinatraWebServerModule(serviceGraph: ServiceGraph) e
   }
 
   private[finatra] def runWebServerAutoBind(router: HttpRouter): Unit = {
-    Option(addCommonFilters.get).filter(b => b).foreach(router.filter[CommonFilters])
-    Option(addRequestScopeFilter.get).filter(b => b)
+    Option(addCommonFilters).filter(b => b).foreach(router.filter[CommonFilters])
+    Option(addRequestScopeFilter).filter(b => b)
       .foreach(router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
 
-    Option(runWebServerAutoBinding.get).filter(b => b).foreach(b => wsComponents.foreach(
+    Option(runWebServerAutoBinding).filter(b => b).foreach(b => wsComponents.foreach(
       wsComponent => {
         wsComponent match {
           case controller: Controller => router.add(controller)
@@ -59,6 +62,4 @@ private[finatra] case class FinatraWebServerModule(serviceGraph: ServiceGraph) e
       }
     ))
   }
-
-  private def wsComponents: Seq[AnyRef] = Seq()
 }
