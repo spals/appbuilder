@@ -5,7 +5,11 @@ import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
 import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
+import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.filestore.core.FileStore
 import net.spals.appbuilder.mapstore.core.MapStore
+import net.spals.appbuilder.message.core.consumer.{MessageConsumer, MessageConsumerCallback}
+import net.spals.appbuilder.message.core.producer.MessageProducer
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{hasKey, is, notNullValue}
@@ -34,6 +38,7 @@ class SampleFinatraWebAppFTest {
 
   @DataProvider def serviceConfigProvider(): Array[Array[AnyRef]] = {
     Array(
+      Array("fileStore.system", "localFS"),
       Array("mapStore.system", "mapDB")
     )
   }
@@ -72,9 +77,29 @@ class SampleFinatraWebAppFTest {
     assertThat(serviceInjector.getInstance(classOf[SampleCustomService]), notNullValue())
   }
 
+  @Test def testExecutorInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[ManagedExecutorServiceRegistry]), notNullValue())
+  }
+
+  @Test def testFileStoreInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[FileStore]), notNullValue())
+  }
+
   @Test def testMapStoreInjection() {
     val serviceInjector = sampleApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[MapStore]), notNullValue())
+  }
+
+  @Test def testMessageInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MessageProducer]), notNullValue())
+    assertThat(serviceInjector.getInstance(classOf[MessageConsumer]), notNullValue())
+
+    val messageCallbackSetKey = new TypeLiteral[java.util.Set[MessageConsumerCallback[_]]](){}
+    val messageCallbackSet = serviceInjector.getInstance(Key.get(messageCallbackSetKey))
+    assertThat(messageCallbackSet, notNullValue())
   }
 
   @Test def testModelInjection() {

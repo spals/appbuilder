@@ -53,7 +53,19 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-executor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-filestore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-mapstore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-message-core</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
