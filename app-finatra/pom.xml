@@ -23,6 +23,10 @@
             <artifactId>governator</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.netflix.governator</groupId>
+            <artifactId>governator-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finatra-http_${scala.version}</artifactId>
         </dependency>

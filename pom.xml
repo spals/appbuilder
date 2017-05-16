@@ -151,6 +151,11 @@
                 <version>${governator.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.netflix.governator</groupId>
+                <artifactId>governator-core</artifactId>
+                <version>${governator.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.trueaccord.scalapb</groupId>
                 <artifactId>scalapbc_${scala.version}</artifactId>
                 <version>${scalapb.version}</version>

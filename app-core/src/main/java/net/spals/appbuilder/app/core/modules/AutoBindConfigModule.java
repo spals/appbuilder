@@ -65,7 +65,7 @@ public abstract class AutoBindConfigModule extends AbstractModule {
         final Key<Config> configKey = Key.get(Config.class, ServiceConfig.class);
         binder().bind(configKey).toInstance(getServiceConfig());
         // Enable @Configuration mappings
-//        binder().install(new ConfigurationModule());
+        binder().install(new ConfigurationModule());
 
         // Bind the full ServiceScan so that it's available to other modules
         final Key<Reflections> serviceScanKey = Key.get(Reflections.class, ServiceScan.class);

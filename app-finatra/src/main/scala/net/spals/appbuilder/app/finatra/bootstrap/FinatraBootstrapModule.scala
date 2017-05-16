@@ -3,10 +3,14 @@ package net.spals.appbuilder.app.finatra.bootstrap
 import com.google.common.base.Preconditions.checkState
 import com.google.common.base.Predicates
 import com.google.inject.{AbstractModule, Module}
-import com.netflix.governator.guice.{BootstrapModule, LifecycleInjector, ModuleListBuilder}
+import com.netflix.governator.LifecycleModule
+import com.netflix.governator.guice.{BootstrapBinder, BootstrapModule, LifecycleInjector, ModuleListBuilder}
+import com.netflix.governator.lifecycle.LifecycleConfigurationProviders
 import com.twitter.inject.{Logging, TwitterModule}
+import com.typesafe.config.{Config, ConfigFactory}
 import net.spals.appbuilder.annotations.service.AutoBindModule
 import net.spals.appbuilder.app.core.bootstrap.{AutoBindModulesBootstrapModule, BootstrapModuleWrapper}
+import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider
 import org.reflections.Reflections
 
 import scala.collection.JavaConverters._
@@ -21,28 +25,49 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 private[finatra] case class FinatraBootstrapModule(
-    staticBootstrapModules: Seq[Module] = List(),
-    serviceScan: Reflections = new Reflections(Predicates.alwaysFalse())
+    serviceConfig: Config = ConfigFactory.empty(),
+    serviceScan: Reflections = new Reflections(Predicates.alwaysFalse()),
+    staticBootstrapModules: Seq[Module] = List()
   )
   extends TwitterModule
   with Logging {
 
-  // Dynamic module to install all static bootstrap modules
-  // (that is, any module which binds state that can feed @AutoBindModules)
-  private val staticBootstrapInstallModule = new AbstractModule {
-    override def configure(): Unit = {
-      staticBootstrapModules.foreach(staticBootstrapModule => {
-        info(s"Installing static bootstrap module: ${staticBootstrapModule.getClass}")
-        install(staticBootstrapModule)
-      })
+  // A guice injector created for bootstraping via Governator
+  private lazy val bootstrapInjector = {
+    // Combine the configuration provider with all static bootstrap modules
+    // given to us. Note that the configuration provider is bound first.
+    val allStaticBootstrapModules = List(governatorPreBootstrapModule) ++
+      staticBootstrapModules.map(new BootstrapModuleWrapper(_))
+    // Use Governator to create an injector based on the static bootstrap modules
+    LifecycleInjector.bootstrap(classOf[AnyRef] /*dummy*/, allStaticBootstrapModules: _*)
+  }
+
+  private lazy val configProvider = new TypesafeConfigurationProvider(serviceConfig)
+
+  // BootstrapModule required to create the boostrapInjector through Governator.
+  // This will be run first, before any other modules, while creating the bootstrap
+  // injector.
+  private lazy val governatorPreBootstrapModule = new BootstrapModule {
+    override def configure(bootstrapBinder: BootstrapBinder): Unit = {
+      bootstrapBinder.bindConfigurationProvider().toInstance(configProvider)
     }
   }
 
-  override lazy val modules = {
-    // Use Governator to create an injector based on the static bootstrap modules
-    val bootstrapInjector = LifecycleInjector.bootstrap(classOf[AnyRef] /*dummy*/,
-      new BootstrapModuleWrapper(staticBootstrapInstallModule))
+  // Module to be run before any other installed modules in Finatra.
+  private lazy val finatraPreBootstrapModule = new AbstractModule {
+    override def configure(): Unit = {
+      // Activate Governator's lifecycle feature
+      install(new LifecycleModule())
+      // Bind a LifecycleCOnfigurationProviders instance so as to activate Governator's
+      // @Configuration feature. Note that this is slightly different then what we do in
+      // the Governator pre bootstrap module above since there the Governator internals
+      // are taking care of these mechanics for us.
+      bind(classOf[LifecycleConfigurationProviders]).toInstance(new LifecycleConfigurationProviders(configProvider))
+    }
+  }
 
+  // Modules installed into Finatra
+  override lazy val modules = {
     // Scan for all auto bound modules
     val autoBoundModuleClasses = serviceScan.getTypesAnnotatedWith(classOf[AutoBindModule]).asScala
     validateModules(autoBoundModuleClasses)
@@ -56,7 +81,7 @@ private[finatra] case class FinatraBootstrapModule(
     })
 
     // Return both static and auto-bound modules to Finatra to be installed
-    staticBootstrapModules ++ autoBoundModules
+    List(finatraPreBootstrapModule) ++ staticBootstrapModules ++ autoBoundModules
   }
 
   private[finatra] def validateModules(moduleClasses: Iterable[Class[_]]): Unit = {

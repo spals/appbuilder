@@ -141,15 +141,18 @@ trait FinatraWebApp extends HttpServer
   }
 
   override def build(): FinatraWebApp = {
-    addFrameworkModules(
-      bootstrapModule.copy(staticBootstrapModules = List(
+    bootstrapModule = bootstrapModule.copy(serviceConfig = getServiceConfig,
+      staticBootstrapModules = List(
         configModuleBuilder
           .setApplicationName(getName)
           .setServiceConfig(getServiceConfig)
           .build(),
         serviceGraphModuleBuilder
           .setServiceGraph(serviceGraph)
-          .build())),
+          .build()))
+
+    addFrameworkModules(
+      bootstrapModule,
       servicesModuleBuilder.build(),
       webServerModule
     )

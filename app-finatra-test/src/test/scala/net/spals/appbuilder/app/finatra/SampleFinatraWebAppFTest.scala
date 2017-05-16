@@ -5,6 +5,7 @@ import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
 import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
+import net.spals.appbuilder.mapstore.core.MapStore
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{hasKey, is, notNullValue}
@@ -69,6 +70,11 @@ class SampleFinatraWebAppFTest {
   @Test def testCustomServiceInjection() {
     val serviceInjector = sampleApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[SampleCustomService]), notNullValue())
+  }
+
+  @Test def testMapStoreInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MapStore]), notNullValue())
   }
 
   @Test def testModelInjection() {
