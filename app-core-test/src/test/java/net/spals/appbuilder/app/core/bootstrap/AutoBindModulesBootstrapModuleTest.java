@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapBinder;
+import net.spals.appbuilder.config.service.ServiceScan;
 import org.reflections.Reflections;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -21,9 +22,10 @@ public class AutoBindModulesBootstrapModuleTest {
 
     @Test
     public void testAutoBindModules() {
-        final Reflections serviceScan = mock(Reflections.class);
-        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+        final Reflections reflections = mock(Reflections.class);
+        when(reflections.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MyModule.class));
+        final ServiceScan serviceScan = new ServiceScan.Builder().setReflections(reflections).build();
 
         final AutoBindModulesBootstrapModule autoBindBootstrapModule = new AutoBindModulesBootstrapModule(serviceScan);
 
@@ -44,7 +46,7 @@ public class AutoBindModulesBootstrapModuleTest {
 
     @Test(dataProvider = "invalidModuleClassProvider")
     public void testInvalidModules(final Class<?> invalidModuleClazz) {
-        final AutoBindModulesBootstrapModule autoBindBootstrapModule = new AutoBindModulesBootstrapModule(mock(Reflections.class));
+        final AutoBindModulesBootstrapModule autoBindBootstrapModule = new AutoBindModulesBootstrapModule(mock(ServiceScan.class));
         verifyException(() -> autoBindBootstrapModule.validateModules(ImmutableSet.of(invalidModuleClazz)), IllegalStateException.class);
     }
 

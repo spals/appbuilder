@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
+import net.spals.appbuilder.message.core.MessageProducer;
 import net.spals.appbuilder.model.core.ModelSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

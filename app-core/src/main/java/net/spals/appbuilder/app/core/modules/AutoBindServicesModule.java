@@ -1,8 +1,6 @@
 package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
@@ -10,10 +8,10 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
 import net.spals.appbuilder.annotations.service.*;
 import net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope;
+import net.spals.appbuilder.config.service.ServiceScan;
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.inferred.freebuilder.FreeBuilder;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +31,13 @@ public abstract class AutoBindServicesModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindServicesModule.class);
 
     public abstract Boolean getErrorOnServiceLeaks();
-    public abstract Reflections getServiceScan();
+    public abstract ServiceScan getServiceScan();
 
     public static class Builder extends AutoBindServicesModule_Builder {
         public Builder() {
             setErrorOnServiceLeaks(true);
             // By default, use an empty service scan
-            setServiceScan(new Reflections(Predicates.alwaysFalse()));
+            setServiceScan(ServiceScan.empty());
         }
     }
 
@@ -54,7 +52,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindFactories(final Binder binder) {
-        final Set<Class<?>> factoryClasses = getServiceScan().getTypesAnnotatedWith(AutoBindFactory.class);
+        final Set<Class<?>> factoryClasses = getServiceScan().getReflections()
+                .getTypesAnnotatedWith(AutoBindFactory.class);
         validateFactories(factoryClasses);
 
         factoryClasses.forEach(factoryClazz -> {
@@ -65,7 +64,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindMaps(final Binder binder) {
-        final Set<Class<?>> mapClasses = getServiceScan().getTypesAnnotatedWith(AutoBindInMap.class);
+        final Set<Class<?>> mapClasses = getServiceScan().getReflections()
+                .getTypesAnnotatedWith(AutoBindInMap.class);
         validateSingletons(mapClasses, AutoBindInMap.class);
         checkServiceLeaks(mapClasses);
 
@@ -87,7 +87,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindProviders(final Binder binder) {
-        final Set<Class<?>> providerClasses = getServiceScan().getTypesAnnotatedWith(AutoBindProvider.class);
+        final Set<Class<?>> providerClasses = getServiceScan().getReflections()
+                .getTypesAnnotatedWith(AutoBindProvider.class);
         validateProviders(providerClasses);
         checkServiceLeaks(providerClasses);
 
@@ -123,7 +124,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindSets(final Binder binder) {
-        final Set<Class<?>> setClasses = getServiceScan().getTypesAnnotatedWith(AutoBindInSet.class);
+        final Set<Class<?>> setClasses = getServiceScan()
+                .getReflections().getTypesAnnotatedWith(AutoBindInSet.class);
         validateSingletons(setClasses, AutoBindInSet.class);
         checkServiceLeaks(setClasses);
 
@@ -139,7 +141,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
 
     @VisibleForTesting
     void autoBindSingletons(final Binder binder) {
-        final Set<Class<?>> singletonClasses = getServiceScan().getTypesAnnotatedWith(AutoBindSingleton.class);
+        final Set<Class<?>> singletonClasses = getServiceScan().getReflections()
+                .getTypesAnnotatedWith(AutoBindSingleton.class);
         validateSingletons(singletonClasses, AutoBindSingleton.class);
         checkServiceLeaks(singletonClasses);
 

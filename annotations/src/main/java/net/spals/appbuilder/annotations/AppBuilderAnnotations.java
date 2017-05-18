@@ -3,7 +3,6 @@ package net.spals.appbuilder.annotations;
 import com.google.common.collect.ImmutableSet;
 import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
-import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.annotations.migration.AutoBindMigration;
 import net.spals.appbuilder.annotations.service.*;
 
@@ -17,7 +16,7 @@ public class AppBuilderAnnotations {
 
     private static final Set<Class<? extends Annotation>> ALL_CONFIG =
             ImmutableSet.<Class<? extends Annotation>>builder()
-                    .add(ApplicationName.class, ServiceConfig.class, ServiceScan.class)
+                    .add(ApplicationName.class, ServiceConfig.class)
                     .build();
 
     private static final Set<Class<? extends Annotation>> ALL_MIGRATION =

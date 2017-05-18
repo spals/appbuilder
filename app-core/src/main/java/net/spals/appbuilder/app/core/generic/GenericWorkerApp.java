@@ -19,6 +19,7 @@ import net.spals.appbuilder.app.core.modules.AutoBindConfigModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServiceGraphModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
+import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
@@ -131,7 +132,7 @@ public abstract class GenericWorkerApp implements App {
         }
 
         @Override
-        public Builder setServiceScan(final Reflections serviceScan) {
+        public Builder setServiceScan(final ServiceScan serviceScan) {
             // 1. Bind the serviceScan as part of the overall application configuration
             configModuleBuilder.setServiceScan(serviceScan);
             // 2. Use the serviceScan to find auto bound modules

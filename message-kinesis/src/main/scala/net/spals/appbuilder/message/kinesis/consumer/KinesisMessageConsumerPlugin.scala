@@ -11,8 +11,9 @@ import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.config.ApplicationName
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
-import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.loadCallbacksForTag
-import net.spals.appbuilder.message.core.consumer.{MessageConsumerCallback, MessageConsumerPlugin}
+import net.spals.appbuilder.message.core.MessageConsumerCallback
+import net.spals.appbuilder.message.core.MessageConsumerCallback.loadCallbacksForTag
+import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.model.core.ModelSerializer
 
 import scala.collection.JavaConverters._

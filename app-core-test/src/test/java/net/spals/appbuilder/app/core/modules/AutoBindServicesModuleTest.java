@@ -1,6 +1,5 @@
 package net.spals.appbuilder.app.core.modules;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.*;
 import com.google.inject.binder.AnnotatedBindingBuilder;
@@ -10,12 +9,11 @@ import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule.AutoBoundProvider;
+import net.spals.appbuilder.config.service.ServiceScan;
 import org.hamcrest.Matchers;
 import org.reflections.Reflections;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 import static com.googlecode.catchexception.CatchException.verifyException;
 import static net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope.*;
@@ -34,12 +32,14 @@ public class AutoBindServicesModuleTest {
 
     @Test
     public void testAutoBindFactories() {
-        final Reflections serviceScan = mock(Reflections.class);
-        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+        final Reflections reflections = mock(Reflections.class);
+        when(reflections.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MyFactory.class));
+        final ServiceScan serviceScan = new ServiceScan.Builder().setReflections(reflections).build();
 
         final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
-                .setServiceScan(serviceScan).build();
+                .setServiceScan(serviceScan)
+                .build();
 
         final Binder binder = mock(Binder.class);
         autoBindModule.autoBindFactories(binder);
@@ -59,9 +59,10 @@ public class AutoBindServicesModuleTest {
 
     @Test(dataProvider = "autoBindProvidersProvider")
     public void testAutoBindProviders(final Class<? extends Provider> providerClazz, final Scope expectedScope) {
-        final Reflections serviceScan = mock(Reflections.class);
-        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+        final Reflections reflections = mock(Reflections.class);
+        when(reflections.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(providerClazz));
+        final ServiceScan serviceScan = new ServiceScan.Builder().setReflections(reflections).build();
 
         final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
                 .setServiceScan(serviceScan).build();
@@ -80,9 +81,10 @@ public class AutoBindServicesModuleTest {
 
     @Test
     public void testAutoBindSimpleSingleton() {
-        final Reflections serviceScan = mock(Reflections.class);
-        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+        final Reflections reflections = mock(Reflections.class);
+        when(reflections.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MySingletonImplBind.class));
+        final ServiceScan serviceScan = new ServiceScan.Builder().setReflections(reflections).build();
 
         final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
                 .setServiceScan(serviceScan).build();
@@ -99,9 +101,11 @@ public class AutoBindServicesModuleTest {
 
     @Test
     public void testAutoBindSingletonWithInterface() {
-        final Reflections serviceScan = mock(Reflections.class);
-        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+        final Reflections reflections = mock(Reflections.class);
+        when(reflections.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MySingletonInterfaceBind.class));
+        final ServiceScan serviceScan = new ServiceScan.Builder().setReflections(reflections).build();
+
 
         final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
                 .setServiceScan(serviceScan).build();
@@ -121,9 +125,10 @@ public class AutoBindServicesModuleTest {
 
     @Test
     public void testAutoBindSingletonWithInterfaceAndImpl() {
-        final Reflections serviceScan = mock(Reflections.class);
-        when(serviceScan.getTypesAnnotatedWith(any(Class.class)))
+        final Reflections reflections = mock(Reflections.class);
+        when(reflections.getTypesAnnotatedWith(any(Class.class)))
                 .thenReturn(ImmutableSet.of(MySingletonInterfaceAndImplBind.class));
+        final ServiceScan serviceScan = new ServiceScan.Builder().setReflections(reflections).build();
 
         final AutoBindServicesModule autoBindModule = new AutoBindServicesModule.Builder()
                 .setServiceScan(serviceScan).build();

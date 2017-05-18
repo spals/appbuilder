@@ -8,9 +8,9 @@ import com.typesafe.config.Config;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
 import net.spals.appbuilder.app.core.generic.GenericWorkerApp;
+import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.inferred.freebuilder.FreeBuilder;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 
 import javax.servlet.DispatcherType;
@@ -95,7 +95,7 @@ public abstract class JaxRsWebApp implements App {
         }
 
         @Override
-        public Builder setServiceScan(final Reflections serviceScan) {
+        public Builder setServiceScan(final ServiceScan serviceScan) {
             appDelegateBuilder.setServiceScan(serviceScan);
             return this;
         }

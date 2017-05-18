@@ -1,7 +1,6 @@
 package net.spals.appbuilder.app.finatra.bootstrap
 
 import com.google.common.base.Preconditions.checkState
-import com.google.common.base.Predicates
 import com.google.inject.{AbstractModule, Module}
 import com.netflix.governator.LifecycleModule
 import com.netflix.governator.guice.{BootstrapBinder, BootstrapModule, LifecycleInjector, ModuleListBuilder}
@@ -11,7 +10,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import net.spals.appbuilder.annotations.service.AutoBindModule
 import net.spals.appbuilder.app.core.bootstrap.{AutoBindModulesBootstrapModule, BootstrapModuleWrapper}
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider
-import org.reflections.Reflections
+import net.spals.appbuilder.config.service.ServiceScan
 
 import scala.collection.JavaConverters._
 
@@ -26,7 +25,7 @@ import scala.collection.JavaConverters._
   */
 private[finatra] case class FinatraBootstrapModule(
     serviceConfig: Config = ConfigFactory.empty(),
-    serviceScan: Reflections = new Reflections(Predicates.alwaysFalse()),
+    serviceScan: ServiceScan = ServiceScan.empty(),
     staticBootstrapModules: Seq[Module] = List()
   )
   extends TwitterModule
@@ -69,7 +68,7 @@ private[finatra] case class FinatraBootstrapModule(
   // Modules installed into Finatra
   override lazy val modules = {
     // Scan for all auto bound modules
-    val autoBoundModuleClasses = serviceScan.getTypesAnnotatedWith(classOf[AutoBindModule]).asScala
+    val autoBoundModuleClasses = serviceScan.getReflections.getTypesAnnotatedWith(classOf[AutoBindModule]).asScala
     validateModules(autoBoundModuleClasses)
 
     // Instantiate all auto bound modules using the bootstrap injector

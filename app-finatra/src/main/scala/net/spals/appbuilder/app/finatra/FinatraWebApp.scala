@@ -13,6 +13,7 @@ import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServ
 import net.spals.appbuilder.app.finatra.bootstrap.FinatraBootstrapModule
 import net.spals.appbuilder.app.finatra.modules.{AutoBindConfigFlagsModule, FinatraWebServerModule}
 import net.spals.appbuilder.app.{core => spals}
+import net.spals.appbuilder.config.service.ServiceScan
 import net.spals.appbuilder.graph.model.{ServiceGraph, ServiceGraphFormat}
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter
 import org.reflections.Reflections
@@ -133,7 +134,7 @@ trait FinatraWebApp extends HttpServer
       ConfigResolveOptions.defaults))
   }
 
-  override def setServiceScan(serviceScan: Reflections): FinatraWebApp = {
+  override def setServiceScan(serviceScan: ServiceScan): FinatraWebApp = {
     bootstrapModule = bootstrapModule.copy(serviceScan = serviceScan)
     configModuleBuilder.setServiceScan(serviceScan)
     servicesModuleBuilder.setServiceScan(serviceScan)

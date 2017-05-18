@@ -8,8 +8,7 @@ import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinat
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.filestore.core.FileStore
 import net.spals.appbuilder.mapstore.core.MapStore
-import net.spals.appbuilder.message.core.consumer.{MessageConsumer, MessageConsumerCallback}
-import net.spals.appbuilder.message.core.producer.MessageProducer
+import net.spals.appbuilder.message.core.{MessageConsumer, MessageConsumerCallback, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{hasKey, is, notNullValue}

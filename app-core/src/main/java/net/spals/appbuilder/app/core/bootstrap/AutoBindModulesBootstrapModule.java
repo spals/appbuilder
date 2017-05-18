@@ -5,7 +5,7 @@ import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 import net.spals.appbuilder.annotations.service.AutoBindModule;
-import org.reflections.Reflections;
+import net.spals.appbuilder.config.service.ServiceScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +23,9 @@ import static com.google.common.base.Preconditions.checkState;
 public class AutoBindModulesBootstrapModule implements BootstrapModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindModulesBootstrapModule.class);
 
-    private final Reflections serviceScan;
+    private final ServiceScan serviceScan;
 
-    public AutoBindModulesBootstrapModule(final Reflections serviceScan) {
+    public AutoBindModulesBootstrapModule(final ServiceScan serviceScan) {
         this.serviceScan = serviceScan;
     }
 
@@ -36,7 +36,8 @@ public class AutoBindModulesBootstrapModule implements BootstrapModule {
 
     @VisibleForTesting
     void autoBindModules(final BootstrapBinder bootstrapBinder) {
-        final Set<Class<?>> moduleClasses = serviceScan.getTypesAnnotatedWith(AutoBindModule.class);
+        final Set<Class<?>> moduleClasses = serviceScan.getReflections()
+            .getTypesAnnotatedWith(AutoBindModule.class);
         validateModules(moduleClasses);
 
         moduleClasses.stream()

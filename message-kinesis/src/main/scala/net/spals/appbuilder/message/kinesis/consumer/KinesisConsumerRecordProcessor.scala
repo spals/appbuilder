@@ -6,8 +6,8 @@ import com.amazonaws.services.kinesis.clientlibrary.types.{InitializationInput, 
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import net.spals.appbuilder.config.message.MessageConsumerConfig
-import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
-import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage
+import net.spals.appbuilder.message.core.MessageConsumerCallback
+import net.spals.appbuilder.message.core.MessageConsumerCallback.unregisteredCallbackMessage
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.slf4j.LoggerFactory
 
