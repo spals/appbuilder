@@ -8,6 +8,12 @@ import net.spals.appbuilder.mapstore.core.MapStore
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
 
+/**
+  * A full sample [[FinatraWebApp]] which uses all default services
+  * and bindings.
+  *
+  * @author tkral
+  */
 class SampleFinatraWebApp extends FinatraWebApp {
 
   setServiceConfigFromClasspath("config/sample-finatra-service.conf")

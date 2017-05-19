@@ -3,6 +3,8 @@ package net.spals.appbuilder.app.core.modules;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.internal.MoreTypes;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
@@ -17,6 +19,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -102,9 +106,9 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 LOGGER.info("Binding @AutoBindProvider: {}", providerClazz);
 
                 // Taken from Governator's ProviderBinderUtil
-                final Class<?> providedType;
+                final Type providedType;
                 try {
-                    providedType = providerClazz.getMethod("get").getReturnType();
+                    providedType = providerClazz.getMethod("get").getGenericReturnType();
                 } catch (NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }

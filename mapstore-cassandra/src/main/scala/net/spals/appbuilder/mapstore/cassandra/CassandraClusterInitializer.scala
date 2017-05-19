@@ -1,11 +1,13 @@
 package net.spals.appbuilder.mapstore.cassandra
 
 import java.net.InetSocketAddress
+import javax.validation.constraints.{Max, Min, NotNull}
 
 import com.datastax.driver.core.Cluster.Initializer
 import com.datastax.driver.core.Host.StateListener
-import com.datastax.driver.core.{Cluster, Configuration, Host}
+import com.datastax.driver.core.{Cluster, Configuration, Host, ProtocolOptions}
 import com.google.inject.Inject
+import com.netflix.governator.annotations
 import com.typesafe.config.Config
 import net.spals.appbuilder.annotations.config.ServiceConfig
 import net.spals.appbuilder.annotations.service.AutoBindSingleton
@@ -25,16 +27,30 @@ private[cassandra] class CassandraClusterInitializer @Inject() (@ServiceConfig c
 
   private val LOGGER = LoggerFactory.getLogger(classOf[CassandraClusterInitializer])
 
+  @NotNull
+  @annotations.Configuration("cassandra.mapStore.clusterName")
+  @volatile
+  private var clusterName: String = null
+
+  @NotNull
+  @annotations.Configuration("cassandra.mapStore.hosts")
+  @volatile
+  private var hosts: String = null
+
+  @Min(1000L)
+  @Max(65535L)
+  @annotations.Configuration("cassandra.mapStore.port")
+  @volatile
+  private var port: Int = ProtocolOptions.DEFAULT_PORT
+
+
   override def getInitialListeners: java.util.Collection[StateListener] =
     List(this.asInstanceOf[StateListener]).asJavaCollection
 
-  override def getClusterName: String =
-    config.getString("cassandra.mapStore.clusterName")
+  override def getClusterName: String = clusterName
 
   override def getContactPoints: java.util.List[InetSocketAddress] = {
-    val port = config.getInt("cassandra.mapStore.port")
-    config.getString("cassandra.mapStore.hosts").split(",")
-      .map(InetSocketAddress.createUnresolved(_, port)).toList.asJava
+    hosts.split(",").map(InetSocketAddress.createUnresolved(_, port)).toList.asJava
   }
 
   override def getConfiguration: Configuration = Configuration.builder().build()

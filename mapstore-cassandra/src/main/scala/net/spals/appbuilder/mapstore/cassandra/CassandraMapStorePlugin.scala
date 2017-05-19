@@ -1,6 +1,7 @@
 package net.spals.appbuilder.mapstore.cassandra
 
 import java.io.Closeable
+import java.util.concurrent.FutureTask
 import java.util.{Date, Optional, UUID}
 import javax.annotation.PreDestroy
 
@@ -22,10 +23,14 @@ import scala.compat.java8.OptionConverters._
   * @author tkral
   */
 @AutoBindInMap(baseClass = classOf[MapStorePlugin], key = "cassandra")
-private[cassandra] class CassandraMapStorePlugin @Inject() (session: Session)
+private[cassandra] class CassandraMapStorePlugin @Inject() (sessionFuture: FutureTask[Session])
   extends MapStorePlugin with Closeable {
 
   private lazy val codecRegistry = new CodecRegistry()
+  private lazy val session = {
+    sessionFuture.run()
+    sessionFuture.get()
+  }
 
   @PreDestroy
   override def close() = session.close()

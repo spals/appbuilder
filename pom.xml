@@ -51,6 +51,7 @@
         <dropwizard.version>1.1.0</dropwizard.version>
         <finatra.version>2.10.0</finatra.version>
         <governator.version>1.15.10</governator.version>
+        <guava.version>19.0</guava.version>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <kafka-clients.version>0.10.1.1</kafka-clients.version>
@@ -63,6 +64,8 @@
         <reflections.version>0.9.10</reflections.version>
         <scalapb.version>0.5.47</scalapb.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
+        <!-- NOTE: Must match what's available in governator.version -->
+        <validation-api.version>1.1.0.Final</validation-api.version>
     </properties>
 
     <modules>
@@ -244,6 +247,11 @@
                 <groupId>javax.ws.rs</groupId>
                 <artifactId>javax.ws.rs-api</artifactId>
                 <version>${javax.ws.rs-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${validation-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>

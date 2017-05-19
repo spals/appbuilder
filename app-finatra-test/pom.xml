@@ -76,6 +76,18 @@
             <artifactId>spals-appbuilder-app-finatra</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-mapstore-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-mapstore-dynamodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-model-protobuf</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
         </dependency>
@@ -98,6 +110,18 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                    Turn off parallel test execution so that application
+                    boot logs are not interwoven.
+                    -->
+                    <parallel>none</parallel>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -7,10 +7,11 @@ import com.twitter.inject.annotations.FlagImpl
 import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.filestore.core.FileStore
-import net.spals.appbuilder.mapstore.core.MapStore
+import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageConsumerCallback, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers
 import org.hamcrest.Matchers.{hasKey, is, notNullValue}
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
 
@@ -89,6 +90,11 @@ class SampleFinatraWebAppFTest {
   @Test def testMapStoreInjection() {
     val serviceInjector = sampleApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[MapStore]), notNullValue())
+
+    val mapStorePluginMapKey = new TypeLiteral[java.util.Map[String, MapStorePlugin]](){}
+    val mapStorePluginMap = serviceInjector.getInstance(Key.get(mapStorePluginMapKey))
+    assertThat(mapStorePluginMap, Matchers.aMapWithSize[String, MapStorePlugin](1))
+    assertThat(mapStorePluginMap, hasKey("mapDB"))
   }
 
   @Test def testMessageInjection() {
@@ -106,6 +112,7 @@ class SampleFinatraWebAppFTest {
 
     val modelSerializerMapKey = new TypeLiteral[java.util.Map[String, ModelSerializer]](){}
     val modelSerializerMap = serviceInjector.getInstance(Key.get(modelSerializerMapKey))
+    assertThat(modelSerializerMap, Matchers.aMapWithSize[String, ModelSerializer](1))
     assertThat(modelSerializerMap, hasKey("pojo"))
   }
 }
