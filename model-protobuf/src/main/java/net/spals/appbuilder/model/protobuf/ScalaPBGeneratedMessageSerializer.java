@@ -16,7 +16,7 @@ import static com.esotericsoftware.kryo.Kryo.NULL;
  * @author tkral
  */
 @AutoValue
-abstract class ScalaPBGeneratedMessageSerializer extends Serializer<GeneratedMessage> {
+public abstract class ScalaPBGeneratedMessageSerializer extends Serializer<GeneratedMessage> {
 
     abstract GeneratedMessageCompanion<?> getCompanion();
 

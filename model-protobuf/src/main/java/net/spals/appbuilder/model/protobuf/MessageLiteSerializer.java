@@ -29,7 +29,7 @@ import static com.esotericsoftware.kryo.Kryo.NULL;
  * @author tkral
  */
 @AutoValue
-abstract class MessageLiteSerializer extends Serializer<MessageLite> {
+public abstract class MessageLiteSerializer extends Serializer<MessageLite> {
 
     abstract Parser<? extends MessageLite> getParser();
 
