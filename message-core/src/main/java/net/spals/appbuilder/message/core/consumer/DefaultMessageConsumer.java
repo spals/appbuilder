@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
+import net.spals.appbuilder.message.core.MessageConsumer;
 import net.spals.appbuilder.model.core.ModelSerializer;
 
 import java.util.Map;

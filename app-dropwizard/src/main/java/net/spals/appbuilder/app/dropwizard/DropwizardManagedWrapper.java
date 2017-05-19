@@ -2,7 +2,7 @@ package net.spals.appbuilder.app.dropwizard;
 
 import io.dropwizard.lifecycle.Managed;
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
-import net.spals.appbuilder.message.core.consumer.MessageConsumer;
+import net.spals.appbuilder.message.core.MessageConsumer;
 
 /**
  * Convenience methods for wrapping services

@@ -1,4 +1,4 @@
-package net.spals.appbuilder.message.core.producer;
+package net.spals.appbuilder.message.core;
 
 /**
  * @author tkral

@@ -8,7 +8,7 @@ import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.executor.core.ManagedExecutorService;
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
-import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback;
+import net.spals.appbuilder.message.core.MessageConsumerCallback;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage;
+import static net.spals.appbuilder.message.core.MessageConsumerCallback.unregisteredCallbackMessage;
 
 /**
  * A {@link MessageConsumerPlugin} for consuming messages

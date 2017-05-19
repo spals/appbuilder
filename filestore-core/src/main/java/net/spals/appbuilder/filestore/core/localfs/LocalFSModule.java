@@ -20,7 +20,7 @@ class LocalFSModule extends AbstractModule {
 
     @Inject
     LocalFSModule(@ServiceConfig final Config serviceConfig) {
-        this.basePath = Paths.get(serviceConfig.getString("local.fileStore.basePath"));
+        this.basePath = Paths.get(serviceConfig.getString("localFS.fileStore.basePath"));
     }
 
     @Override

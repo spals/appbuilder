@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>10-SNAPSHOT</version>
+        <version>10</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -45,21 +45,27 @@
     <properties>
         <ascii-graphs.version>0.0.7</ascii-graphs.version>
         <aws-java-sdk.version>1.11.93</aws-java-sdk.version>
+        <bcel.version>6.0</bcel.version>
         <cassandra-driver.version>3.1.4</cassandra-driver.version>
         <chill.version>0.9.2</chill.version>
-        <dropwizard.version>1.0.6</dropwizard.version>
+        <dropwizard.version>1.1.0</dropwizard.version>
+        <finatra.version>2.10.0</finatra.version>
         <governator.version>1.15.10</governator.version>
+        <guava.version>19.0</guava.version>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <kafka-clients.version>0.10.1.1</kafka-clients.version>
         <kinesis-client.version>1.7.4</kinesis-client.version>
         <kinesis-producer.version>0.12.3</kinesis-producer.version>
         <kryo-serializers.version>0.41</kryo-serializers.version>
+        <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
         <protobuf.version>3.3.0</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
         <scalapb.version>0.5.47</scalapb.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
+        <!-- NOTE: Must match what's available in governator.version -->
+        <validation-api.version>1.1.0.Final</validation-api.version>
     </properties>
 
     <modules>
@@ -67,6 +73,8 @@
         <module>app-core</module>
         <module>app-core-test</module>
         <module>app-dropwizard</module>
+        <module>app-finatra</module>
+        <module>app-finatra-test</module>
         <module>bom</module>
         <module>config</module>
         <module>config-test</module>
@@ -89,6 +97,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>amazon-kinesis-client</artifactId>
@@ -115,6 +128,12 @@
                 <version>${cassandra-driver.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-testlib</artifactId>
+                <version>${guice.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
                 <version>${protobuf.version}</version>
@@ -132,6 +151,11 @@
             <dependency>
                 <groupId>com.netflix.governator</groupId>
                 <artifactId>governator-api</artifactId>
+                <version>${governator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netflix.governator</groupId>
+                <artifactId>governator-core</artifactId>
                 <version>${governator.version}</version>
             </dependency>
             <dependency>
@@ -153,6 +177,51 @@
                 <groupId>com.twitter</groupId>
                 <artifactId>chill-java</artifactId>
                 <version>${chill.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>finatra-http_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>finatra-http_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-app_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-core_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-modules_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-request-scope_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>inject-server_${scala.version}</artifactId>
+                <version>${finatra.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.typesafe</groupId>
@@ -178,6 +247,11 @@
                 <groupId>javax.ws.rs</groupId>
                 <artifactId>javax.ws.rs-api</artifactId>
                 <version>${javax.ws.rs-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${validation-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
@@ -231,6 +305,11 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-finatra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-mapstore-cassandra</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -253,6 +332,11 @@
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-model-protobuf</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.bcel</groupId>
+                <artifactId>bcel</artifactId>
+                <version>${bcel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>

@@ -10,13 +10,13 @@ import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
 import net.spals.appbuilder.app.core.bootstrap.BootstrapModuleWrapper;
-import net.spals.appbuilder.app.core.generic.JaxRsWebApp;
+import net.spals.appbuilder.app.core.jaxrs.JaxRsWebApp;
+import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.glassfish.jersey.message.internal.TracingLogger;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.TracingConfig;
 import org.inferred.freebuilder.FreeBuilder;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -124,7 +124,7 @@ public abstract class DropwizardWebApp implements App {
         }
 
         @Override
-        public Builder setServiceScan(final Reflections serviceScan) {
+        public Builder setServiceScan(final ServiceScan serviceScan) {
             appDelegateBuilder.setServiceScan(serviceScan);
             return this;
         }

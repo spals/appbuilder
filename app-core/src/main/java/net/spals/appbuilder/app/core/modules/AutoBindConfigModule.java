@@ -16,13 +16,12 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
 import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
-import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.config.TaggedConfig;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
+import net.spals.appbuilder.config.service.ServiceScan;
 import org.inferred.freebuilder.FreeBuilder;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +43,14 @@ public abstract class AutoBindConfigModule extends AbstractModule {
 
     public abstract String getApplicationName();
     public abstract Config getServiceConfig();
-    public abstract Reflections getServiceScan();
+    public abstract ServiceScan getServiceScan();
 
-    public static class Builder extends AutoBindConfigModule_Builder {  }
+    public static class Builder extends AutoBindConfigModule_Builder {
+        public Builder() {
+            // By default, use an empty service scan
+            setServiceScan(ServiceScan.empty());
+        }
+    }
 
     @Override
     public void configure() {
@@ -61,8 +65,7 @@ public abstract class AutoBindConfigModule extends AbstractModule {
         binder().install(new ConfigurationModule());
 
         // Bind the full ServiceScan so that it's available to other modules
-        final Key<Reflections> serviceScanKey = Key.get(Reflections.class, ServiceScan.class);
-        binder().bind(serviceScanKey).toInstance(getServiceScan());
+        binder().bind(ServiceScan.class).toInstance(getServiceScan());
 
         autoBindConfigs(binder(), MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
         autoBindConfigs(binder(), MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));

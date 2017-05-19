@@ -3,6 +3,7 @@ package net.spals.appbuilder.app.core;
 import com.google.common.annotations.Beta;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.reflections.Reflections;
 
@@ -31,7 +32,7 @@ public interface WorkerAppBuilder<A extends App> {
 
     WorkerAppBuilder<A> setServiceConfigFromClasspath(String serviceConfigFileName);
 
-    WorkerAppBuilder<A> setServiceScan(Reflections serviceScan);
+    WorkerAppBuilder<A> setServiceScan(ServiceScan serviceScan);
 
     A build();
 }

@@ -5,10 +5,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.multibindings.MapBinder;
-import net.spals.appbuilder.annotations.config.ServiceScan;
 import net.spals.appbuilder.annotations.migration.AutoBindMigration;
 import net.spals.appbuilder.annotations.service.AutoBindModule;
-import org.reflections.Reflections;
+import net.spals.appbuilder.config.service.ServiceScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +23,10 @@ import static com.google.common.base.Preconditions.checkState;
 class AutoBindMigrationsModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoBindMigrationsModule.class);
 
-    private final Reflections serviceScan;
+    private final ServiceScan serviceScan;
 
     @Inject
-    public AutoBindMigrationsModule(@ServiceScan final Reflections serviceScan) {
+    public AutoBindMigrationsModule(final ServiceScan serviceScan) {
         this.serviceScan = serviceScan;
     }
 
@@ -39,7 +38,7 @@ class AutoBindMigrationsModule extends AbstractModule {
     @VisibleForTesting
     void autoBindMigrations(final Binder binder) {
         final MapBinder migrationBinder = MapBinder.newMapBinder(binder, Integer.class, MapStoreMigration.class);
-        final Set<Class<?>> migrationClasses = serviceScan.getTypesAnnotatedWith(AutoBindMigration.class);
+        final Set<Class<?>> migrationClasses = serviceScan.getReflections().getTypesAnnotatedWith(AutoBindMigration.class);
         validateMigrations(migrationClasses);
 
         migrationClasses.stream()

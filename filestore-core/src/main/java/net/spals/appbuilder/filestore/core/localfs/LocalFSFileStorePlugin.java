@@ -29,7 +29,7 @@ import static net.spals.appbuilder.filestore.core.model.FileStoreLocation.LOCAL;
  *
  * @author tkral
  */
-@AutoBindInMap(baseClass = FileStorePlugin.class, key = "localfs")
+@AutoBindInMap(baseClass = FileStorePlugin.class, key = "localFS")
 class LocalFSFileStorePlugin implements FileStorePlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalFSFileStorePlugin.class);
 

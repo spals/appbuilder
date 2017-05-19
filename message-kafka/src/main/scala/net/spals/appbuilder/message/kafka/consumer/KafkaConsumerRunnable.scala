@@ -3,8 +3,8 @@ package net.spals.appbuilder.message.kafka.consumer
 import java.util.concurrent.atomic.AtomicBoolean
 
 import net.spals.appbuilder.config.message.MessageConsumerConfig
-import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback
-import net.spals.appbuilder.message.core.consumer.MessageConsumerCallback.unregisteredCallbackMessage
+import net.spals.appbuilder.message.core.MessageConsumerCallback
+import net.spals.appbuilder.message.core.MessageConsumerCallback.unregisteredCallbackMessage
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.WakeupException
