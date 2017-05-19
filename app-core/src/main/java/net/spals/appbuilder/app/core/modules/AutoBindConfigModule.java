@@ -13,6 +13,7 @@ import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
 import com.netflix.governator.guice.BootstrapModule;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import net.spals.appbuilder.annotations.config.ApplicationName;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
@@ -47,7 +48,8 @@ public abstract class AutoBindConfigModule extends AbstractModule {
 
     public static class Builder extends AutoBindConfigModule_Builder {
         public Builder() {
-            // By default, use an empty service scan
+            // By default, use an empty config and scan
+            setServiceConfig(ConfigFactory.empty());
             setServiceScan(ServiceScan.empty());
         }
     }

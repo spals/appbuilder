@@ -24,7 +24,6 @@ import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 
 /**
@@ -85,6 +84,7 @@ public abstract class GenericWorkerApp implements App {
 
             setName(name);
             setLogger(logger);
+            setServiceConfig(ConfigFactory.empty());
         }
 
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
@@ -117,10 +117,6 @@ public abstract class GenericWorkerApp implements App {
         @Override
         public Builder setServiceConfig(final Config serviceConfig) {
             configModuleBuilder.setServiceConfig(serviceConfig);
-            addBootstrapModule(bootstrapBinder ->
-                // This will parse the configuration and deliver its individual pieces
-                // to @Configuration fields.
-                bootstrapBinder.bindConfigurationProvider().toInstance(new TypesafeConfigurationProvider(serviceConfig)));
             return super.setServiceConfig(serviceConfig);
         }
 
@@ -145,9 +141,16 @@ public abstract class GenericWorkerApp implements App {
 
         @Override
         public GenericWorkerApp build() {
+            final AutoBindConfigModule configModule = configModuleBuilder.build();
+            addBootstrapModule(bootstrapBinder ->
+                // This will parse the configuration and deliver its individual pieces
+                // to @Configuration fields.
+                bootstrapBinder.bindConfigurationProvider()
+                    .toInstance(new TypesafeConfigurationProvider(configModule.getServiceConfig())));
+
             // Add config and serviceGraph bindings in bootstrap phase
             // so that they can be consumed by auto bound Modules
-            addBootstrapModule(new BootstrapModuleWrapper(configModuleBuilder.build()));
+            addBootstrapModule(new BootstrapModuleWrapper(configModule));
             addBootstrapModule(new BootstrapModuleWrapper(serviceGraphModuleBuilder.build()));
             addModule(servicesModuleBuilder.build());
 

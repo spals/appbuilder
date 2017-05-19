@@ -26,13 +26,16 @@ class MinimalFinatraWebAppFTest {
     testServerWrapper.start()
   }
 
-  @AfterClass def classTearDown(): Unit = {
+  @AfterClass def classTearDown() {
     testServerWrapper.close()
   }
 
-  @Test def testBasicFinatraWebApp() {
-    assertThat(minimalApp.getName, is("net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp"))
+  @Test def testBasicFinatraWebAppLogger() {
     assertThat(minimalApp.getLogger, instanceOf[slf4j.Logger](classOf[slf4j.Logger]))
+  }
+
+  @Test def testBasicFinatraWebAppName() {
+    assertThat(minimalApp.getName, is("net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp"))
   }
 
   @DataProvider def defaultServiceConfigProvider(): Array[Array[AnyRef]] = {

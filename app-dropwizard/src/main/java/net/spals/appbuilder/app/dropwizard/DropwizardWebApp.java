@@ -104,7 +104,7 @@ public abstract class DropwizardWebApp implements App {
             addBootstrapModule(new BootstrapModuleWrapper(new DropwizardEnvironmentModule(env)));
             enableApiRequestTracing(env);
 
-            return this;
+            return super.setEnvironment(env);
         }
 
         @Override
