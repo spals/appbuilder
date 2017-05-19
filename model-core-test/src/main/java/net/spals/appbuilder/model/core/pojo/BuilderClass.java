@@ -10,7 +10,7 @@ import org.inferred.freebuilder.FreeBuilder;
  * @author tkral
  */
 @FreeBuilder
-abstract class BuilderClass {
+public abstract class BuilderClass {
 
     abstract String getStringValue();
 

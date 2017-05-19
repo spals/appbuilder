@@ -10,7 +10,7 @@ import com.google.auto.value.AutoValue;
  * @author tkral
  */
 @AutoValue
-abstract class AutoValueClass {
+public abstract class AutoValueClass {
 
     static AutoValueClass create(final String stringValue) {
         return new AutoValue_AutoValueClass(stringValue);
