@@ -27,6 +27,26 @@
             <artifactId>dropwizard-testing</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-executor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-filestore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-mapstore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-message-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-model-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-app-dropwizard</artifactId>
         </dependency>
@@ -43,5 +63,21 @@
             <artifactId>testng</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                    Turn off parallel test execution so that application
+                    boot logs are not interwoven.
+                    -->
+                    <parallel>none</parallel>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

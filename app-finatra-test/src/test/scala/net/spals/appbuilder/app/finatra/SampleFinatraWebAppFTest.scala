@@ -8,6 +8,8 @@ import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinat
 import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
 import net.spals.appbuilder.filestore.core.FileStore
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
+import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
+import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageConsumerCallback, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
@@ -97,14 +99,32 @@ class SampleFinatraWebAppFTest {
     assertThat(mapStorePluginMap, hasKey("mapDB"))
   }
 
-  @Test def testMessageInjection() {
+  @Test def testMessageConsumerInjection() {
     val serviceInjector = sampleApp.getServiceInjector
-    assertThat(serviceInjector.getInstance(classOf[MessageProducer]), notNullValue())
     assertThat(serviceInjector.getInstance(classOf[MessageConsumer]), notNullValue())
+
+    val messageConsumerPluginMapKey = new TypeLiteral[java.util.Map[String, MessageConsumerPlugin]](){}
+    val messageConsumerPluginMap = serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey))
+    assertThat(messageConsumerPluginMap, Matchers.aMapWithSize[String, MessageConsumerPlugin](1))
+    assertThat(messageConsumerPluginMap, hasKey("blockingQueue"))
+  }
+
+  @Test def testMessageConsumerCallbackInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
 
     val messageCallbackSetKey = new TypeLiteral[java.util.Set[MessageConsumerCallback[_]]](){}
     val messageCallbackSet = serviceInjector.getInstance(Key.get(messageCallbackSetKey))
     assertThat(messageCallbackSet, notNullValue())
+  }
+
+  @Test def testMessageProducerInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MessageProducer]), notNullValue())
+
+    val messageProducerPluginMapKey = new TypeLiteral[java.util.Map[String, MessageProducerPlugin]](){}
+    val messageProducerPluginMap = serviceInjector.getInstance(Key.get(messageProducerPluginMapKey))
+    assertThat(messageProducerPluginMap, Matchers.aMapWithSize[String, MessageProducerPlugin](1))
+    assertThat(messageProducerPluginMap, hasKey("blockingQueue"))
   }
 
   @Test def testModelInjection() {
