@@ -27,6 +27,14 @@ import org.slf4j.LoggerFactory;
 public class SampleDropwizardWebApp extends Application<Configuration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SampleDropwizardWebApp.class);
 
+    @VisibleForTesting
+    public static final String APP_CONFIG_FILE_NAME = "config/sample-dropwizard-app.yml";
+    private static final String SERVICE_CONFIG_FILE_NAME = "config/sample-dropwizard-service.conf";
+
+    public static void main(final String[] args) throws Throwable {
+        new SampleDropwizardWebApp().run("server", APP_CONFIG_FILE_NAME);
+    }
+
     private DropwizardWebApp.Builder webAppDelegateBuilder;
     private DropwizardWebApp webAppDelegate;
 
@@ -38,7 +46,7 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
     @Override
     public void initialize(final Bootstrap<Configuration> bootstrap) {
         this.webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
-            .setServiceConfigFromClasspath("config/sample-dropwizard-service.conf")
+            .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.sample")
                 .addDefaultServices(ManagedExecutorServiceRegistry.class)

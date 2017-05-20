@@ -6,6 +6,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
+import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,10 @@ import org.slf4j.LoggerFactory;
  */
 public class MinimalDropwizardWebApp extends Application<Configuration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MinimalDropwizardWebApp.class);
+
+    public static void main(final String[] args) throws Throwable {
+        new MinimalDropwizardWebApp().run("server");
+    }
 
     private DropwizardWebApp.Builder webAppDelegateBuilder;
     private DropwizardWebApp webAppDelegate;

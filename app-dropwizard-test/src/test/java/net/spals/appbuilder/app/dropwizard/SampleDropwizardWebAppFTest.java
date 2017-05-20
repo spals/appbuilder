@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.*;
 public class SampleDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-            new DropwizardTestSupport<>(SampleDropwizardWebApp.class, new Configuration());
+            new DropwizardTestSupport<>(SampleDropwizardWebApp.class, SampleDropwizardWebApp.APP_CONFIG_FILE_NAME);
     private DropwizardWebApp webAppDelegate;
 
     @BeforeTest
