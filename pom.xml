@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>10</version>
+        <version>11-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
