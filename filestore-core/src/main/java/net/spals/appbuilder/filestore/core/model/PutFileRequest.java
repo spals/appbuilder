@@ -1,15 +1,18 @@
 package net.spals.appbuilder.filestore.core.model;
 
+import net.spals.appbuilder.filestore.core.FileStore;
 import org.inferred.freebuilder.FreeBuilder;
 
 import java.io.InputStream;
 import java.util.Optional;
 
 /**
+ * A request bean for putting files in a {@link FileStore}.
+ *
  * @author tkral
  */
 @FreeBuilder
-public interface PutFileStoreRequest {
+public interface PutFileRequest {
 
     InputStream getFileStream();
 
@@ -19,5 +22,5 @@ public interface PutFileStoreRequest {
 
     Optional<String> getContentType();
 
-    class Builder extends PutFileStoreRequest_Builder {  }
+    class Builder extends PutFileRequest_Builder {  }
 }

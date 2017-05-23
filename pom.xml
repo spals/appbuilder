@@ -84,6 +84,7 @@
         <module>config-test</module>
         <module>executor-core</module>
         <module>filestore-core</module>
+        <module>filestore-core-test</module>
         <module>graph</module>
         <module>graph-test</module>
         <module>mapstore-cassandra</module>

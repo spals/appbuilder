@@ -8,7 +8,7 @@ import com.typesafe.config.ConfigException;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.filestore.core.model.FileMetadata;
 import net.spals.appbuilder.filestore.core.model.FileStoreKey;
-import net.spals.appbuilder.filestore.core.model.PutFileStoreRequest;
+import net.spals.appbuilder.filestore.core.model.PutFileRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +65,7 @@ class FileStoreProvider implements Provider<FileStore> {
         }
 
         @Override
-        public FileMetadata putFile(final FileStoreKey key, final PutFileStoreRequest request) throws IOException {
+        public FileMetadata putFile(final FileStoreKey key, final PutFileRequest request) throws IOException {
             return pluginDelegate.putFile(key, request);
         }
     }

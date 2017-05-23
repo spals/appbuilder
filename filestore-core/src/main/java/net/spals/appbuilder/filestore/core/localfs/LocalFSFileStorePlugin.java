@@ -9,7 +9,7 @@ import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.filestore.core.model.FileMetadata;
 import net.spals.appbuilder.filestore.core.model.FileSecurityLevel;
 import net.spals.appbuilder.filestore.core.model.FileStoreKey;
-import net.spals.appbuilder.filestore.core.model.PutFileStoreRequest;
+import net.spals.appbuilder.filestore.core.model.PutFileRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ class LocalFSFileStorePlugin implements FileStorePlugin {
     private final Path basePath;
 
     @Inject
-    LocalFSFileStorePlugin(@Named("fileStore") final Path basePath) {
+    LocalFSFileStorePlugin(@Named("localFS.fileStore") final Path basePath) {
         this.basePath = basePath;
     }
 
@@ -86,7 +87,7 @@ class LocalFSFileStorePlugin implements FileStorePlugin {
     }
 
     @Override
-    public FileMetadata putFile(final FileStoreKey key, final PutFileStoreRequest request) throws IOException {
+    public FileMetadata putFile(final FileStoreKey key, final PutFileRequest request) throws IOException {
         final Path filePath = resolveFilePath(key);
         try {
             Files.createDirectories(filePath.getParent());
@@ -94,6 +95,9 @@ class LocalFSFileStorePlugin implements FileStorePlugin {
                 Files.createFile(filePath);
             }
 
+            // Copy the file stream into the file
+            java.nio.file.Files.copy(request.getFileStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            // Add security settings to file
             final ImmutableSet.Builder<PosixFilePermission> filePermsBuilder = ImmutableSet.<PosixFilePermission>builder()
                     .add(OWNER_READ, OWNER_EXECUTE, GROUP_READ, GROUP_EXECUTE);
             if (request.getFileSecurityLevel().isPublic()) {
