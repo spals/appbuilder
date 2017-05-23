@@ -1,13 +1,18 @@
 package net.spals.appbuilder.app.dropwizard.plugins;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.Injector;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.spals.appbuilder.app.dropwizard.DropwizardManagedWrapper;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
+import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
 import net.spals.appbuilder.mapstore.core.MapStore;
+import net.spals.appbuilder.message.core.MessageConsumer;
+import net.spals.appbuilder.message.core.MessageProducer;
 import net.spals.appbuilder.model.core.ModelSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +44,14 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
     @Override
     public void initialize(final Bootstrap<Configuration> bootstrap) {
         this.webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
-            .setServiceConfigFromClasspath("config/plugins-dropwizard-service.conf")
+            .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.plugins")
+                .addDefaultServices(ManagedExecutorServiceRegistry.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.dynamodb", MapStore.class)
+                .addServicePlugins("net.spals.appbuilder.message.kafka", MessageConsumer.class, MessageProducer.class)
+                .addServicePlugins("net.spals.appbuilder.message.kinesis", MessageConsumer.class, MessageProducer.class)
                 .addServicePlugins("net.spals.appbuilder.model.protobuf", ModelSerializer.class)
                 .build());
     }
@@ -51,5 +59,14 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
     @Override
     public void run(Configuration configuration, Environment env) throws Exception {
         this.webAppDelegate = webAppDelegateBuilder.setEnvironment(env).build();
+
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        // Attach all ExecutorServices to the Dropwizard lifecycle
+        final ManagedExecutorServiceRegistry executorServiceRegistry =
+                serviceInjector.getInstance(ManagedExecutorServiceRegistry.class);
+        env.lifecycle().manage(DropwizardManagedWrapper.wrap(executorServiceRegistry));
+        // Attach all MessageConsumers to the Dropwizard lifecycle
+        final MessageConsumer messageConsumer = serviceInjector.getInstance(MessageConsumer.class);
+        env.lifecycle().manage(DropwizardManagedWrapper.wrap(messageConsumer));
     }
 }

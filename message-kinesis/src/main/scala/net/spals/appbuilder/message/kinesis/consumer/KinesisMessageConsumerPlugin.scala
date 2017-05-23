@@ -15,12 +15,19 @@ import net.spals.appbuilder.message.core.MessageConsumerCallback
 import net.spals.appbuilder.message.core.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.model.core.ModelSerializer
+import javax.validation.constraints.{Min, NotNull}
+
+import net.spals.appbuilder.annotations.service.AutoBindInMap
 
 import scala.collection.JavaConverters._
 
 /**
+  * A [[MessageConsumerPlugin]] for consuming messages
+  * from a Kinesis queue.
+  *
   * @author tkral
   */
+@AutoBindInMap(baseClass = classOf[MessageConsumerPlugin], key = "kinesis")
 private[consumer] class KinesisMessageConsumerPlugin @Inject()
   (@ApplicationName applicationName: String,
    consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
@@ -28,15 +35,19 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
    kinesisConsumerRecordProcessorFactory: KinesisConsumerRecordProcessorFactory)
   extends MessageConsumerPlugin {
 
+  @NotNull
   @Configuration("kinesis.messageConsumer.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
+  @NotNull
   @Configuration("kinesis.messageConsumer.awsSecretKey")
   private var awsSecretKey: String = null
 
+  @NotNull
   @Configuration("kinesis.messageConsumer.endpoint")
   private var endpoint: String = null
 
+  @Min(2L)
   @Configuration("kinesis.messageConsumer.numThreads")
   private var numThreads: Int = 2
 
