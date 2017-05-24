@@ -1,5 +1,7 @@
 package net.spals.appbuilder.message.kinesis.producer
 
+import javax.validation.constraints.NotNull
+
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.producer.{KinesisProducer, KinesisProducerConfiguration}
@@ -18,12 +20,15 @@ import scala.util.Try
 @AutoBindProvider
 private[producer] class KinesisProducerProvider() extends Provider[KinesisProducer] {
 
+  @NotNull
   @Configuration("kinesis.messageProducer.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
+  @NotNull
   @Configuration("kinesis.messageProducer.awsSecretKey")
   private var awsSecretKey: String = null
 
+  @NotNull
   @Configuration("kinesis.messageProducer.endpoint")
   private var endpoint: String = null
 

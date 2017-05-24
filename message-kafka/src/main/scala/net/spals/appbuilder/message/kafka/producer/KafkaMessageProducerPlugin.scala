@@ -1,6 +1,7 @@
 package net.spals.appbuilder.message.kafka.producer
 
 import java.util.Properties
+import javax.validation.constraints.{Min, NotNull}
 
 import com.google.common.cache.{CacheBuilder, CacheLoader}
 import com.netflix.governator.annotations.Configuration
@@ -9,7 +10,7 @@ import net.spals.appbuilder.config.message.MessageProducerConfig
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import org.apache.kafka.clients.producer.ProducerConfig._
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
+import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer};
 
 /**
   * A [[MessageProducerPlugin]] for producing messages
@@ -20,9 +21,11 @@ import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSeriali
 @AutoBindInMap(baseClass = classOf[MessageProducerPlugin], key = "kafka")
 private[producer] class KafkaMessageProducerPlugin extends MessageProducerPlugin {
 
+  @NotNull
   @Configuration("kafka.messageProducer.bootstrapServers")
   private var bootstrapServers: String = null
 
+  @Min(0L)
   @Configuration("kafka.messageProducer.retries")
   private var retries: Int = 0
 

@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>10</version>
+        <version>11-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -46,12 +46,15 @@
         <ascii-graphs.version>0.0.7</ascii-graphs.version>
         <aws-java-sdk.version>1.11.93</aws-java-sdk.version>
         <bcel.version>6.0</bcel.version>
-        <cassandra-driver.version>3.1.4</cassandra-driver.version>
+        <cassandra-driver.version>3.2.0</cassandra-driver.version>
         <chill.version>0.9.2</chill.version>
         <dropwizard.version>1.1.0</dropwizard.version>
         <finatra.version>2.10.0</finatra.version>
         <governator.version>1.15.10</governator.version>
-        <guava.version>19.0</guava.version>
+        <!-- NOTE: Must match what's available in governator.version -->
+        <hibernate.version>5.3.4.Final</hibernate.version>
+        <!-- NOTE: Must match what's available in governator.version -->
+        <javax.el>3.0.0</javax.el>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <kafka-clients.version>0.10.1.1</kafka-clients.version>
@@ -73,6 +76,7 @@
         <module>app-core</module>
         <module>app-core-test</module>
         <module>app-dropwizard</module>
+        <module>app-dropwizard-test</module>
         <module>app-finatra</module>
         <module>app-finatra-test</module>
         <module>bom</module>
@@ -80,6 +84,7 @@
         <module>config-test</module>
         <module>executor-core</module>
         <module>filestore-core</module>
+        <module>filestore-core-test</module>
         <module>graph</module>
         <module>graph-test</module>
         <module>mapstore-cassandra</module>
@@ -147,6 +152,16 @@
                 <groupId>com.netflix.governator</groupId>
                 <artifactId>governator</artifactId>
                 <version>${governator.version}</version>
+                <exclusions>
+                    <!--
+                    Exclude older version of hibernate which
+                    conflicts with hibernate from Dropwizard.
+                    -->
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-validator</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.netflix.governator</groupId>
@@ -237,6 +252,12 @@
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-core</artifactId>
                 <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-testing</artifactId>
+                <version>${dropwizard.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -342,6 +363,16 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
                 <version>${kafka-clients.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.el</artifactId>
+                <version>${javax.el}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mapdb</groupId>

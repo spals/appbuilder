@@ -25,7 +25,6 @@ class DefaultManagedExecutorServiceRegistry implements ManagedExecutorServiceReg
 
     private final Map<Key, ManagedExecutorService> managedExecutorServices = new HashMap<>();
 
-
     @Override
     public ManagedExecutorService registerExecutorService(final Class<?> parentClass,
                                                           final ExecutorService executorService,
@@ -34,7 +33,8 @@ class DefaultManagedExecutorServiceRegistry implements ManagedExecutorServiceReg
         final ManagedExecutorService managedExecutorService =
                 new DelegatingManagedExecutorService(executorService, key, shutdown, shutdownUnit);
 
-        return managedExecutorServices.put(key, managedExecutorService);
+        managedExecutorServices.put(key, managedExecutorService);
+        return managedExecutorService;
     }
 
     @Override
@@ -42,7 +42,8 @@ class DefaultManagedExecutorServiceRegistry implements ManagedExecutorServiceReg
                                                           final ManagedExecutorService managedExecutorService,
                                                           final String... tags) {
         final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
-        return managedExecutorServices.put(key, managedExecutorService);
+        managedExecutorServices.put(key, managedExecutorService);
+        return managedExecutorService;
     }
 
     @Override

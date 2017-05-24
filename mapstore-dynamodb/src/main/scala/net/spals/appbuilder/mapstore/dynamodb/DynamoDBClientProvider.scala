@@ -1,5 +1,7 @@
 package net.spals.appbuilder.mapstore.dynamodb
 
+import javax.validation.constraints.NotNull
+
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.Regions
@@ -21,12 +23,15 @@ import scala.util.Try
 @AutoBindProvider
 private[dynamodb] class DynamoDBClientProvider extends Provider[AmazonDynamoDB] {
 
+  @NotNull
   @Configuration("dynamoDB.mapStore.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
+  @NotNull
   @Configuration("dynamoDB.mapStore.awsSecretKey")
   private var awsSecretKey: String = null
 
+  @NotNull
   @Configuration("dynamoDB.mapStore.endpoint")
   private var endpoint: String = null
 

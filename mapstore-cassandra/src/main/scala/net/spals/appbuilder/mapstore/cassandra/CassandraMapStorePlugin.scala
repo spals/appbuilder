@@ -2,6 +2,7 @@ package net.spals.appbuilder.mapstore.cassandra
 
 import java.io.Closeable
 import java.util.concurrent.FutureTask
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.{Date, Optional, UUID}
 import javax.annotation.PreDestroy
 
@@ -27,13 +28,19 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (sessionFuture: Futur
   extends MapStorePlugin with Closeable {
 
   private lazy val codecRegistry = new CodecRegistry()
+  private val sessionInitialized = new AtomicBoolean(false)
   private lazy val session = {
+    sessionInitialized.set(true)
     sessionFuture.run()
     sessionFuture.get()
   }
 
   @PreDestroy
-  override def close() = session.close()
+  override def close() = {
+    if (sessionInitialized.get()) {
+      session.close()
+    }
+  }
 
   override def createTable(tableName: String, tableKey: MapStoreTableKey): Boolean = {
     val schemaBuilder = SchemaBuilder.createTable(tableName).ifNotExists()

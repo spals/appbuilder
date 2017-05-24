@@ -2,7 +2,7 @@ package net.spals.appbuilder.filestore.core;
 
 import net.spals.appbuilder.filestore.core.model.FileMetadata;
 import net.spals.appbuilder.filestore.core.model.FileStoreKey;
-import net.spals.appbuilder.filestore.core.model.PutFileStoreRequest;
+import net.spals.appbuilder.filestore.core.model.PutFileRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,5 +19,5 @@ public interface FileStore {
 
     Optional<FileMetadata> getFileMetadata(FileStoreKey key) throws IOException;
 
-    FileMetadata putFile(FileStoreKey key, PutFileStoreRequest request) throws IOException;
+    FileMetadata putFile(FileStoreKey key, PutFileRequest request) throws IOException;
 }

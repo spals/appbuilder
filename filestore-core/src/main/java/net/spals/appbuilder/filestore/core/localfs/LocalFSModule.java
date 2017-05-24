@@ -25,6 +25,6 @@ class LocalFSModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        binder().bind(Path.class).annotatedWith(Names.named("fileStore")).toInstance(basePath);
+        binder().bind(Path.class).annotatedWith(Names.named("localFS.fileStore")).toInstance(basePath);
     }
 }

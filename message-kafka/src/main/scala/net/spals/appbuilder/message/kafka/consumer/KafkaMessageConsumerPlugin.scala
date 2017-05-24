@@ -2,6 +2,7 @@ package net.spals.appbuilder.message.kafka.consumer
 
 import java.util.Properties
 import java.util.concurrent.Executors
+import javax.validation.constraints.{Min, NotNull}
 
 import com.google.inject.Inject
 import com.netflix.governator.annotations.Configuration
@@ -14,10 +15,10 @@ import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.apache.kafka.clients.consumer.ConsumerConfig._
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
+import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
+import scala.collection.mutable;
 
 /**
   * A [[MessageConsumerPlugin]] for consuming messages
@@ -31,9 +32,11 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
    executorServiceRegistry: ManagedExecutorServiceRegistry)
   extends MessageConsumerPlugin {
 
+  @NotNull
   @Configuration("kafka.messageConsumer.bootstrapServers")
   private var bootstrapServers: String = null
 
+  @Min(2L)
   @Configuration("kafka.messageConsumer.numThreads")
   private var numThreads: Int = 2
 
@@ -41,13 +44,13 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
 
   private[consumer] def createConsumerProps(kafkaConsumerConfig: KafkaConsumerConfig): Properties = {
     val props = new Properties()
-    props.put(AUTO_COMMIT_INTERVAL_MS_CONFIG, Long.box(1000L))
+    props.put(AUTO_COMMIT_INTERVAL_MS_CONFIG, Int.box(1000))
     props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
     props.put(ENABLE_AUTO_COMMIT_CONFIG, Boolean.box(true))
     props.put(GROUP_ID_CONFIG, kafkaConsumerConfig.getGroupId)
-    props.put(KEY_DESERIALIZER_CLASS_CONFIG, classOf[StringSerializer].getName)
-    props.put(SESSION_TIMEOUT_MS_CONFIG, Long.box(30000L))
-    props.put(VALUE_DESERIALIZER_CLASS_CONFIG, classOf[ByteArraySerializer].getName)
+    props.put(KEY_DESERIALIZER_CLASS_CONFIG, classOf[StringDeserializer].getName)
+    props.put(SESSION_TIMEOUT_MS_CONFIG, Int.box(30000))
+    props.put(VALUE_DESERIALIZER_CLASS_CONFIG, classOf[ByteArrayDeserializer].getName)
 
     props
   }
