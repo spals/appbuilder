@@ -5,7 +5,7 @@ import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
 import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
-import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.FileStore
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
@@ -81,7 +81,7 @@ class SampleFinatraWebAppFTest {
 
   @Test def testExecutorInjection() {
     val serviceInjector = sampleApp.getServiceInjector
-    assertThat(serviceInjector.getInstance(classOf[ManagedExecutorServiceRegistry]), notNullValue())
+    assertThat(serviceInjector.getInstance(classOf[ExecutorServiceFactory]), notNullValue())
   }
 
   @Test def testFileStoreInjection() {

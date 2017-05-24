@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
+ * An {@link ExecutorService} delegater which provides
+ * a {@link #stop()} method to run a gracefully shutdown
+ * of the executor.
+ *
  * @author tkral
  */
-class DelegatingManagedExecutorService implements ManagedExecutorService {
+class DelegatingManagedExecutorService implements ExecutorService {
 
     private final ExecutorService executorServiceDelegate;
 
@@ -21,7 +25,7 @@ class DelegatingManagedExecutorService implements ManagedExecutorService {
     private final TimeUnit shutdownUnit;
 
     DelegatingManagedExecutorService(final ExecutorService executorServiceDelegate,
-                                     final ManagedExecutorServiceRegistry.Key executorServiceKey,
+                                     final ExecutorServiceFactory.Key executorServiceKey,
                                      final long shutdown,
                                      final TimeUnit shutdownUnit) {
         this.executorServiceDelegate = executorServiceDelegate;
@@ -88,8 +92,7 @@ class DelegatingManagedExecutorService implements ManagedExecutorService {
         return executorServiceDelegate.shutdownNow();
     }
 
-    @Override
-    public synchronized void stop() {
+    synchronized void stop() {
         if (isShutdown()) {
             return;
         }

@@ -6,8 +6,7 @@ import com.typesafe.config.Config;
 import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
-import net.spals.appbuilder.executor.core.ManagedExecutorService;
-import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.message.core.MessageConsumerCallback;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
@@ -18,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static net.spals.appbuilder.message.core.MessageConsumerCallback.unregisteredCallbackMessage;
@@ -39,7 +38,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     private final Set<MessageConsumerCallback<?>> consumerCallbackSet;
     private final BlockingQueue<BlockingQueueMessage> blockingMessageQueue;
 
-    private final ManagedExecutorService executorService;
+    private final ExecutorService executorService;
 
     private final Long pollTimeout;
     private final TimeUnit pollTimeoutUnit;
@@ -47,7 +46,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     @Inject
     BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
                                        final Set<MessageConsumerCallback<?>> consumerCallbackSet,
-                                       final ManagedExecutorServiceRegistry executorServiceRegistry,
+                                       final ExecutorServiceFactory executorServiceFactory,
                                        @Named("blockingMessageQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
                 .filter(config -> config.hasPath("blockingQueue.messageConsumer.pollTimeout"))
@@ -60,8 +59,8 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
         this.blockingMessageQueue = blockingMessageQueue;
         // The number of registered consumer callbacks provides an upper bound on
         // the number of executor threads that we'll need.
-        this.executorService = executorServiceRegistry.registerExecutorService(getClass(),
-                Executors.newFixedThreadPool(Math.max(consumerCallbackSet.size(), 1)));
+        this.executorService = executorServiceFactory.createFixedThreadPool(Math.max(consumerCallbackSet.size(), 1),
+                getClass());
     }
 
     @Override
@@ -75,9 +74,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     }
 
     @Override
-    public void stop(final MessageConsumerConfig consumerConfig) {
-        executorService.stop();
-    }
+    public void stop(final MessageConsumerConfig consumerConfig) {  }
 
     class BlockingQueueConsumerRunnable implements Runnable {
 

@@ -1,14 +1,13 @@
 package net.spals.appbuilder.message.kafka.consumer
 
 import java.util.Properties
-import java.util.concurrent.Executors
 import javax.validation.constraints.{Min, NotNull}
 
 import com.google.inject.Inject
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.config.message.MessageConsumerConfig
-import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.message.core.MessageConsumerCallback
 import net.spals.appbuilder.message.core.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
@@ -29,7 +28,7 @@ import scala.collection.mutable;
 @AutoBindInMap(baseClass = classOf[MessageConsumerPlugin], key = "kafka")
 private[consumer] class KafkaMessageConsumerPlugin @Inject()
   (consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
-   executorServiceRegistry: ManagedExecutorServiceRegistry)
+   executorServiceFactory: ExecutorServiceFactory)
   extends MessageConsumerPlugin {
 
   @NotNull
@@ -67,15 +66,12 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
       consumerConfig, modelSerializer)
     consumerRunnableCache ++= Map(consumerConfig -> consumerRunnable)
 
-    val executorService = executorServiceRegistry.registerExecutorService(getClass,
-      Executors.newFixedThreadPool(numThreads), consumerConfig.getTag)
+    val executorService = executorServiceFactory.createFixedThreadPool(numThreads, getClass, consumerConfig.getTag)
     executorService.submit(consumerRunnable)
   }
 
   override def stop(consumerConfig: MessageConsumerConfig): Unit = {
     // Shutdown the native Kafka consumer within the KafkaConsumerRunnable
     consumerRunnableCache.get(consumerConfig).foreach(_.shutdown())
-    // Stop the thread executor registered under the MessageConsumerConfig tag
-    executorServiceRegistry.stop(getClass, consumerConfig.getTag)
   }
 }
