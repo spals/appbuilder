@@ -15,7 +15,25 @@ package net.spals.appbuilder.app.core;
  */
 public interface WebAppBuilder<A extends App> extends WorkerAppBuilder<A> {
 
+    /**
+     * Disable automatic auto-binding of web server
+     * components.
+     *
+     * By default, web application will attempt to
+     * automatically bind perceived web components.
+     *
+     * A consumer may disable this functionality
+     * with this method.
+     */
     WebAppBuilder<A> disableWebServerAutoBinding();
 
+    /**
+     * Allow bound services to be scoped per web
+     * server request.
+     *
+     * This is off by default because request scoping
+     * typically involves an added filter which may
+     * have performance ramifications.
+     */
     WebAppBuilder<A> enableRequestScoping();
 }
