@@ -36,6 +36,9 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
         final DelegatingManagedExecutorService managedExecutorService =
                 new DelegatingManagedExecutorService(Executors.newFixedThreadPool(nThreads), key, shutdown, shutdownUnit);
+
+        LOGGER.info("Created FixedThreadPool executor service for " + key.getParentClass().getSimpleName() +
+                "(" + key.getTags() + ")");
         managedExecutorServices.put(key, managedExecutorService);
         return managedExecutorService;
     }
@@ -46,6 +49,9 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
         final DelegatingManagedExecutorService managedExecutorService =
                 new DelegatingManagedExecutorService(Executors.newCachedThreadPool(), key, shutdown, shutdownUnit);
+
+        LOGGER.info("Created CachedThreadPool executor service for " + key.getParentClass().getSimpleName() +
+                "(" + key.getTags() + ")");
         managedExecutorServices.put(key, managedExecutorService);
         return managedExecutorService;
     }
@@ -56,6 +62,9 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         final Key key = new Key.Builder().setParentClass(parentClass).addTags(tags).build();
         final DelegatingManagedExecutorService managedExecutorService =
                 new DelegatingManagedExecutorService(Executors.newSingleThreadExecutor(), key, shutdown, shutdownUnit);
+
+        LOGGER.info("Created SingleThreadExecutor executor service for " + key.getParentClass().getSimpleName() +
+                "(" + key.getTags() + ")");
         managedExecutorServices.put(key, managedExecutorService);
         return managedExecutorService;
     }
