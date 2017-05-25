@@ -10,6 +10,9 @@ import java.util.Set;
 /**
  * Bean for holding configuration for a service scan.
  *
+ * This informs an application of where to look for
+ * services to automatically bind.
+ *
  * This is a simple wrapper around a {@link Reflections}
  * object with syntactic sugar for adding service packages
  * to the scan.

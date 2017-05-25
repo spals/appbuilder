@@ -7,6 +7,8 @@ import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.message.core.MessageConsumer;
 import net.spals.appbuilder.model.core.ModelSerializer;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,6 +34,7 @@ class DefaultMessageConsumer implements MessageConsumer {
     }
 
     @Override
+    @PostConstruct
     public void start() {
         consumerConfigMap.entrySet().stream()
             .filter(consumerConfigEntry -> consumerConfigEntry.getValue().isActive())
@@ -52,6 +55,7 @@ class DefaultMessageConsumer implements MessageConsumer {
     }
 
     @Override
+    @PreDestroy
     public void stop() {
         consumerConfigMap.entrySet().stream()
             .filter(consumerConfigEntry -> consumerConfigEntry.getValue().isActive())

@@ -8,6 +8,9 @@ import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
+import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
+import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
+import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
@@ -58,6 +61,30 @@ class PluginsFinatraWebAppFTest {
   @Test def testDynamoDBMapStoreInjection() {
     val serviceInjector = pluginsApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[AmazonDynamoDB]), notNullValue())
+  }
+
+  @Test def testMessageConsumerInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MessageConsumer]), notNullValue())
+
+    val messageConsumerPluginMapKey = new TypeLiteral[java.util.Map[String, MessageConsumerPlugin]](){}
+    val messageConsumerPluginMap = serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey))
+    assertThat(messageConsumerPluginMap, Matchers.aMapWithSize[String, MessageConsumerPlugin](3))
+    assertThat(messageConsumerPluginMap, hasKey("blockingQueue"))
+    assertThat(messageConsumerPluginMap, hasKey("kafka"))
+    assertThat(messageConsumerPluginMap, hasKey("kinesis"))
+  }
+
+  @Test def testMessageProducerInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MessageProducer]), notNullValue())
+
+    val messageProducerPluginMapKey = new TypeLiteral[java.util.Map[String, MessageProducerPlugin]](){}
+    val messageProducerPluginMap = serviceInjector.getInstance(Key.get(messageProducerPluginMapKey))
+    assertThat(messageProducerPluginMap, Matchers.aMapWithSize[String, MessageProducerPlugin](3))
+    assertThat(messageProducerPluginMap, hasKey("blockingQueue"))
+    assertThat(messageProducerPluginMap, hasKey("kafka"))
+    assertThat(messageProducerPluginMap, hasKey("kinesis"))
   }
 
   @Test def testModelInjection() {

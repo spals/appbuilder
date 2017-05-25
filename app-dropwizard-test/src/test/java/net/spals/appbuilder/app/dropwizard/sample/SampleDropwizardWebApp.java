@@ -1,15 +1,13 @@
 package net.spals.appbuilder.app.dropwizard.sample;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Injector;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import net.spals.appbuilder.app.dropwizard.DropwizardManagedWrapper;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -49,7 +47,7 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.sample")
-                .addDefaultServices(ManagedExecutorServiceRegistry.class)
+                .addDefaultServices(ExecutorServiceFactory.class)
                 .addDefaultServices(FileStore.class)
                 .addDefaultServices(MapStore.class)
                 .addDefaultServices(MessageConsumer.class, MessageProducer.class)
@@ -62,14 +60,5 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
     @Override
     public void run(Configuration configuration, Environment env) throws Exception {
         this.webAppDelegate = webAppDelegateBuilder.setEnvironment(env).build();
-
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
-        // Attach all ExecutorServices to the Dropwizard lifecycle
-        final ManagedExecutorServiceRegistry executorServiceRegistry =
-                serviceInjector.getInstance(ManagedExecutorServiceRegistry.class);
-        env.lifecycle().manage(DropwizardManagedWrapper.wrap(executorServiceRegistry));
-        // Attach all MessageConsumers to the Dropwizard lifecycle
-        final MessageConsumer messageConsumer = serviceInjector.getInstance(MessageConsumer.class);
-        env.lifecycle().manage(DropwizardManagedWrapper.wrap(messageConsumer));
     }
 }

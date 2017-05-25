@@ -9,7 +9,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
 import net.spals.appbuilder.app.dropwizard.sample.SampleCustomService;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
-import net.spals.appbuilder.executor.core.ManagedExecutorServiceRegistry;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
@@ -91,7 +91,7 @@ public class SampleDropwizardWebAppFTest {
     @Test
     public void testExecutorInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
-        assertThat(serviceInjector.getInstance(ManagedExecutorServiceRegistry.class), notNullValue());
+        assertThat(serviceInjector.getInstance(ExecutorServiceFactory.class), notNullValue());
     }
 
     @Test
