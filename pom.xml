@@ -85,6 +85,7 @@
         <module>executor-core</module>
         <module>filestore-core</module>
         <module>filestore-core-test</module>
+        <module>filestore-s3</module>
         <module>graph</module>
         <module>graph-test</module>
         <module>mapstore-cassandra</module>
@@ -125,6 +126,11 @@
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-kinesis</artifactId>
+                <version>${aws-java-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-s3</artifactId>
                 <version>${aws-java-sdk.version}</version>
             </dependency>
             <dependency>
@@ -327,6 +333,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-app-finatra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-filestore-s3</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
