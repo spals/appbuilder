@@ -25,7 +25,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * @author tkral
   */
-@AutoBindInMap(baseClass = classOf[S3FileStorePlugin], key = "s3")
+@AutoBindInMap(baseClass = classOf[FileStorePlugin], key = "s3")
 private[s3] class S3FileStorePlugin @Inject() (
   @ApplicationName applicationName: String,
   s3Client: AmazonS3,

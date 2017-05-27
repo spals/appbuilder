@@ -6,7 +6,7 @@ import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
 import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
-import net.spals.appbuilder.filestore.core.FileStore
+import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
@@ -87,6 +87,11 @@ class SampleFinatraWebAppFTest {
   @Test def testFileStoreInjection() {
     val serviceInjector = sampleApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[FileStore]), notNullValue())
+
+    val fileStorePluginMapKey = new TypeLiteral[java.util.Map[String, FileStorePlugin]](){}
+    val fileStorePluginMap = serviceInjector.getInstance(Key.get(fileStorePluginMapKey))
+    assertThat(fileStorePluginMap, Matchers.aMapWithSize[String, FileStorePlugin](1))
+    assertThat(fileStorePluginMap, hasKey("localFS"))
   }
 
   @Test def testMapStoreInjection() {

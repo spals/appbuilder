@@ -7,10 +7,11 @@ import com.datastax.driver.core.Session
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
+import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
-import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
+import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
@@ -38,6 +39,17 @@ class PluginsFinatraWebAppFTest {
     testServerWrapper.close()
   }
 
+  @Test def testFileStoreInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[FileStore]), notNullValue())
+
+    val fileStorePluginMapKey = new TypeLiteral[java.util.Map[String, FileStorePlugin]](){}
+    val fileStorePluginMap = serviceInjector.getInstance(Key.get(fileStorePluginMapKey))
+    assertThat(fileStorePluginMap, Matchers.aMapWithSize[String, FileStorePlugin](2))
+    assertThat(fileStorePluginMap, hasKey("localFS"))
+    assertThat(fileStorePluginMap, hasKey("s3"))
+  }
+
   @Test def testMapStoreInjection() {
     val serviceInjector = pluginsApp.getServiceInjector
     assertThat(serviceInjector.getInstance(classOf[MapStore]), notNullValue())
@@ -48,7 +60,6 @@ class PluginsFinatraWebAppFTest {
     assertThat(mapStorePluginMap, hasKey("cassandra"))
     assertThat(mapStorePluginMap, hasKey("dynamoDB"))
     assertThat(mapStorePluginMap, hasKey("mapDB"))
-
   }
 
   @Test def testCassandraMapStoreInjection() {

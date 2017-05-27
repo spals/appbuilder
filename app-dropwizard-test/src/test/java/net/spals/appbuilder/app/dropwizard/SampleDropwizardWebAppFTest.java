@@ -11,6 +11,7 @@ import net.spals.appbuilder.app.dropwizard.sample.SampleCustomService;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
+import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -98,6 +99,13 @@ public class SampleDropwizardWebAppFTest {
     public void testFileStoreInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
         assertThat(serviceInjector.getInstance(FileStore.class), notNullValue());
+
+        final TypeLiteral<Map<String, FileStorePlugin>> fileStorePluginMapKey =
+                new TypeLiteral<Map<String, FileStorePlugin>>(){};
+        final Map<String, FileStorePlugin> fileStorePluginMap =
+                serviceInjector.getInstance(Key.get(fileStorePluginMapKey));
+        assertThat(fileStorePluginMap, aMapWithSize(1));
+        assertThat(fileStorePluginMap, hasKey("localFS"));
     }
 
     @Test

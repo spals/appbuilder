@@ -8,6 +8,8 @@ import com.google.inject.TypeLiteral;
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
 import net.spals.appbuilder.app.dropwizard.plugins.PluginsDropwizardWebApp;
+import net.spals.appbuilder.filestore.core.FileStore;
+import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -45,6 +47,20 @@ public class PluginsDropwizardWebAppFTest {
     @AfterTest
     void classTearDown() {
         testServerWrapper.after();
+    }
+
+    @Test
+    public void testFileStoreInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(FileStore.class), notNullValue());
+
+        final TypeLiteral<Map<String, FileStorePlugin>> fileStorePluginMapKey =
+                new TypeLiteral<Map<String, FileStorePlugin>>(){};
+        final Map<String, FileStorePlugin> fileStorePluginMap =
+                serviceInjector.getInstance(Key.get(fileStorePluginMapKey));
+        assertThat(fileStorePluginMap, aMapWithSize(2));
+        assertThat(fileStorePluginMap, hasKey("localFS"));
+        assertThat(fileStorePluginMap, hasKey("s3"));
     }
 
     @Test
