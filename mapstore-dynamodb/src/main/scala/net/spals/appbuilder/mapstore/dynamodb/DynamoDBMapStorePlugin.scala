@@ -128,7 +128,7 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
         s"${putItemOutcome.getPutItemResult.getConsumedCapacity}")
     }
 
-    item.asMap()
+    Option(putItemOutcome.getItem).map(_.asMap()).getOrElse(item.asMap())
   }
 
   override def updateItem(tableName: String,
@@ -154,7 +154,8 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
         s"${updateItemOutcome.getUpdateItemResult.getConsumedCapacity}")
     }
 
-    updateItemOutcome.getItem.asMap()
+    Option(updateItemOutcome.getItem).map(_.asMap())
+      .getOrElse(table.getItem(primaryKey).asMap())
   }
 
   @VisibleForTesting

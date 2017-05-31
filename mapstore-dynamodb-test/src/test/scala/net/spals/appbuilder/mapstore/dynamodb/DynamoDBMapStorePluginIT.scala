@@ -117,17 +117,17 @@ class DynamoDBMapStorePluginIT {
 
   @DataProvider def updateItemProvider(): Array[Array[AnyRef]] = {
     Array(
-      Array(Map("key1" -> Long.box(1L)),
-        Map("myHashField" -> "myHashValue1", "myRangeField" -> "myRangeValue1", "key" -> "value", "key1" -> Long.box(1L))),
-      Array(Map("key1" -> ""),
-        Map("myHashField" -> "myHashField1", "myRangeField" -> "myRangeValue1", "key" -> "value"))
+      Array(Map("numberKey" -> Long.box(1L)),
+        Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue1", "key" -> "value", "numberKey" -> java.math.BigDecimal.valueOf(1L))),
+      Array(Map("numberKey" -> ""),
+        Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue1", "key" -> "value"))
     )
   }
 
-  @Test(enabled = false, dataProvider = "updateItemProvider", dependsOnMethods = Array("testPutItem"))
+  @Test(dataProvider = "updateItemProvider", dependsOnMethods = Array("testPutItem"))
   def testUpdateItem(payload: Map[String, AnyRef],
                      expectedResult: Map[String, AnyRef]) {
-    val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue1")
+    val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
       .setRange("myRangeField", equalTo[String]("myRangeValue1")).build
 
     assertThat(storePlugin.updateItem(rangeTableName, storeKey, payload.asJava), is(expectedResult.asJava))
@@ -167,7 +167,7 @@ class DynamoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "getItemsProvider", dependsOnMethods = Array("testPutItem"))
+  @Test(dataProvider = "getItemsProvider", dependsOnMethods = Array("testPutItem", "testUpdateItem"))
   def testGetItems(storeKey: MapStoreKey,
                    expectedResults: List[Map[String, AnyRef]]) {
     assertThat(storePlugin.getItems(rangeTableName, storeKey, defaultOptions()),
