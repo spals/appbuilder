@@ -6,9 +6,10 @@ import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions
 import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey._
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between
 import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all
-import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey, TwoValueMapRangeKey, ZeroValueMapRangeKey}
+import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{contains, empty, is}
+import org.slf4j.LoggerFactory
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
 
 import scala.collection.JavaConverters._
@@ -19,13 +20,15 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 class DynamoDBMapStorePluginIT {
+  private val LOGGER = LoggerFactory.getLogger(classOf[DynamoDBMapStorePluginIT])
 
   private lazy val dynamoDBClient = {
     val dynamoDBClientProvider = new DynamoDBClientProvider
     dynamoDBClientProvider.awsAccessKeyId = "DUMMY"
     dynamoDBClientProvider.awsSecretKey = "DUMMY"
-    dynamoDBClientProvider.endpoint = s"http://10.0.1.24:${System.getenv("DYNAMODB_LOCAL_PORT")}"
+    dynamoDBClientProvider.endpoint = s"http://${System.getenv("DYNAMODB_IP")}:${System.getenv("DYNAMODB_PORT")}"
 
+    LOGGER.info(s"Connecting to dynamoDB instance at ${dynamoDBClientProvider.endpoint}")
     dynamoDBClientProvider.get()
   }
 

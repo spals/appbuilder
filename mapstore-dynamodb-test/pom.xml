@@ -56,13 +56,22 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>reserve-network-ports</id>
+                        <id>discover-dynamodb-ip</id>
+                        <goals>
+                            <goal>local-ip</goal>
+                        </goals>
+                        <configuration>
+                            <localIpProperty>dynamodb.ip</localIpProperty>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>reserve-dynamodb-port</id>
                         <goals>
                             <goal>reserve-network-port</goal>
                         </goals>
                         <configuration>
                             <portNames>
-                                <portName>dynamodb-local.port</portName>
+                                <portName>dynamodb.port</portName>
                             </portNames>
                         </configuration>
                     </execution>
@@ -76,13 +85,13 @@
                     <images>
                         <image>
                             <name>cnadiminti/dynamodb-local:2017-04-22_beta</name>
-                            <alias>dynamodb-local</alias>
+                            <alias>dynamodb</alias>
                             <run>
                                 <ports>
-                                    <port>dynamodb-local.port:8000</port>
+                                    <port>dynamodb.port:8000</port>
                                 </ports>
                                 <wait>
-                                    <!-- Allow 5 seconds for dynamodb-local container to boot-->
+                                    <!-- Allow 5 seconds for dynamodb container to boot-->
                                     <time>5000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
@@ -113,7 +122,8 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <environmentVariables>
-                        <DYNAMODB_LOCAL_PORT>${dynamodb-local.port}</DYNAMODB_LOCAL_PORT>
+                        <DYNAMODB_IP>${dynamodb.ip}</DYNAMODB_IP>
+                        <DYNAMODB_PORT>${dynamodb.port}</DYNAMODB_PORT>
                     </environmentVariables>
                 </configuration>
             </plugin>
