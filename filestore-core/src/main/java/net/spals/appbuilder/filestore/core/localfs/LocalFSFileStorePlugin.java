@@ -37,7 +37,7 @@ class LocalFSFileStorePlugin implements FileStorePlugin {
     private final Path basePath;
 
     @Inject
-    LocalFSFileStorePlugin(@Named("localFS.fileStore") final Path basePath) {
+    LocalFSFileStorePlugin(@Named("fileStore.localFS.basePath") final Path basePath) {
         this.basePath = basePath;
     }
 

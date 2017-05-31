@@ -21,7 +21,7 @@ private[s3] class S3TransferManagerProvider @Inject() (
 ) extends Provider[TransferManager] {
 
   @Min(2)
-  @Configuration("s3.fileStore.numUploadThreads")
+  @Configuration("fileStore.s3.numUploadThreads")
   private var numUploadThreads: Int = 10
 
   override def get(): TransferManager = {

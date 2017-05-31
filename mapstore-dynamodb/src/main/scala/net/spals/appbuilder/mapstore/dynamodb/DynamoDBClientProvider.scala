@@ -24,15 +24,15 @@ import scala.util.Try
 private[dynamodb] class DynamoDBClientProvider extends Provider[AmazonDynamoDB] {
 
   @NotNull
-  @Configuration("dynamoDB.mapStore.awsAccessKeyId")
+  @Configuration("mapStore.dynamoDB.awsAccessKeyId")
   private[dynamodb] var awsAccessKeyId: String = null
 
   @NotNull
-  @Configuration("dynamoDB.mapStore.awsSecretKey")
+  @Configuration("mapStore.dynamoDB.awsSecretKey")
   private[dynamodb] var awsSecretKey: String = null
 
   @NotNull
-  @Configuration("dynamoDB.mapStore.endpoint")
+  @Configuration("mapStore.dynamoDB.endpoint")
   private[dynamodb] var endpoint: String = null
 
   override def get(): AmazonDynamoDB = {
@@ -46,7 +46,7 @@ private[dynamodb] class DynamoDBClientProvider extends Provider[AmazonDynamoDB] 
         dynamoDBClientBuilder.withEndpointConfiguration(endpointConfig)
       }
       case regionEndpoint if Try(Regions.fromName(regionEndpoint)).isSuccess => dynamoDBClientBuilder.withRegion(regionEndpoint)
-      case _ => throw new ConfigException.BadValue("dynamoDB.mapStore.endpoint",
+      case _ => throw new ConfigException.BadValue("mapStore.dynamoDB.endpoint",
         s"Unrecognized DynamoDB endpoint. Value is neither an http endpoint nor a known region: $endpoint")
     }
 

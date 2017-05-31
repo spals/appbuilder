@@ -28,18 +28,18 @@ private[cassandra] class CassandraClusterInitializer @Inject() (@ServiceConfig c
   private val LOGGER = LoggerFactory.getLogger(classOf[CassandraClusterInitializer])
 
   @NotNull
-  @annotations.Configuration("cassandra.mapStore.clusterName")
+  @annotations.Configuration("mapStore.cassandra.clusterName")
   @volatile
   private var clusterName: String = null
 
   @NotNull
-  @annotations.Configuration("cassandra.mapStore.hosts")
+  @annotations.Configuration("mapStore.cassandra.hosts")
   @volatile
   private var hosts: String = null
 
   @Min(1000L)
   @Max(65535L)
-  @annotations.Configuration("cassandra.mapStore.port")
+  @annotations.Configuration("mapStore.cassandra.port")
   @volatile
   private var port: Int = ProtocolOptions.DEFAULT_PORT
 

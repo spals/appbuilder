@@ -20,15 +20,15 @@ import scala.util.Try
 private[s3] class S3ClientProvider extends Provider[AmazonS3] {
 
   @NotNull
-  @Configuration("s3.fileStore.awsAccessKeyId")
+  @Configuration("fileStore.s3.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
   @NotNull
-  @Configuration("s3.fileStore.awsSecretKey")
+  @Configuration("fileStore.s3.awsSecretKey")
   private var awsSecretKey: String = null
 
   @NotNull
-  @Configuration("s3.fileStore.endpoint")
+  @Configuration("fileStore.s3.endpoint")
   private var endpoint: String = null
 
   override def get(): AmazonS3 = {
@@ -42,7 +42,7 @@ private[s3] class S3ClientProvider extends Provider[AmazonS3] {
         s3ClientBuilder.withEndpointConfiguration(endpointConfig)
       }
       case regionEndpoint if Try(Regions.fromName(regionEndpoint)).isSuccess => s3ClientBuilder.withRegion(regionEndpoint)
-      case _ => throw new ConfigException.BadValue("s3.fileStore.endpoint",
+      case _ => throw new ConfigException.BadValue("fileStore.s3.endpoint",
         s"Unrecognized S3 endpoint. Value is neither an http endpoint nor a known region: $endpoint")
     }
 

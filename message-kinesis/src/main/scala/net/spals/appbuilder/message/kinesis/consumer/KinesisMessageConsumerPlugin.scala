@@ -34,19 +34,19 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   extends MessageConsumerPlugin {
 
   @NotNull
-  @Configuration("kinesis.messageConsumer.awsAccessKeyId")
+  @Configuration("messageConsumer.kinesis.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
   @NotNull
-  @Configuration("kinesis.messageConsumer.awsSecretKey")
+  @Configuration("messageConsumer.kinesis.awsSecretKey")
   private var awsSecretKey: String = null
 
   @NotNull
-  @Configuration("kinesis.messageConsumer.endpoint")
+  @Configuration("messageConsumer.kinesis.endpoint")
   private var endpoint: String = null
 
   @Min(2L)
-  @Configuration("kinesis.messageConsumer.numThreads")
+  @Configuration("messageConsumer.kinesis.numThreads")
   private var numThreads: Int = 2
 
   override def start(consumerConfig: MessageConsumerConfig, modelSerializer: ModelSerializer): Unit = {

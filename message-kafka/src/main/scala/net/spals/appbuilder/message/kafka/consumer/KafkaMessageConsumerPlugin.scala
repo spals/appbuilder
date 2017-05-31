@@ -32,11 +32,11 @@ private[consumer] class KafkaMessageConsumerPlugin @Inject()
   extends MessageConsumerPlugin {
 
   @NotNull
-  @Configuration("kafka.messageConsumer.bootstrapServers")
+  @Configuration("messageConsumer.kafka.bootstrapServers")
   private var bootstrapServers: String = null
 
   @Min(2L)
-  @Configuration("kafka.messageConsumer.numThreads")
+  @Configuration("messageConsumer.kafka.numThreads")
   private var numThreads: Int = 2
 
   private val consumerRunnableCache = mutable.Map[MessageConsumerConfig, KafkaConsumerRunnable]()

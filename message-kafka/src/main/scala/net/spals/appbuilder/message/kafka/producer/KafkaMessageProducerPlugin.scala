@@ -22,11 +22,11 @@ import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSeriali
 private[producer] class KafkaMessageProducerPlugin extends MessageProducerPlugin {
 
   @NotNull
-  @Configuration("kafka.messageProducer.bootstrapServers")
+  @Configuration("messageProducer.kafka.bootstrapServers")
   private var bootstrapServers: String = null
 
   @Min(0L)
-  @Configuration("kafka.messageProducer.retries")
+  @Configuration("messageProducer.kafka.retries")
   private var retries: Int = 0
 
   private val producerCache = CacheBuilder.newBuilder()

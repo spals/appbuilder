@@ -35,7 +35,7 @@ private[s3] class S3FileStorePlugin @Inject() (
 ) extends FileStorePlugin {
 
   @NotNull
-  @Configuration("s3.fileStore.bucket")
+  @Configuration("fileStore.s3.bucket")
   private var s3Bucket: String = s"$applicationName-fileStore"
 
   override def deleteFile(key: FileStoreKey): Boolean = {

@@ -21,15 +21,15 @@ import scala.util.Try
 private[producer] class KinesisProducerProvider() extends Provider[KinesisProducer] {
 
   @NotNull
-  @Configuration("kinesis.messageProducer.awsAccessKeyId")
+  @Configuration("messageProducer.kinesis.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
   @NotNull
-  @Configuration("kinesis.messageProducer.awsSecretKey")
+  @Configuration("messageProducer.kinesis.awsSecretKey")
   private var awsSecretKey: String = null
 
   @NotNull
-  @Configuration("kinesis.messageProducer.endpoint")
+  @Configuration("messageProducer.kinesis.endpoint")
   private var endpoint: String = null
 
   override def get(): KinesisProducer = {
@@ -43,7 +43,7 @@ private[producer] class KinesisProducerProvider() extends Provider[KinesisProduc
         config.setKinesisEndpoint(httpEndpoint)
       case regionEndpoint if Try(Regions.fromName(regionEndpoint)).isSuccess =>
         config.setRegion(regionEndpoint)
-      case _ => throw new ConfigException.BadValue("kinesis.messageProducer.endpoint",
+      case _ => throw new ConfigException.BadValue("messageProducer.kinesis.endpoint",
         s"Unrecognized Kinesis endpoint. Value is neither an http endpoint nor a known region: $endpoint")
     }
 

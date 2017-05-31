@@ -39,18 +39,18 @@ case class S3EncryptionHolder(value: Optional[AmazonS3Encryption])
 private[s3] class S3EncryptionHolderProvider extends Provider[S3EncryptionHolder] {
 
   @NotNull
-  @Configuration("s3.fileStore.awsAccessKeyId")
+  @Configuration("fileStore.s3.awsAccessKeyId")
   private var awsAccessKeyId: String = null
 
   @NotNull
-  @Configuration("s3.fileStore.awsSecretKey")
+  @Configuration("fileStore.s3.awsSecretKey")
   private var awsSecretKey: String = null
 
   @NotNull
-  @Configuration("s3.fileStore.endpoint")
+  @Configuration("fileStore.s3.endpoint")
   private var endpoint: String = null
 
-  @Configuration("s3.fileStore.encryptionKey")
+  @Configuration("fileStore.s3.encryptionKey")
   private var encryptionKey: String = null
 
 
@@ -103,7 +103,7 @@ private[s3] class S3TransferEncryptionHolderProvider @Inject() (
 ) extends Provider[S3TransferEncryptionHolder] {
 
   @Min(2)
-  @Configuration("s3.fileStore.numUploadThreads")
+  @Configuration("fileStore.s3.numUploadThreads")
   private var numUploadThreads: Int = 10
 
   override def get(): S3TransferEncryptionHolder = {
