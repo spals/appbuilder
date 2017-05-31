@@ -25,15 +25,15 @@ private[dynamodb] class DynamoDBClientProvider extends Provider[AmazonDynamoDB] 
 
   @NotNull
   @Configuration("dynamoDB.mapStore.awsAccessKeyId")
-  private var awsAccessKeyId: String = null
+  private[dynamodb] var awsAccessKeyId: String = null
 
   @NotNull
   @Configuration("dynamoDB.mapStore.awsSecretKey")
-  private var awsSecretKey: String = null
+  private[dynamodb] var awsSecretKey: String = null
 
   @NotNull
   @Configuration("dynamoDB.mapStore.endpoint")
-  private var endpoint: String = null
+  private[dynamodb] var endpoint: String = null
 
   override def get(): AmazonDynamoDB = {
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
