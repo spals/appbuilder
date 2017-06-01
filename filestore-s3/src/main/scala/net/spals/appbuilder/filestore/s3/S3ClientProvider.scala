@@ -21,15 +21,15 @@ private[s3] class S3ClientProvider extends Provider[AmazonS3] {
 
   @NotNull
   @Configuration("fileStore.s3.awsAccessKeyId")
-  private var awsAccessKeyId: String = null
+  private[s3] var awsAccessKeyId: String = null
 
   @NotNull
   @Configuration("fileStore.s3.awsSecretKey")
-  private var awsSecretKey: String = null
+  private[s3] var awsSecretKey: String = null
 
   @NotNull
   @Configuration("fileStore.s3.endpoint")
-  private var endpoint: String = null
+  private[s3] var endpoint: String = null
 
   override def get(): AmazonS3 = {
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)

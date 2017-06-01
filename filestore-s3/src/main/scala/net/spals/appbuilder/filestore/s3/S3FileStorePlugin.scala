@@ -3,6 +3,7 @@ package net.spals.appbuilder.filestore.s3
 import java.io.{BufferedInputStream, IOException, InputStream}
 import java.net.URI
 import java.util.Optional
+import javax.annotation.PostConstruct
 import javax.validation.constraints.NotNull
 
 import com.amazonaws.DefaultRequest
@@ -35,8 +36,20 @@ private[s3] class S3FileStorePlugin @Inject() (
 ) extends FileStorePlugin {
 
   @NotNull
+  @Configuration("fileStore.s3.endpoint")
+  private[s3] var endpoint: String = null
+
+  @NotNull
   @Configuration("fileStore.s3.bucket")
-  private var s3Bucket: String = s"$applicationName-fileStore"
+  private[s3] var s3Bucket: String = s"${applicationName.toLowerCase}-filestore"
+
+  private[s3] lazy val s3Region: Option[Region] = Try(s3Client.getRegion).toOption
+
+  @PostConstruct private[s3] def createBucket(): Unit = {
+    if (!s3Client.doesBucketExist(s3Bucket)) {
+      s3Client.createBucket(s3Bucket)
+    }
+  }
 
   override def deleteFile(key: FileStoreKey): Boolean = {
     val s3ObjectId = resolveS3ObjectId(key)
@@ -81,6 +94,10 @@ private[s3] class S3FileStorePlugin @Inject() (
           .setURI(resolveBrowserURI(s3ObjectId))
           .build()
       }).asJava
+      case Failure(s3e: AmazonS3Exception) => s3e.getStatusCode match {
+        case 404 => Optional.empty[FileMetadata]
+        case _ => throw new IOException().initCause(s3e).asInstanceOf[IOException]
+      }
       case Failure(t) => throw new IOException().initCause(t).asInstanceOf[IOException]
 
     }
@@ -141,10 +158,11 @@ private[s3] class S3FileStorePlugin @Inject() (
     //
     // See http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html#WebsiteRestEndpointDiff
     //
-    val endpoint = s"https://${s3Client.getRegion.toAWSRegion.getServiceEndpoint(AmazonS3.ENDPOINT_PREFIX)}"
+    val s3Endpoint = s3Region.map(region => s"https://${region.toAWSRegion.getServiceEndpoint(AmazonS3.ENDPOINT_PREFIX)}")
+      .getOrElse(endpoint)
 
     val request = new DefaultRequest(Constants.S3_SERVICE_DISPLAY_NAME)
-    val serviceEndpointBuilder = new IdentityEndpointBuilder(new URI(endpoint))
+    val serviceEndpointBuilder = new IdentityEndpointBuilder(new URI(s3Endpoint))
     val requestEndpointResolver = new S3RequestEndpointResolver(serviceEndpointBuilder, true /*isPathStyleAccess*/,
       s3ObjectId.getBucket, s3ObjectId.getKey)
     requestEndpointResolver.resolveRequestEndpoint(request)

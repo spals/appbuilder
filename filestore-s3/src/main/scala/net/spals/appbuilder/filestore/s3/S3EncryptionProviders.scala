@@ -40,19 +40,18 @@ private[s3] class S3EncryptionHolderProvider extends Provider[S3EncryptionHolder
 
   @NotNull
   @Configuration("fileStore.s3.awsAccessKeyId")
-  private var awsAccessKeyId: String = null
+  private[s3] var awsAccessKeyId: String = null
 
   @NotNull
   @Configuration("fileStore.s3.awsSecretKey")
-  private var awsSecretKey: String = null
+  private[s3] var awsSecretKey: String = null
 
   @NotNull
   @Configuration("fileStore.s3.endpoint")
-  private var endpoint: String = null
+  private[s3] var endpoint: String = null
 
   @Configuration("fileStore.s3.encryptionKey")
-  private var encryptionKey: String = null
-
+  private[s3] var encryptionKey: String = null
 
   override def get(): S3EncryptionHolder = {
     val s3Encryption = Option(encryptionKey).map(key => {
@@ -104,7 +103,7 @@ private[s3] class S3TransferEncryptionHolderProvider @Inject() (
 
   @Min(2)
   @Configuration("fileStore.s3.numUploadThreads")
-  private var numUploadThreads: Int = 10
+  private[s3] var numUploadThreads: Int = 10
 
   override def get(): S3TransferEncryptionHolder = {
     val s3TransferEncryption = s3EncryptionHolder.value.asScala.map(s3Encryption => {

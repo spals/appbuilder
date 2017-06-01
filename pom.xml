@@ -86,6 +86,7 @@
         <module>filestore-core</module>
         <module>filestore-core-test</module>
         <module>filestore-s3</module>
+        <module>filestore-s3-test</module>
         <module>graph</module>
         <module>graph-test</module>
         <module>mapstore-cassandra</module>
