@@ -32,7 +32,7 @@ class DynamoDBMapStorePluginIT {
     dynamoDBClientProvider.get()
   }
 
-  private lazy val storePlugin = new DynamoDBMapStorePlugin(dynamoDBClient)
+  private lazy val mapStorePlugin = new DynamoDBMapStorePlugin(dynamoDBClient)
 
   private val hashTableName = "hashTable"
   private val hashTableKey = new MapStoreTableKey.Builder()
@@ -46,13 +46,13 @@ class DynamoDBMapStorePluginIT {
     .build()
 
   @BeforeClass def createTables() {
-    storePlugin.createTable(hashTableName, hashTableKey)
-    storePlugin.createTable(rangeTableName, rangeTableKey)
+    mapStorePlugin.createTable(hashTableName, hashTableKey)
+    mapStorePlugin.createTable(rangeTableName, rangeTableKey)
   }
 
   @AfterClass(alwaysRun = true) def dropTables() {
-    storePlugin.dropTable(hashTableName)
-    storePlugin.dropTable(rangeTableName)
+    mapStorePlugin.dropTable(hashTableName)
+    mapStorePlugin.dropTable(rangeTableName)
   }
 
   @DataProvider def emptyGetProvider(): Array[Array[AnyRef]] = {
@@ -70,13 +70,13 @@ class DynamoDBMapStorePluginIT {
   @Test(dataProvider = "emptyGetProvider")
   def testEmptyGetItem(tableName: String,
                        storeKey: MapStoreKey) {
-    assertThat(storePlugin.getItem(tableName, storeKey), is(Optional.empty[java.util.Map[String, AnyRef]]))
+    assertThat(mapStorePlugin.getItem(tableName, storeKey), is(Optional.empty[java.util.Map[String, AnyRef]]))
   }
 
   @Test(dataProvider = "emptyGetProvider")
   def testEmptyGetItems(tableName: String,
                         storeKey: MapStoreKey) {
-    assertThat(storePlugin.getItems(tableName, storeKey, defaultOptions()), empty[java.util.Map[String, AnyRef]])
+    assertThat(mapStorePlugin.getItems(tableName, storeKey, defaultOptions()), empty[java.util.Map[String, AnyRef]])
   }
 
   @DataProvider def putItemProvider(): Array[Array[AnyRef]] = {
@@ -114,8 +114,8 @@ class DynamoDBMapStorePluginIT {
                   storeKey: MapStoreKey,
                   payload: Map[String, AnyRef],
                   expectedResult: Map[String, AnyRef]) {
-    assertThat(storePlugin.putItem(tableName, storeKey, payload.asJava), is(expectedResult.asJava))
-    assertThat(storePlugin.getItem(tableName, storeKey), is(Optional.of(expectedResult.asJava)))
+    assertThat(mapStorePlugin.putItem(tableName, storeKey, payload.asJava), is(expectedResult.asJava))
+    assertThat(mapStorePlugin.getItem(tableName, storeKey), is(Optional.of(expectedResult.asJava)))
   }
 
   @DataProvider def updateItemProvider(): Array[Array[AnyRef]] = {
@@ -133,8 +133,8 @@ class DynamoDBMapStorePluginIT {
     val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
       .setRange("myRangeField", equalTo[String]("myRangeValue1")).build
 
-    assertThat(storePlugin.updateItem(rangeTableName, storeKey, payload.asJava), is(expectedResult.asJava))
-    assertThat(storePlugin.getItem(rangeTableName, storeKey), is(Optional.of(expectedResult.asJava)))
+    assertThat(mapStorePlugin.updateItem(rangeTableName, storeKey, payload.asJava), is(expectedResult.asJava))
+    assertThat(mapStorePlugin.getItem(rangeTableName, storeKey), is(Optional.of(expectedResult.asJava)))
   }
 
   @DataProvider def getItemsProvider(): Array[Array[AnyRef]] = {
@@ -173,7 +173,7 @@ class DynamoDBMapStorePluginIT {
   @Test(dataProvider = "getItemsProvider", dependsOnMethods = Array("testPutItem", "testUpdateItem"))
   def testGetItems(storeKey: MapStoreKey,
                    expectedResults: List[Map[String, AnyRef]]) {
-    assertThat(storePlugin.getItems(rangeTableName, storeKey, defaultOptions()),
+    assertThat(mapStorePlugin.getItems(rangeTableName, storeKey, defaultOptions()),
       contains[java.util.Map[String, AnyRef]](expectedResults.map(_.asJava): _*))
   }
 }
