@@ -90,6 +90,7 @@
         <module>graph</module>
         <module>graph-test</module>
         <module>mapstore-cassandra</module>
+        <module>mapstore-cassandra-test</module>
         <module>mapstore-core</module>
         <module>mapstore-core-test</module>
         <module>mapstore-dynamodb</module>

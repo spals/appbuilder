@@ -1,6 +1,7 @@
 package net.spals.appbuilder.app.dropwizard;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -81,10 +82,7 @@ public class PluginsDropwizardWebAppFTest {
     @Test
     public void testCassandraMapStoreInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
-
-        final TypeLiteral<FutureTask<Session>> sessionFutureKey =
-                new TypeLiteral<FutureTask<Session>>(){};
-        assertThat(serviceInjector.getInstance(Key.get(sessionFutureKey)), notNullValue());
+        assertThat(serviceInjector.getInstance(Cluster.class), notNullValue());
     }
 
     @Test

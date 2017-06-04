@@ -1,15 +1,16 @@
 package net.spals.appbuilder.mapstore.cassandra
 
 import java.io.Closeable
-import java.util.concurrent.FutureTask
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.{Date, Optional, UUID}
 import javax.annotation.PreDestroy
+import javax.validation.constraints.{Min, NotNull}
 
+import com.datastax.driver.core._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
-import com.datastax.driver.core.{CodecRegistry, DataType, Row, Session}
 import com.google.inject.Inject
+import com.netflix.governator.annotations
+import net.spals.appbuilder.annotations.config.ApplicationName
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.mapstore.core.MapStorePlugin
 import net.spals.appbuilder.mapstore.core.model.{MapQueryOptions, MapStoreKey, MapStoreTableKey}
@@ -18,28 +19,51 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
 
 /**
-  * Implementation of [[MapStorePlugin]] which
-  * uses Apache Cassandra.
+  * Implementation of [[MapStorePlugin]] which uses Apache Cassandra.
+  *
+  * NOTE: This uses a schema-less map to hold all row state such
+  * that Cassandra is used as a true key-value store. Some consider
+  * this an anti-pattern of Cassandra and CQL.
+  *
+  * TODO: Strongly-typed CassandraStore.
   *
   * @author tkral
   */
 @AutoBindInMap(baseClass = classOf[MapStorePlugin], key = "cassandra")
-private[cassandra] class CassandraMapStorePlugin @Inject() (sessionFuture: FutureTask[Session])
-  extends MapStorePlugin with Closeable {
+private[cassandra] class CassandraMapStorePlugin @Inject() (
+  @ApplicationName applicationName: String,
+  cluster: Cluster
+) extends MapStorePlugin with Closeable {
+
+  @annotations.Configuration("mapStore.cassandra.keyspace")
+  @volatile
+  private[cassandra] var configuredKeyspace: String = null
+
+  @Min(1L)
+  @annotations.Configuration("mapStore.cassandra.replicationFactor")
+  @volatile
+  private[cassandra] var replicationFactor: Int = 2
+
+  private[cassandra] val replicationStrategy: String = "SimpleStrategy"
 
   private lazy val codecRegistry = new CodecRegistry()
-  private val sessionInitialized = new AtomicBoolean(false)
+  private val keyspace = Option(configuredKeyspace).getOrElse(applicationName)
   private lazy val session = {
-    sessionInitialized.set(true)
-    sessionFuture.run()
-    sessionFuture.get()
+    val replicationOptions = Map[String, AnyRef]("replication_factor" -> Int.box(replicationFactor),
+      "class" -> replicationStrategy)
+    val createKeyspace = SchemaBuilder.createKeyspace(keyspace).ifNotExists().`with`().durableWrites(true)
+        .replication(replicationOptions.asJava)
+    val connectedSession = cluster.connect()
+    connectedSession.execute(createKeyspace)
+    val useKeyspace = s"USE $keyspace"
+    connectedSession.execute(useKeyspace)
+    connectedSession
   }
 
   @PreDestroy
   override def close() = {
-    if (sessionInitialized.get()) {
-      session.close()
-    }
+    // NOTE: Closes *all* sessions created with the cluster
+    cluster.close()
   }
 
   override def createTable(tableName: String, tableKey: MapStoreTableKey): Boolean = {
@@ -47,6 +71,7 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (sessionFuture: Futur
       .addPartitionKey(tableKey.getHashField, loadDataType(tableKey.getHashFieldType))
     tableKey.getRangeField.asScala
       .foreach(schemaBuilder.addClusteringColumn(_, loadDataType(tableKey.getRangeFieldType.get())))
+    schemaBuilder.addColumn("payload", DataType.map(DataType.varchar(), DataType.varchar()))
 
     session.execute(schemaBuilder.toString).wasApplied()
   }
@@ -106,17 +131,14 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (sessionFuture: Futur
 
     val keyFields = key.getRangeField.asScala.map(rangeField => List(key.getHashField, rangeField))
       .getOrElse(List(key.getHashField))
-    val keyValues = key.getRangeField.asScala.map(rangeField => List(key.getHashValue, key.getRangeKey.getValue))
-      .getOrElse(List(key.getHashValue)).asInstanceOf[List[AnyRef]]
+    val keyValues: List[AnyRef] = key.getRangeField.asScala
+      .map(rangeField => List(key.getHashValue, key.getRangeKey.getValue.asInstanceOf[AnyRef]))
+      .getOrElse(List[AnyRef](key.getHashValue))
 
-    val payloadFields = payload.asScala.keys
-    val payloadValues = payload.asScala.values
-
-    val allFields = (keyFields ++ payloadFields).asJava
-    val allValues = (keyValues ++ payloadValues).asJava
-
-    val queryBuilder = QueryBuilder.insertInto(tableName).values(allFields, allValues)
-    rowMapper().apply(session.execute(queryBuilder.toString).one())
+    val queryBuilder = QueryBuilder.insertInto(tableName).values(keyFields.asJava, keyValues.asJava)
+      .value("payload", payload)
+    session.execute(queryBuilder.toString)
+    getItem(tableName, key).get()
   }
 
   override def updateItem(tableName: String,
@@ -150,8 +172,17 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (sessionFuture: Futur
   }
 
   private[cassandra] def rowMapper(): Row => java.util.Map[String, AnyRef] = {
-    row => row.getColumnDefinitions.asList().asScala
-      .map(col => (col.getName, row.get(col.getName, codecRegistry.codecFor(col.getType))))
-      .toMap[String, AnyRef].asJava
+    row => {
+      val cols = row.getColumnDefinitions.asList().asScala
+      val rowMap = cols
+        .map(col => (col.getName, row.get(col.getName, codecRegistry.codecFor(col.getType))))
+        .toMap[String, AnyRef]
+      val rowMMap = collection.mutable.Map(rowMap.toSeq: _*)
+
+      val payloadMap = rowMMap.remove("payload").map(_.asInstanceOf[java.util.Map[String, AnyRef]].asScala)
+      val keyMap = rowMMap.toMap[String, AnyRef]
+
+      payloadMap.map(_ ++ keyMap).getOrElse(keyMap).asJava
+    }
   }
 }

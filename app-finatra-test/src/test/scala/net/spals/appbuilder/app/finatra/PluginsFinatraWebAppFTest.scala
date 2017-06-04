@@ -3,7 +3,7 @@ package net.spals.appbuilder.app.finatra
 import java.util.concurrent.FutureTask
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.datastax.driver.core.Session
+import com.datastax.driver.core.{Cluster, Session}
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
@@ -64,9 +64,7 @@ class PluginsFinatraWebAppFTest {
 
   @Test def testCassandraMapStoreInjection() {
     val serviceInjector = pluginsApp.getServiceInjector
-
-    val sessionFutureKey = new TypeLiteral[FutureTask[Session]](){}
-    assertThat(serviceInjector.getInstance(Key.get(sessionFutureKey)), notNullValue())
+    assertThat(serviceInjector.getInstance(classOf[Cluster]), notNullValue())
   }
 
   @Test def testDynamoDBMapStoreInjection() {
