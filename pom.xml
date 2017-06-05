@@ -96,6 +96,7 @@
         <module>mapstore-dynamodb</module>
         <module>mapstore-dynamodb-test</module>
         <module>message-core</module>
+        <module>message-core-test</module>
         <module>message-kafka</module>
         <module>message-kinesis</module>
         <module>model-core</module>
