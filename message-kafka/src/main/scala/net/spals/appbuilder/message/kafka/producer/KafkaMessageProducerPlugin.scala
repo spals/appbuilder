@@ -19,15 +19,15 @@ import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSeriali
   * @author tkral
   */
 @AutoBindInMap(baseClass = classOf[MessageProducerPlugin], key = "kafka")
-private[producer] class KafkaMessageProducerPlugin extends MessageProducerPlugin {
+private[kafka] class KafkaMessageProducerPlugin extends MessageProducerPlugin {
 
   @NotNull
   @Configuration("messageProducer.kafka.bootstrapServers")
-  private var bootstrapServers: String = null
+  private[kafka] var bootstrapServers: String = null
 
   @Min(0L)
   @Configuration("messageProducer.kafka.retries")
-  private var retries: Int = 0
+  private[kafka] var retries: Int = 0
 
   private val producerCache = CacheBuilder.newBuilder()
     .build(new CacheLoader[KafkaProducerConfig, KafkaProducer[String, Array[Byte]]] {

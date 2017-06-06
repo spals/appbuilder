@@ -98,6 +98,7 @@
         <module>message-core</module>
         <module>message-core-test</module>
         <module>message-kafka</module>
+        <module>message-kafka-test</module>
         <module>message-kinesis</module>
         <module>model-core</module>
         <module>model-core-test</module>
