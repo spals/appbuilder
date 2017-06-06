@@ -326,6 +326,12 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-message-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-model-core</artifactId>
                 <version>${project.version}</version>
             </dependency>

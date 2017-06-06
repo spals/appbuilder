@@ -5,7 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
-import net.spals.appbuilder.message.core.MessageConsumerCallback;
+import net.spals.appbuilder.message.core.TestMessageConsumerCallback;
 import net.spals.appbuilder.model.core.ModelSerializer;
 import org.testng.annotations.Test;
 
@@ -34,7 +34,7 @@ public class BlockingQueueMessageIT {
             .setTag("myTag").setGlobalId("myProducerId").setFormat("pojo")
             .setDestination("blockingQueue").setChannel("myChannel").build();
     private final MessageConsumerConfig consumerConfig = new MessageConsumerConfig.Builder()
-            .setTag("myTag").setGlobalId("myProducerId").setFormat("pojo")
+            .setTag("myTag").setGlobalId("myConsumerId").setFormat("pojo")
             .setSource("blockingQueue").setChannel("myChannel").build();
 
     @Test
@@ -42,8 +42,6 @@ public class BlockingQueueMessageIT {
         final CountDownLatch cdl = new CountDownLatch(1);
         final TestMessageConsumerCallback consumerCallback =
                 new TestMessageConsumerCallback(cdl, "payload");
-
-
 
         final BlockingQueueMessageConsumerPlugin consumerPlugin =
                 new BlockingQueueMessageConsumerPlugin(ConfigFactory.empty(),
@@ -72,33 +70,5 @@ public class BlockingQueueMessageIT {
                 .thenAnswer(invocationOnMock -> new String((byte[])invocationOnMock.getArgument(0)));
 
         return modelSerializer;
-    }
-
-    private static class TestMessageConsumerCallback implements MessageConsumerCallback<String> {
-
-        private final CountDownLatch cdl;
-        private final String expectedPayload;
-
-        TestMessageConsumerCallback(final CountDownLatch cdl,
-                                    final String expectedPayload) {
-            this.cdl = cdl;
-            this.expectedPayload = expectedPayload;
-        }
-
-        @Override
-        public String getTag() {
-            return "myTag";
-        }
-
-        @Override
-        public Class<String> getPayloadType() {
-            return String.class;
-        }
-
-        @Override
-        public void processMessage(final MessageConsumerConfig consumerConfig, final String payload) {
-            assertThat(payload, is(expectedPayload));
-            cdl.countDown();
-        }
     }
 }
