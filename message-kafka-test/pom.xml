@@ -71,15 +71,6 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>discover-zookeeper-ip</id>
-                        <goals>
-                            <goal>local-ip</goal>
-                        </goals>
-                        <configuration>
-                            <localIpProperty>zookeeper.ip</localIpProperty>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>discover-kafka-ip</id>
                         <goals>
                             <goal>local-ip</goal>
@@ -114,14 +105,15 @@
                             <name>wurstmeister/kafka:${kafka-clients.version}</name>
                             <alias>kafka</alias>
                             <run>
+                                <env>
+                                    <KAFKA_ADVERTISED_HOST_NAME>${kafka.ip}</KAFKA_ADVERTISED_HOST_NAME>
+                                </env>
+                                <links>
+                                    <link>zookeeper:zk</link>
+                                </links>
                                 <ports>
                                     <port>${kafka.port}:9092</port>
                                 </ports>
-                                <env>
-                                    <KAFKA_ADVERTISED_HOST_NAME>${kafka.ip}</KAFKA_ADVERTISED_HOST_NAME>
-                                    <KAFKA_ADVERTISED_PORT>${kafka.port}</KAFKA_ADVERTISED_PORT>
-                                    <KAFKA_ZOOKEEPER_CONNECT>${zookeeper.ip}:${zookeeper.port}</KAFKA_ZOOKEEPER_CONNECT>
-                                </env>
                                 <volumes>
                                     <bind>
                                         <volume>/var/run/docker.sock:/var/run/docker.sock</volume>
