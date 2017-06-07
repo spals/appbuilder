@@ -100,8 +100,8 @@
                                     <port>${zookeeper.port}:2181</port>
                                 </ports>
                                 <wait>
-                                    <!-- Allow 5 seconds for zookeeper container to boot-->
-                                    <time>5000</time>
+                                    <log>binding to port</log>
+                                    <time>2000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                             </run>
@@ -115,13 +115,18 @@
                                 </ports>
                                 <env>
                                     <KAFKA_ADVERTISED_HOST_NAME>${kafka.ip}</KAFKA_ADVERTISED_HOST_NAME>
-                                    <KAFKA_ZOOKEEPER_CONNECT>zookeeper:${zookeeper.port}</KAFKA_ZOOKEEPER_CONNECT>
+                                    <KAFKA_ADVERTISED_PORT>${kafka.port}</KAFKA_ADVERTISED_PORT>
+                                    <KAFKA_ZOOKEEPER_CONNECT>${zookeeper.ip}:${zookeeper.port}</KAFKA_ZOOKEEPER_CONNECT>
                                 </env>
                                 <volumes>
                                     <bind>
                                         <volume>/var/run/docker.sock:/var/run/docker.sock</volume>
                                     </bind>
                                 </volumes>
+                                <wait>
+                                    <time>5000</time>
+                                    <shutdown>500</shutdown>
+                                </wait>
                             </run>
                         </image>
                     </images>

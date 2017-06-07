@@ -91,8 +91,8 @@
                                     <port>cassandra.port:9042</port>
                                 </ports>
                                 <wait>
-                                    <!-- Allow 20 seconds for cassandra container to boot-->
-                                    <time>20000</time>
+                                    <log>listening for CQL clients</log>
+                                    <time>45000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                             </run>
