@@ -96,7 +96,7 @@
                                 </ports>
                                 <wait>
                                     <log>listening for CQL clients</log>
-                                    <time>45000</time>
+                                    <time>60000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                             </run>

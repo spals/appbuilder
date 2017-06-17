@@ -88,39 +88,19 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>wurstmeister/zookeeper:latest</name>
-                            <alias>zookeeper</alias>
-                            <run>
-                                <ports>
-                                    <port>${zookeeper.port}:2181</port>
-                                </ports>
-                                <wait>
-                                    <log>binding to port</log>
-                                    <time>2000</time>
-                                    <shutdown>500</shutdown>
-                                </wait>
-                            </run>
-                        </image>
-                        <image>
-                            <name>wurstmeister/kafka:${kafka-clients.version}</name>
+                            <name>spotify/kafka:latest</name>
                             <alias>kafka</alias>
                             <run>
                                 <env>
-                                    <KAFKA_ADVERTISED_HOST_NAME>${kafka.ip}</KAFKA_ADVERTISED_HOST_NAME>
+                                    <ADVERTISED_HOST_NAME>${kafka.ip}</ADVERTISED_HOST_NAME>
+                                    <ADVERTISED_PORT>${kafka.port}</ADVERTISED_PORT>
                                 </env>
-                                <links>
-                                    <link>zookeeper:zk</link>
-                                </links>
                                 <ports>
+                                    <port>${zookeeper.port}:2181</port>
                                     <port>${kafka.port}:9092</port>
                                 </ports>
-                                <volumes>
-                                    <bind>
-                                        <volume>/var/run/docker.sock:/var/run/docker.sock</volume>
-                                    </bind>
-                                </volumes>
                                 <wait>
-                                    <time>5000</time>
+                                    <time>2000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                             </run>
