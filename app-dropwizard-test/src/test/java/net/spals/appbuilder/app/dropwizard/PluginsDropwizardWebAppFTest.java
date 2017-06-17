@@ -1,6 +1,7 @@
 package net.spals.appbuilder.app.dropwizard;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -8,6 +9,8 @@ import com.google.inject.TypeLiteral;
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
 import net.spals.appbuilder.app.dropwizard.plugins.PluginsDropwizardWebApp;
+import net.spals.appbuilder.filestore.core.FileStore;
+import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -48,6 +51,20 @@ public class PluginsDropwizardWebAppFTest {
     }
 
     @Test
+    public void testFileStoreInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(FileStore.class), notNullValue());
+
+        final TypeLiteral<Map<String, FileStorePlugin>> fileStorePluginMapKey =
+                new TypeLiteral<Map<String, FileStorePlugin>>(){};
+        final Map<String, FileStorePlugin> fileStorePluginMap =
+                serviceInjector.getInstance(Key.get(fileStorePluginMapKey));
+        assertThat(fileStorePluginMap, aMapWithSize(2));
+        assertThat(fileStorePluginMap, hasKey("localFS"));
+        assertThat(fileStorePluginMap, hasKey("s3"));
+    }
+
+    @Test
     public void testMapStoreInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
         assertThat(serviceInjector.getInstance(MapStore.class), notNullValue());
@@ -65,10 +82,7 @@ public class PluginsDropwizardWebAppFTest {
     @Test
     public void testCassandraMapStoreInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
-
-        final TypeLiteral<FutureTask<Session>> sessionFutureKey =
-                new TypeLiteral<FutureTask<Session>>(){};
-        assertThat(serviceInjector.getInstance(Key.get(sessionFutureKey)), notNullValue());
+        assertThat(serviceInjector.getInstance(Cluster.class), notNullValue());
     }
 
     @Test

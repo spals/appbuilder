@@ -47,13 +47,13 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
     BlockingQueueMessageConsumerPlugin(@ServiceConfig final Config serviceConfig,
                                        final Set<MessageConsumerCallback<?>> consumerCallbackSet,
                                        final ExecutorServiceFactory executorServiceFactory,
-                                       @Named("blockingMessageQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
+                                       @Named("message.blockingQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
         this.pollTimeout = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("blockingQueue.messageConsumer.pollTimeout"))
-                .map(config -> config.getLong("blockingQueue.messageConsumer.pollTimeout")).orElse(10L);
+                .filter(config -> config.hasPath("messageConsumer.blockingQueue.pollTimeout"))
+                .map(config -> config.getLong("messageConsumer.blockingQueue.pollTimeout")).orElse(10L);
         this.pollTimeoutUnit = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("blockingQueue.messageConsumer.pollTimeoutUnit"))
-                .map(config -> config.getEnum(TimeUnit.class, "blockingQueue.messageConsumer.pollTimeoutUnit")).orElse(TimeUnit.MILLISECONDS);
+                .filter(config -> config.hasPath("messageConsumer.blockingQueue.pollTimeoutUnit"))
+                .map(config -> config.getEnum(TimeUnit.class, "messageConsumer.blockingQueue.pollTimeoutUnit")).orElse(TimeUnit.MILLISECONDS);
 
         this.consumerCallbackSet = consumerCallbackSet;
         this.blockingMessageQueue = blockingMessageQueue;

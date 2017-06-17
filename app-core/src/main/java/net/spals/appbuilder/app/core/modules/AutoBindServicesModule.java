@@ -251,7 +251,7 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                         || javax.inject.Provider.class.isAssignableFrom(singletonClazz))
                 .collect(Collectors.toSet());
         checkState(invalidSingletons.isEmpty(),
-                "@$s can only annotate non-Provider classes: %s", annotationClazz.getSimpleName(), invalidSingletons);
+                "@AutoBindSingleton can only annotate non-Provider classes: %s", annotationClazz.getSimpleName(), invalidSingletons);
     }
 
     /**

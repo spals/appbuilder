@@ -3,10 +3,7 @@ package net.spals.appbuilder.filestore.core.localfs;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import net.spals.appbuilder.filestore.core.model.FileMetadata;
-import net.spals.appbuilder.filestore.core.model.FileSecurityLevel;
-import net.spals.appbuilder.filestore.core.model.FileStoreKey;
-import net.spals.appbuilder.filestore.core.model.PutFileRequest;
+import net.spals.appbuilder.filestore.core.model.*;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
@@ -21,11 +18,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Unit tests for {@link LocalFSFileStorePlugin}.
+ * Functional tests for {@link LocalFSFileStorePlugin}.
  *
  * @author tkral
  */
-public class LocalFSFileStorePluginTest {
+public class LocalFSFileStorePluginFTest {
 
     @Test
     public void testPutFile() throws IOException {
@@ -33,7 +30,7 @@ public class LocalFSFileStorePluginTest {
         final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
 
         final FileStoreKey fileKey = new FileStoreKey.Builder()
-                .setPartition("LocalFSFileStorePluginTest")
+                .setPartition("LocalFSFileStorePluginFTest")
                 .setId("testPutFile.txt")
                 .build();
         final InputStream fileStream = new ByteArrayInputStream("abcde".getBytes());
@@ -42,7 +39,9 @@ public class LocalFSFileStorePluginTest {
         final FileMetadata fileMetadata = fileStorePlugin.putFile(fileKey, putFileRequest);
         assertThat(fileMetadata.getURI().getScheme(), is("file"));
         assertThat(fileMetadata.getURI().getPath(),
-                is(String.format("%s/LocalFSFileStorePluginTest/testPutFile.txt", basePath)));
+                is(String.format("%s/LocalFSFileStorePluginFTest/testPutFile.txt", basePath)));
+        assertThat(fileMetadata.getSecurityLevel(), is(FileSecurityLevel.PUBLIC));
+        assertThat(fileMetadata.getStoreLocation(), is(FileStoreLocation.LOCAL));
         assertThat(java.nio.file.Files.getPosixFilePermissions(Paths.get(fileMetadata.getURI())), hasItem(OTHERS_READ));
     }
 
@@ -52,7 +51,7 @@ public class LocalFSFileStorePluginTest {
         final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
 
         final FileStoreKey fileKey = new FileStoreKey.Builder()
-                .setPartition("LocalFSFileStorePluginTest")
+                .setPartition("LocalFSFileStorePluginFTest")
                 .setId("testPutFileReplace.txt")
                 .build();
         final InputStream fileStream1 = new ByteArrayInputStream("abcde".getBytes());
@@ -74,7 +73,7 @@ public class LocalFSFileStorePluginTest {
         final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
 
         final FileStoreKey fileKey = new FileStoreKey.Builder()
-                .setPartition("LocalFSFileStorePluginTest")
+                .setPartition("LocalFSFileStorePluginFTest")
                 .setId("testGetFile.txt")
                 .build();
         final InputStream fileStream = new ByteArrayInputStream("abcde".getBytes());
@@ -93,7 +92,7 @@ public class LocalFSFileStorePluginTest {
         final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
 
         final FileStoreKey fileKey = new FileStoreKey.Builder()
-                .setPartition("LocalFSFileStorePluginTest")
+                .setPartition("LocalFSFileStorePluginFTest")
                 .setId("testDeleteFile.txt")
                 .build();
         final InputStream fileStream = new ByteArrayInputStream("abcde".getBytes());
@@ -113,7 +112,7 @@ public class LocalFSFileStorePluginTest {
         final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
 
         final FileStoreKey fileKey = new FileStoreKey.Builder()
-                .setPartition("LocalFSFileStorePluginTest")
+                .setPartition("LocalFSFileStorePluginFTest")
                 .setId("testPrivateFile.txt")
                 .build();
         final InputStream fileStream = new ByteArrayInputStream("abcde".getBytes());

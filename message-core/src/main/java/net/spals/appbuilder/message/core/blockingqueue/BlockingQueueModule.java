@@ -27,14 +27,14 @@ class BlockingQueueModule extends AbstractModule {
 
     @Inject
     BlockingQueueModule(@ServiceConfig final Config serviceConfig) {
-        this.queueSize = Optional.of(serviceConfig).filter(config -> config.hasPath("blockingQueue.size"))
-                .map(config -> config.getInt("blockingQueue.size")).orElse(Integer.MAX_VALUE);
+        this.queueSize = Optional.of(serviceConfig).filter(config -> config.hasPath("message.blockingQueue.size"))
+                .map(config -> config.getInt("message.blockingQueue.size")).orElse(Integer.MAX_VALUE);
     }
 
     @Override
     protected void configure() {
         binder().bind(new TypeLiteral<BlockingQueue<BlockingQueueMessage>>(){})
-                .annotatedWith(Names.named("blockingMessageQueue"))
+                .annotatedWith(Names.named("message.blockingQueue"))
                 .toInstance(new LinkedBlockingQueue<>(queueSize));
     }
 }

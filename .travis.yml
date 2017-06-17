@@ -3,12 +3,15 @@ language: java
 jdk:
   - oraclejdk8
 
-# Run on container-based infrastructure
-sudo: false
+# Require sudo for docker service
+sudo: required
 
 cache:
   directories:
     - ${HOME}/.m2/repository
+
+services:
+  - docker
 
 before_install:
   - if [ ! -z "${GPG_SECRET_KEYS}" ]; then echo ${GPG_SECRET_KEYS} | base64 --decode | ${GPG_EXECUTABLE} --import; fi
@@ -18,7 +21,7 @@ before_install:
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/settings.xml -O ${TRAVIS_BUILD_DIR}/.travis/settings.xml
 
 script:
-  - mvn --batch-mode --settings .travis/settings.xml --show-version test
+  - mvn --batch-mode --settings .travis/settings.xml --show-version verify
 
 before_deploy:
   - mvn --settings .travis/settings.xml --show-version dependency:resolve -Ddeploy

@@ -16,6 +16,7 @@ import net.spals.appbuilder.mapstore.core.MapStorePlugin
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.{Extended, Standard}
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHolder
 import net.spals.appbuilder.mapstore.core.model.{MapQueryOptions, MapStoreKey, MapStoreTableKey}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
@@ -29,6 +30,7 @@ import scala.compat.java8.OptionConverters._
 @AutoBindInMap(baseClass = classOf[MapStorePlugin], key = "dynamoDB")
 private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: AmazonDynamoDB)
   extends MapStorePlugin with Closeable {
+  private val LOGGER = LoggerFactory.getLogger(classOf[DynamoDBMapStorePlugin])
 
   private val dynamoDB = new DynamoDB(dynamoDBClient)
 
@@ -37,6 +39,7 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
 
   override def createTable(tableName: String,
                            tableKey: MapStoreTableKey): Boolean = {
+    // Add hash key information to the create table request
     val hashKeyAttrDef = new AttributeDefinition().withAttributeName(tableKey.getHashField)
       .withAttributeType(createAttributeType(tableKey.getHashFieldType))
     val hashKeySchema = new KeySchemaElement(tableKey.getHashField, KeyType.HASH)
@@ -45,6 +48,7 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
       .withAttributeDefinitions(hashKeyAttrDef)
       .withKeySchema(hashKeySchema)
 
+    // Add range key information to the create table request (if necessary)
     tableKey.getRangeField.asScala.foreach(rangeField => {
       val rangeKeyAttrDef = new AttributeDefinition().withAttributeName(rangeField)
         .withAttributeType(createAttributeType(tableKey.getRangeFieldType.get()))
@@ -53,6 +57,10 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
       createTableRequest.withAttributeDefinitions(rangeKeyAttrDef)
         .withKeySchema(rangeKeySchema)
     })
+
+    // Add minimal provisioned throughput to the table
+    val provisionedThroughput = new ProvisionedThroughput().withReadCapacityUnits(1L).withWriteCapacityUnits(1L)
+    createTableRequest.withProvisionedThroughput(provisionedThroughput)
 
     TableUtils.createTableIfNotExists(dynamoDBClient, createTableRequest)
   }
@@ -67,7 +75,11 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     val table = dynamoDB.getTable(tableName)
     val primaryKey = createPrimaryKey(key)
 
-    table.deleteItem(primaryKey)
+    val deleteItemOutcome = table.deleteItem(primaryKey)
+    if (LOGGER.isTraceEnabled) {
+      LOGGER.trace(s"Capacity used for deleteItem on table $tableName: " +
+        s"${deleteItemOutcome.getDeleteItemResult.getConsumedCapacity}")
+    }
   }
 
   override def getAllItems(tableName: String): java.util.List[java.util.Map[String, AnyRef]] = {
@@ -80,7 +92,13 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     val table = dynamoDB.getTable(tableName)
     val primaryKey = createPrimaryKey(key)
 
-    Option(table.getItem(primaryKey)).map(_.asMap()).asJava
+    val getItemOutcome = table.getItemOutcome(primaryKey)
+    if (LOGGER.isTraceEnabled) {
+      LOGGER.trace(s"Capacity used for getItem on table $tableName: " +
+        s"${getItemOutcome.getGetItemResult.getConsumedCapacity}")
+    }
+
+    Option(getItemOutcome.getItem).map(_.asMap()).asJava
   }
 
   override def getItems(tableName: String,
@@ -104,7 +122,13 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
 
     stripKey(key, payload)
     val item = Item.fromMap(payload).withPrimaryKey(primaryKey)
-    table.putItem(item).getItem.asMap()
+    val putItemOutcome = table.putItem(item)
+    if (LOGGER.isTraceEnabled) {
+      LOGGER.trace(s"Capacity used for putItem on table $tableName: " +
+        s"${putItemOutcome.getPutItemResult.getConsumedCapacity}")
+    }
+
+    Option(putItemOutcome.getItem).map(_.asMap()).getOrElse(item.asMap())
   }
 
   override def updateItem(tableName: String,
@@ -124,14 +148,28 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
         }
       }).toArray
 
-    table.updateItem(primaryKey, attrUpdates: _*).getItem.asMap()
+    val updateItemOutcome = table.updateItem(primaryKey, attrUpdates: _*)
+    if (LOGGER.isTraceEnabled) {
+      LOGGER.trace(s"Capacity used for updateItem on table $tableName: " +
+        s"${updateItemOutcome.getUpdateItemResult.getConsumedCapacity}")
+    }
+
+    Option(updateItemOutcome.getItem).map(_.asMap())
+      .getOrElse(table.getItem(primaryKey).asMap())
   }
 
   @VisibleForTesting
   private[dynamodb] def createAttributeType(fieldType: Class[_]): ScalarAttributeType = {
     fieldType match {
-      case fType if fType.equals(classOf[Boolean]) || fType.equals(classOf[java.lang.Boolean]) => ScalarAttributeType.B
-      case fType if classOf[java.lang.Number].isAssignableFrom(fType) => ScalarAttributeType.N
+      case booleanType if booleanType.equals(classOf[Boolean]) => ScalarAttributeType.B
+      case byteType if byteType.equals(classOf[Byte]) => ScalarAttributeType.N
+      case doubleType if doubleType.equals(classOf[Double]) => ScalarAttributeType.N
+      case floatType if floatType.equals(classOf[Float]) => ScalarAttributeType.N
+      case intType if intType.equals(classOf[Int]) => ScalarAttributeType.N
+      case javaBooleanType if javaBooleanType.equals(classOf[java.lang.Boolean]) => ScalarAttributeType.B
+      case javaNumberType if classOf[java.lang.Number].isAssignableFrom(javaNumberType) => ScalarAttributeType.N
+      case longType if longType.equals(classOf[Long]) => ScalarAttributeType.N
+      case shortType if shortType.equals(classOf[Short]) => ScalarAttributeType.N
       case _ => ScalarAttributeType.S
     }
   }

@@ -37,16 +37,16 @@ class BlockingQueueMessageProducerPlugin implements MessageProducerPlugin {
 
     @Inject
     BlockingQueueMessageProducerPlugin(@ServiceConfig final Config serviceConfig,
-                                       @Named("blockingMessageQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
+                                       @Named("message.blockingQueue") final BlockingQueue<BlockingQueueMessage> blockingMessageQueue) {
         this.blockingMessageQueue = blockingMessageQueue;
         this.offerTimeout = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("blockingQueue.messageProducer.offerTimeout"))
-                .map(config -> config.getLong("blockingQueue.messageProducer.offerTimeout"));
+                .filter(config -> config.hasPath("messageProducer.blockingQueue.offerTimeout"))
+                .map(config -> config.getLong("messageProducer.blockingQueue.offerTimeout"));
         this.offerTimeoutUnit = Optional.of(serviceConfig)
-                .filter(config -> config.hasPath("blockingQueue.messageProducer.offerTimeoutUnit"))
-                .map(config -> config.getEnum(TimeUnit.class, "blockingQueue.messageProducer.offerTimeoutUnit"));
+                .filter(config -> config.hasPath("messageProducer.blockingQueue.offerTimeoutUnit"))
+                .map(config -> config.getEnum(TimeUnit.class, "messageProducer.blockingQueue.offerTimeoutUnit"));
         checkState(offerTimeout.isPresent() == offerTimeoutUnit.isPresent(),
-                "blockingQueue.messageProducer.offerTimeout and blockingQueue.messageProducer.offerTimeoutUnit must both have values");
+                "messageProducer.blockingQueue.offerTimeout and messageProducer.blockingQueue.offerTimeoutUnit must both have values");
     }
 
     @Override

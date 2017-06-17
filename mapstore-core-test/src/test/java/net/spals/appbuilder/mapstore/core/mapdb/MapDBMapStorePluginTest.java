@@ -20,12 +20,15 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions;
-import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.*;
+import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.equalTo;
+import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.greaterThan;
+import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.greaterThanOrEqualTo;
+import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.lessThan;
+import static net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.lessThanOrEqualTo;
 import static net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between;
 import static net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Unit tests for {@link MapDBMapStorePlugin}
@@ -49,12 +52,21 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "emptyGetProvider")
-    public void testEmptyGet(final MapStoreTableKey tableKey,
-                             final MapStoreKey storeKey) throws IOException {
+    public void testEmptyGetItem(final MapStoreTableKey tableKey,
+                                 final MapStoreKey storeKey) throws IOException {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         storePlugin.createTable("myTable", tableKey);
 
         assertThat(storePlugin.getItem("myTable", storeKey), is(Optional.empty()));
+    }
+
+    @Test(dataProvider = "emptyGetProvider")
+    public void testEmptyGetItems(final MapStoreTableKey tableKey,
+                                  final MapStoreKey storeKey) throws IOException {
+        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
+        storePlugin.createTable("myTable", tableKey);
+
+        assertThat(storePlugin.getItems("myTable", storeKey, defaultOptions()), empty());
     }
 
     @DataProvider

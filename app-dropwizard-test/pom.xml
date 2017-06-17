@@ -52,6 +52,10 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-filestore-s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-mapstore-cassandra</artifactId>
         </dependency>
         <dependency>

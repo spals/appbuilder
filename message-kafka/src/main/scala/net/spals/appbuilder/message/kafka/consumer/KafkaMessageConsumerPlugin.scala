@@ -26,18 +26,18 @@ import scala.collection.mutable;
   * @author tkral
   */
 @AutoBindInMap(baseClass = classOf[MessageConsumerPlugin], key = "kafka")
-private[consumer] class KafkaMessageConsumerPlugin @Inject()
+private[kafka] class KafkaMessageConsumerPlugin @Inject()
   (consumerCallbackSet: java.util.Set[MessageConsumerCallback[_]],
    executorServiceFactory: ExecutorServiceFactory)
   extends MessageConsumerPlugin {
 
   @NotNull
-  @Configuration("kafka.messageConsumer.bootstrapServers")
-  private var bootstrapServers: String = null
+  @Configuration("messageConsumer.kafka.bootstrapServers")
+  private[kafka] var bootstrapServers: String = null
 
   @Min(2L)
-  @Configuration("kafka.messageConsumer.numThreads")
-  private var numThreads: Int = 2
+  @Configuration("messageConsumer.kafka.numThreads")
+  private[kafka] var numThreads: Int = 2
 
   private val consumerRunnableCache = mutable.Map[MessageConsumerConfig, KafkaConsumerRunnable]()
 
