@@ -13,7 +13,7 @@ private[producer] case class KafkaProducerCallback(producerConfig: MessageProduc
 
   override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
     (metadata, exception) match {
-      case (_, null) => LOGGER.trace(s"Successfully send message on kafka: partition=${metadata.partition()},offset=${metadata.offset()}")
+      case (_, null) => LOGGER.trace(s"Successfully sent message on kafka: partition=${metadata.partition()},offset=${metadata.offset()}")
       case (null, _) => LOGGER.error("Error occurred while sending message on kafka", exception)
     }
   }
