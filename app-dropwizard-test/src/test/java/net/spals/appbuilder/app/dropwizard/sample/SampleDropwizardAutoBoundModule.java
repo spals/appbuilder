@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.core.sample;
+package net.spals.appbuilder.app.dropwizard.sample;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;
@@ -13,12 +13,12 @@ import net.spals.appbuilder.annotations.service.AutoBindModule;
  * @author tkral
  */
 @AutoBindModule
-public class SampleAutoBoundCoreModule implements Module {
+class SampleDropwizardAutoBoundModule implements Module {
 
     private final String applicationName;
 
     @Inject
-    SampleAutoBoundCoreModule(@ApplicationName final String applicationName) {
+    SampleDropwizardAutoBoundModule(@ApplicationName final String applicationName) {
         this.applicationName = applicationName;
     }
 

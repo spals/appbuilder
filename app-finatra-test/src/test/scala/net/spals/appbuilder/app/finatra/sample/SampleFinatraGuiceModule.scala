@@ -9,7 +9,7 @@ import com.google.inject.name.Names
   *
   * @author tkral
   */
-private[sample] class SampleGuiceModule extends AbstractModule {
+private[sample] class SampleFinatraGuiceModule extends AbstractModule {
   override def configure(): Unit = {
     binder.bind(classOf[String]).annotatedWith(Names.named("GuiceModule")).toInstance(this.getClass.getName)
   }

@@ -53,8 +53,8 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
                 .addDefaultServices(MessageConsumer.class, MessageProducer.class)
                 .addDefaultServices(ModelSerializer.class)
                 .build())
-            .addBootstrapModule(new SampleBootstrapModule())
-            .addModule(new SampleGuiceModule());
+            .addBootstrapModule(new SampleDropwizardBootstrapModule())
+            .addModule(new SampleDropwizardGuiceModule());
     }
 
     @Override

@@ -25,10 +25,8 @@ class SampleFinatraWebApp extends FinatraWebApp {
     .addDefaultServices(classOf[MessageConsumer], classOf[MessageProducer])
     .addDefaultServices(classOf[ModelSerializer])
     .build())
-  addModule(new SampleGuiceModule)
-  addModule(new SampleTwitterModule)
+  addModule(new SampleFinatraGuiceModule)
+  addModule(new SampleFinatraTwitterModule)
   build()
 
 }
-
-

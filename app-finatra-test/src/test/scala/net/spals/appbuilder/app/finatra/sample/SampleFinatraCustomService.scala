@@ -8,4 +8,4 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton
   * @author tkral
   */
 @AutoBindSingleton
-private[finatra] class SampleCustomService { }
+private[finatra] class SampleFinatraCustomService { }

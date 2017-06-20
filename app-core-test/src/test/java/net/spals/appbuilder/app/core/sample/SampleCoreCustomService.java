@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.sample;
+package net.spals.appbuilder.app.core.sample;
 
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
@@ -8,7 +8,7 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton;
  * @author tkral
  */
 @AutoBindSingleton
-public class SampleCustomService {
+public class SampleCoreCustomService {
 
-    SampleCustomService() {  }
+    SampleCoreCustomService() {  }
 }

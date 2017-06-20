@@ -1,16 +1,15 @@
-package net.spals.appbuilder.app.dropwizard.sample;
+package net.spals.appbuilder.app.core.sample;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 
 /**
- * A sample guice {@link Module} for
- * {@link net.spals.appbuilder.app.dropwizard.DropwizardWebApp.Builder#addModule(Module)}
+ * A sample guice {@link Module}.
  *
  * @author tkral
  */
-class SampleGuiceModule extends AbstractModule {
+public class SampleCoreGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {

@@ -5,9 +5,9 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
-import net.spals.appbuilder.app.core.sample.SampleBootstrapCoreModule;
-import net.spals.appbuilder.app.core.sample.SampleCustomCoreService;
-import net.spals.appbuilder.app.core.sample.SampleGuiceCoreModule;
+import net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule;
+import net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule;
+import net.spals.appbuilder.app.core.sample.SampleCoreCustomService;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
@@ -49,8 +49,8 @@ public class SampleGenericWorkerAppFTest {
                     .addDefaultServices(MessageConsumer.class, MessageProducer.class)
                     .addDefaultServices(ModelSerializer.class)
                     .build())
-            .addBootstrapModule(new SampleBootstrapCoreModule())
-            .addModule(new SampleGuiceCoreModule())
+            .addBootstrapModule(new SampleCoreBootstrapModule())
+            .addModule(new SampleCoreGuiceModule())
             .build();
 
     @DataProvider
@@ -70,9 +70,9 @@ public class SampleGenericWorkerAppFTest {
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "sample:net.spals.appbuilder.app.core.sample.SampleAutoBoundCoreModule"},
-                {"BootstrapModule", "net.spals.appbuilder.app.core.sample.SampleBootstrapCoreModule"},
-                {"GuiceModule", "net.spals.appbuilder.app.core.sample.SampleGuiceCoreModule"},
+                {"AutoBoundModule", "sample:net.spals.appbuilder.app.core.sample.SampleCoreAutoBoundModule"},
+                {"BootstrapModule", "net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule"},
+                {"GuiceModule", "net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule"},
         };
     }
 
@@ -86,7 +86,7 @@ public class SampleGenericWorkerAppFTest {
     @Test
     public void testCustomServiceInjection() {
         final Injector serviceInjector = sampleApp.getServiceInjector();
-        assertThat(serviceInjector.getInstance(SampleCustomCoreService.class), notNullValue());
+        assertThat(serviceInjector.getInstance(SampleCoreCustomService.class), notNullValue());
     }
 
     @Test

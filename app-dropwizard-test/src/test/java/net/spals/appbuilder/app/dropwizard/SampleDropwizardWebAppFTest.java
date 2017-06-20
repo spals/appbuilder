@@ -7,7 +7,7 @@ import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
-import net.spals.appbuilder.app.dropwizard.sample.SampleCustomService;
+import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomService;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
@@ -70,9 +70,9 @@ public class SampleDropwizardWebAppFTest {
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "SampleDropwizardWebApp:net.spals.appbuilder.app.dropwizard.sample.SampleAutoBoundModule"},
-                {"BootstrapModule", "net.spals.appbuilder.app.dropwizard.sample.SampleBootstrapModule"},
-                {"GuiceModule", "net.spals.appbuilder.app.dropwizard.sample.SampleGuiceModule"},
+                {"AutoBoundModule", "SampleDropwizardWebApp:net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardAutoBoundModule"},
+                {"BootstrapModule", "net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardBootstrapModule"},
+                {"GuiceModule", "net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardGuiceModule"},
         };
     }
 
@@ -86,7 +86,7 @@ public class SampleDropwizardWebAppFTest {
     @Test
     public void testCustomServiceInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
-        assertThat(serviceInjector.getInstance(SampleCustomService.class), notNullValue());
+        assertThat(serviceInjector.getInstance(SampleDropwizardCustomService.class), notNullValue());
     }
 
     @Test
