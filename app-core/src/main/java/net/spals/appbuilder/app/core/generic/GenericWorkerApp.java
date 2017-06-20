@@ -32,33 +32,6 @@ import org.slf4j.Logger;
 @FreeBuilder
 public abstract class GenericWorkerApp implements App {
 
-    abstract LifecycleInjector getLifecycleInjector();
-
-    @Override
-    public final Injector getServiceInjector() {
-        // 1. Startup the Governator LifecycleManager
-        final LifecycleManager lifecycleManager = getLifecycleInjector().getLifecycleManager();
-        try {
-            lifecycleManager.start();
-        } catch (Exception e) {
-            getLogger().error("Error during LifecycleManager start", e);
-            throw new RuntimeException(e);
-        }
-
-        // 2. Ensure that we shut everything down properly
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            getLogger().info("Shutting down {} application.", getName());
-            lifecycleManager.close();
-        }));
-        // 3. Grab the Guice injector from which we can get service references
-        final Injector serviceInjecter = getLifecycleInjector().createInjector();
-        // 4. Output the service graph
-        final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
-        serviceGraphWriter.writeServiceGraph();
-
-        return serviceInjecter;
-    }
-
     public static class Builder extends GenericWorkerApp_Builder implements WorkerAppBuilder<GenericWorkerApp> {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
@@ -154,8 +127,33 @@ public abstract class GenericWorkerApp implements App {
             addBootstrapModule(new BootstrapModuleWrapper(serviceGraphModuleBuilder.build()));
             addModule(servicesModuleBuilder.build());
 
-            setLifecycleInjector(lifecycleInjectorBuilder.build());
+            setServiceInjector(buildServiceInjector(lifecycleInjectorBuilder));
             return super.build();
+        }
+
+        private Injector buildServiceInjector(final LifecycleInjectorBuilder lifecycleInjectorBuilder) {
+            // 1. Startup the Governator LifecycleManager
+            final LifecycleInjector lifecycleInjector = lifecycleInjectorBuilder.build();
+            final LifecycleManager lifecycleManager = lifecycleInjector.getLifecycleManager();
+            try {
+                lifecycleManager.start();
+            } catch (Exception e) {
+                getLogger().error("Error during LifecycleManager start", e);
+                throw new RuntimeException(e);
+            }
+
+            // 2. Ensure that we shut everything down properly
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                getLogger().info("Shutting down {} application.", getName());
+                lifecycleManager.close();
+            }));
+            // 3. Grab the Guice injector from which we can get service references
+            final Injector serviceInjecter = lifecycleInjector.createInjector();
+            // 4. Output the service graph
+            final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
+            serviceGraphWriter.writeServiceGraph();
+
+            return serviceInjecter;
         }
     }
 

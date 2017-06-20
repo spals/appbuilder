@@ -30,11 +30,11 @@ class MinimalFinatraWebAppFTest {
     testServerWrapper.close()
   }
 
-  @Test def testBasicFinatraWebAppLogger() {
+  @Test def testFinatraWebAppLogger() {
     assertThat(minimalApp.getLogger, instanceOf[slf4j.Logger](classOf[slf4j.Logger]))
   }
 
-  @Test def testBasicFinatraWebAppName() {
+  @Test def testFinatraWebAppName() {
     assertThat(minimalApp.getName, is("net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp"))
   }
 
