@@ -3,7 +3,7 @@ package net.spals.appbuilder.app.core.sample;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
 /**
- * An auto-bound service for [[SampleDropwizardWebApp]]
+ * A sample auto-bound service.
  *
  * @author tkral
  */

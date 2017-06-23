@@ -6,8 +6,7 @@ import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 
 /**
- * A sample guice {@link BootstrapModule} for
- * {@link net.spals.appbuilder.app.dropwizard.DropwizardWebApp.Builder#addModule(Module)}
+ * A sample guice {@link BootstrapModule}.
  *
  * @author tkral
  */

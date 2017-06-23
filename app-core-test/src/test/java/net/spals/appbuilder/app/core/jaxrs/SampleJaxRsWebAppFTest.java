@@ -4,12 +4,13 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
+import com.google.inject.servlet.GuiceFilter;
 import com.typesafe.config.Config;
-import net.spals.appbuilder.app.core.generic.GenericWorkerApp;
 import net.spals.appbuilder.app.core.generic.MinimalGenericWorkerAppFTest;
 import net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule;
 import net.spals.appbuilder.app.core.sample.SampleCoreCustomService;
 import net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule;
+import net.spals.appbuilder.app.core.sample.web.*;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
@@ -30,13 +31,16 @@ import org.testng.annotations.Test;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.core.Configurable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Functional tests for a sample {@link JaxRsWebApp}
@@ -47,7 +51,14 @@ public class SampleJaxRsWebAppFTest {
     private final Logger LOGGER = LoggerFactory.getLogger(MinimalGenericWorkerAppFTest.class);
 
     private final Configurable<?> configurable = mock(Configurable.class);
-    private final BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration = mock(BiFunction.class);
+    private final Map<String, Filter> registeredFilters = new HashMap<>();
+    private final BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration = new BiFunction<String, Filter, FilterRegistration.Dynamic>() {
+        @Override
+        public FilterRegistration.Dynamic apply(final String name, final Filter filter) {
+            registeredFilters.put(name, filter);
+            return mock(FilterRegistration.Dynamic.class);
+        }
+    };
 
     private final JaxRsWebApp sampleApp = new JaxRsWebApp.Builder("sample", LOGGER)
             .setConfigurable(configurable)
@@ -63,6 +74,7 @@ public class SampleJaxRsWebAppFTest {
                     .build())
             .addBootstrapModule(new SampleCoreBootstrapModule())
             .addModule(new SampleCoreGuiceModule())
+            .enableRequestScoping()
             .build();
 
     @DataProvider
@@ -180,5 +192,27 @@ public class SampleJaxRsWebAppFTest {
                 serviceInjector.getInstance(Key.get(modelSerializerMapKey));
         assertThat(modelSerializerMap, aMapWithSize(1));
         assertThat(modelSerializerMap, hasKey("pojo"));
+    }
+
+    @Test
+    public void testRequestScopeEnabled() {
+        assertThat(registeredFilters, hasEntry(is("com.google.inject.servlet.GuiceFilter"), instanceOf(GuiceFilter.class)));
+    }
+
+    @DataProvider
+    Object[][] webInjectionProvider() {
+        return new Object[][] {
+                {SampleCoreDynamicFeature.class},
+                {SampleCoreExceptionMapper.class},
+                {SampleCoreProvider.class},
+                {SampleCoreRequestFilter.class},
+                {SampleCoreResource.class},
+                {SampleCoreResponseFilter.class},
+        };
+    }
+
+    @Test(dataProvider = "webInjectionProvider")
+    public void testWebInjection(final Class<?> webClazz) {
+        verify(configurable).register(isA(webClazz));
     }
 }
