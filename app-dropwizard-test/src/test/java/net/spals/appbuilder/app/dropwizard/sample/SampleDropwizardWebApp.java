@@ -58,7 +58,7 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
     }
 
     @Override
-    public void run(Configuration configuration, Environment env) throws Exception {
+    public void run(final Configuration configuration, final Environment env) throws Exception {
         this.webAppDelegate = webAppDelegateBuilder.setEnvironment(env).build();
     }
 }
