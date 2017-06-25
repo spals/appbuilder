@@ -1,8 +1,14 @@
 package net.spals.appbuilder.app.finatra
 
-import com.google.inject.Stage
+import com.github.mustachejava.MustacheFactory
+import com.google.inject.{Key, Stage, TypeLiteral}
+import com.twitter.finagle.filter.LogFormatter
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finatra.http.EmbeddedHttpServer
+import com.twitter.finatra.http.exceptions.ExceptionManager
+import com.twitter.finatra.http.marshalling.{DefaultMessageBodyReader, DefaultMessageBodyWriter}
+import com.twitter.finatra.http.response.ResponseBuilder
 import net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{instanceOf, is, notNullValue}
@@ -57,8 +63,23 @@ class MinimalFinatraWebAppFTest {
     assertThat(serviceConfig.getAnyRef(configKey), is(expectedConfigValue))
   }
 
-  @Test def testDefaultServiceInjector() {
+  @DataProvider
+  def defaultServiceInjectorProvider(): Array[Array[AnyRef]] = {
+    Array(
+      Array(TypeLiteral.get(classOf[DefaultMessageBodyReader])),
+      Array(TypeLiteral.get(classOf[DefaultMessageBodyWriter])),
+      Array(TypeLiteral.get(classOf[ExceptionManager])),
+      Array(TypeLiteral.get(classOf[MustacheFactory])),
+      Array(new TypeLiteral[LogFormatter[Request, Response]](){}),
+      Array(TypeLiteral.get(classOf[ResponseBuilder])),
+      Array(TypeLiteral.get(classOf[StatsReceiver]))
+    )
+  }
+
+  @Test(dataProvider = "defaultServiceInjectorProvider")
+  def testDefaultServiceInjector(typeLiteral: TypeLiteral[_]) {
     val serviceInjector = minimalApp.getServiceInjector
-    assertThat(serviceInjector.getInstance(classOf[StatsReceiver]), notNullValue())
+    val service = serviceInjector.getInstance(Key.get(typeLiteral)).asInstanceOf[AnyRef]
+    assertThat(service, notNullValue())
   }
 }
