@@ -52,6 +52,7 @@ public class AutoBindModulesBootstrapModule implements BootstrapModule {
                 .filter(moduleClazz -> moduleClazz.isInterface() || !Module.class.isAssignableFrom(moduleClazz))
                 .collect(Collectors.toSet());
         checkState(invalidModules.isEmpty(),
-                "@AutoBindModule can only annotate Module classes: %s", invalidModules);
+                "@AutoBindModule can only annotate Module classes: %s",
+                new Object[] {invalidModules});
     }
 }

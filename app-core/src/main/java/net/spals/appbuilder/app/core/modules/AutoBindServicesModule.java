@@ -3,8 +3,6 @@ package net.spals.appbuilder.app.core.modules;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import com.google.inject.binder.AnnotatedBindingBuilder;
-import com.google.inject.internal.MoreTypes;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Set;
@@ -102,7 +99,7 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 checkState(autoBindProvider.bindingAnnotation() == AutoBindProvider.class
                         || autoBindProvider.bindingAnnotation().isAnnotationPresent(BindingAnnotation.class),
                         "@AutoBindProvider.bindingAnnotation must be annotated with @BindingAnnotation: %s",
-                        autoBindProvider.bindingAnnotation());
+                        new Object[] {autoBindProvider.bindingAnnotation()});
                 LOGGER.info("Binding @AutoBindProvider: {}", providerClazz);
 
                 // Taken from Governator's ProviderBinderUtil
@@ -230,7 +227,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                 .filter(factoryClazz -> !factoryClazz.isInterface())
                 .collect(Collectors.toSet());
         checkState(invalidFactories.isEmpty(),
-                "@AutoBindFactory can only annotate interfaces: %s", invalidFactories);
+                "@AutoBindFactory can only annotate interfaces: %s",
+                new Object[] {invalidFactories});
     }
 
     @VisibleForTesting
@@ -240,7 +238,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                         || !javax.inject.Provider.class.isAssignableFrom(providerClazz))
                 .collect(Collectors.toSet());
         checkState(invalidProviders.isEmpty(),
-                "@AutoBindProvider can only annotate Provider classes: %s", invalidProviders);
+                "@AutoBindProvider can only annotate Provider classes: %s",
+                new Object[] {invalidProviders});
     }
 
     @VisibleForTesting
@@ -251,7 +250,8 @@ public abstract class AutoBindServicesModule extends AbstractModule {
                         || javax.inject.Provider.class.isAssignableFrom(singletonClazz))
                 .collect(Collectors.toSet());
         checkState(invalidSingletons.isEmpty(),
-                "@AutoBindSingleton can only annotate non-Provider classes: %s", annotationClazz.getSimpleName(), invalidSingletons);
+                "@%s can only annotate non-Provider classes: %s",
+                new Object[] {annotationClazz.getSimpleName(), invalidSingletons});
     }
 
     /**
