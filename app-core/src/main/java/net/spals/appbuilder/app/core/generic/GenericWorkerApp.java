@@ -35,25 +35,22 @@ public abstract class GenericWorkerApp implements App {
     public static class Builder extends GenericWorkerApp_Builder implements WorkerAppBuilder<GenericWorkerApp> {
 
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
-        private final ServiceGraph serviceGraph;
+        private final ServiceGraph serviceGraph = new ServiceGraph();
 
-        private final AutoBindConfigModule.Builder configModuleBuilder =
-                new AutoBindConfigModule.Builder();
-        private final AutoBindServiceGraphModule.Builder serviceGraphModuleBuilder =
-                new AutoBindServiceGraphModule.Builder();
+        private final AutoBindConfigModule.Builder configModuleBuilder;
+        private final AutoBindServiceGraphModule.Builder serviceGraphModuleBuilder;
         private final AutoBindServicesModule.Builder servicesModuleBuilder =
                 new AutoBindServicesModule.Builder();
 
         public Builder(final String name, final Logger logger) {
-            this.configModuleBuilder.setApplicationName(name);
             this.lifecycleInjectorBuilder = LifecycleInjector.builder()
                     .ignoringAllAutoBindClasses()
                     .withBootstrapModule(bootstrapBinder -> {
                         bootstrapBinder.disableAutoBinding();
                         bootstrapBinder.requireExactBindingAnnotations();
                     });
-            this.serviceGraph = new ServiceGraph();
-            this.serviceGraphModuleBuilder.setServiceGraph(serviceGraph);
+            this.configModuleBuilder = new AutoBindConfigModule.Builder(name);
+            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph);
 
             setName(name);
             setLogger(logger);

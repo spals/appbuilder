@@ -87,8 +87,8 @@ trait FinatraWebApp extends HttpServer
   private val serviceGraph = new ServiceGraph()
 
   private var bootstrapModule = new FinatraBootstrapModule()
-  private val configModuleBuilder = new AutoBindConfigModule.Builder
-  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder
+  private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
+  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph)
   private val servicesModuleBuilder = new AutoBindServicesModule.Builder
   private var webServerModule = FinatraWebServerModule(serviceGraph)
 
@@ -144,11 +144,9 @@ trait FinatraWebApp extends HttpServer
     bootstrapModule = bootstrapModule.copy(serviceConfig = getServiceConfig,
       staticBootstrapModules = List(
         configModuleBuilder
-          .setApplicationName(getName)
           .setServiceConfig(getServiceConfig)
           .build(),
         serviceGraphModuleBuilder
-          .setServiceGraph(serviceGraph)
           .build()))
 
     addFrameworkModules(

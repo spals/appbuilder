@@ -88,7 +88,7 @@ public class AutoBindConfigModuleTest {
                                                           final Class<T> configType,
                                                           final Map<String, T> expectedConfigMap) {
         final AutoBindConfigModule autoBindBootstrapModule =
-                new AutoBindConfigModule.Builder().setServiceConfig(serviceConfig).buildPartial();
+                new AutoBindConfigModule.Builder("My App").setServiceConfig(serviceConfig).buildPartial();
         assertThat(autoBindBootstrapModule.parseConfigs(configSubTag, configType), is(expectedConfigMap));
     }
 
@@ -114,7 +114,7 @@ public class AutoBindConfigModuleTest {
                               final String configSubTag,
                               final Set<String> expectedParsedTags) {
         final AutoBindConfigModule autoBindBootstrapModule =
-                new AutoBindConfigModule.Builder().setServiceConfig(serviceConfig).buildPartial();
+                new AutoBindConfigModule.Builder("My App").setServiceConfig(serviceConfig).buildPartial();
         assertThat(autoBindBootstrapModule.parseTags(configSubTag), is(expectedParsedTags));
     }
 }

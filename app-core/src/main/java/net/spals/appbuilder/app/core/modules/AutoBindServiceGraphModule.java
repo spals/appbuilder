@@ -31,7 +31,8 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
     public abstract ServiceGraph getServiceGraph();
 
     public static class Builder extends AutoBindServiceGraphModule_Builder {
-        public Builder() {
+        public Builder(final ServiceGraph serviceGraph) {
+            setServiceGraph(serviceGraph);
             setGraphFormat(ServiceGraphFormat.NONE);
         }
     }
