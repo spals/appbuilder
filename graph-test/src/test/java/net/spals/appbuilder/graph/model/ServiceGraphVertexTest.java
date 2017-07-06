@@ -23,23 +23,23 @@ public class ServiceGraphVertexTest {
     Object[][] equalsProvider() {
         return new Object[][] {
                 // Case: Non-Vertex objects
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(), null, false},
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(), new Object(), false},
+                {ServiceGraphVertex.newVertex(Key.get(String.class)), null, false},
+                {ServiceGraphVertex.newVertex(Key.get(String.class)), new Object(), false},
                 // Case: Same key types
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(),
-                        new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(), true},
+                {ServiceGraphVertex.newVertex(Key.get(String.class)),
+                        ServiceGraphVertex.newVertex(Key.get(String.class)), true},
                 // Case: Different key types
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(),
-                        new ServiceGraphVertex.Builder().setGuiceKey(Key.get(Integer.class)).build(), false},
+                {ServiceGraphVertex.newVertex(Key.get(String.class)),
+                        ServiceGraphVertex.newVertex(Key.get(Integer.class)), false},
                 // Case: Mismatched annotations
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class, ApplicationName.class)).build(),
-                        new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(), false},
+                {ServiceGraphVertex.newVertex(Key.get(String.class, ApplicationName.class)),
+                        ServiceGraphVertex.newVertex(Key.get(String.class)), false},
                 // Case: Mismatched sources
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).setSource(Provider.class).build(),
-                        new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(), false},
+                {ServiceGraphVertex.newVertex(Key.get(String.class), Provider.class),
+                        ServiceGraphVertex.newVertex(Key.get(String.class)), false},
                 // Case: Same key types, same annotations, same sources
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class, ApplicationName.class)).setSource(Provider.class).build(),
-                        new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class, ApplicationName.class)).setSource(Provider.class).build(), true},
+                {ServiceGraphVertex.newVertex(Key.get(String.class, ApplicationName.class), Provider.class),
+                        ServiceGraphVertex.newVertex(Key.get(String.class, ApplicationName.class), Provider.class), true},
         };
     }
 
@@ -59,8 +59,8 @@ public class ServiceGraphVertexTest {
     @Test
     public void testInHashSet() {
         final HashSet<ServiceGraphVertex> vertexSet = new HashSet<>();
-        vertexSet.add(new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build());
-        vertexSet.add(new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build());
+        vertexSet.add(ServiceGraphVertex.newVertex(Key.get(String.class)));
+        vertexSet.add(ServiceGraphVertex.newVertex(Key.get(String.class)));
 
         assertThat(vertexSet, hasSize(1));
     }

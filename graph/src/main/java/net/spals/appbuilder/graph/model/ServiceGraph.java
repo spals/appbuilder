@@ -20,8 +20,8 @@ public class ServiceGraph {
     private final Set<ServiceGraphVertex> vertices = new HashSet<>();
 
     public synchronized ServiceGraph addEdge(final Key<?> fromKey, final Key<?> toKey) {
-        return addEdge(new ServiceGraphVertex.Builder().setGuiceKey(fromKey).build(),
-                       new ServiceGraphVertex.Builder().setGuiceKey(toKey).build());
+        return addEdge(ServiceGraphVertex.newVertex(fromKey),
+                       ServiceGraphVertex.newVertex(toKey));
     }
 
     public synchronized ServiceGraph addEdge(final ServiceGraphVertex fromVertex, final ServiceGraphVertex toVertex) {
@@ -31,7 +31,7 @@ public class ServiceGraph {
     }
 
     public ServiceGraph addVertex(final Key<?> key) {
-        return addVertex(new ServiceGraphVertex.Builder().setGuiceKey(key).build());
+        return addVertex(ServiceGraphVertex.newVertex(key));
     }
 
     public ServiceGraph addVertex(final ServiceGraphVertex vertex) {
