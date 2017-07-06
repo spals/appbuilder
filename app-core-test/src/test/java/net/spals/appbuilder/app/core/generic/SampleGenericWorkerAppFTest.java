@@ -1,14 +1,14 @@
-package net.spals.appbuilder.app.dropwizard;
+package net.spals.appbuilder.app.core.generic;
 
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
-import io.dropwizard.Configuration;
-import io.dropwizard.testing.DropwizardTestSupport;
-import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomService;
-import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
+import net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule;
+import net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule;
+import net.spals.appbuilder.app.core.sample.SampleCoreCustomService;
+import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
@@ -20,8 +20,8 @@ import net.spals.appbuilder.message.core.MessageProducer;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -32,26 +32,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Functional tests for a sample {@link DropwizardWebApp}
+ * Functional tests for a sample {@link GenericWorkerApp}
  *
  * @author tkral
  */
-public class SampleDropwizardWebAppFTest {
+public class SampleGenericWorkerAppFTest {
+    private final Logger LOGGER = LoggerFactory.getLogger(MinimalGenericWorkerAppFTest.class);
 
-    private final DropwizardTestSupport<Configuration> testServerWrapper =
-            new DropwizardTestSupport<>(SampleDropwizardWebApp.class, SampleDropwizardWebApp.APP_CONFIG_FILE_NAME);
-    private DropwizardWebApp webAppDelegate;
-
-    @BeforeTest
-    void classSetup() {
-        testServerWrapper.before();
-        webAppDelegate = ((SampleDropwizardWebApp)testServerWrapper.getApplication()).getDelegate();
-    }
-
-    @AfterTest
-    void classTearDown() {
-        testServerWrapper.after();
-    }
+    private final GenericWorkerApp sampleApp = new GenericWorkerApp.Builder("sample", LOGGER)
+            .setServiceConfigFromClasspath("config/sample-generic-service.conf")
+            .setServiceScan(new ServiceScan.Builder()
+                    .addServicePackages("net.spals.appbuilder.app.core.sample")
+                    .addDefaultServices(ExecutorServiceFactory.class)
+                    .addDefaultServices(FileStore.class)
+                    .addDefaultServices(MapStore.class)
+                    .addDefaultServices(MessageConsumer.class, MessageProducer.class)
+                    .addDefaultServices(ModelSerializer.class)
+                    .build())
+            .addBootstrapModule(new SampleCoreBootstrapModule())
+            .addModule(new SampleCoreGuiceModule())
+            .build();
 
     @DataProvider
     Object[][] serviceConfigProvider() {
@@ -63,41 +63,41 @@ public class SampleDropwizardWebAppFTest {
 
     @Test(dataProvider = "serviceConfigProvider")
     public void testServiceConfig(final String configKey, final Object expectedConfigValue) {
-        final Config serviceConfig = webAppDelegate.getServiceConfig();
+        final Config serviceConfig = sampleApp.getServiceConfig();
         assertThat(serviceConfig.getAnyRef(configKey), is(expectedConfigValue));
     }
 
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "SampleDropwizardWebApp:net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardAutoBoundModule"},
-                {"BootstrapModule", "net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardBootstrapModule"},
-                {"GuiceModule", "net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardGuiceModule"},
+                {"AutoBoundModule", "sample:net.spals.appbuilder.app.core.sample.SampleCoreAutoBoundModule"},
+                {"BootstrapModule", "net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule"},
+                {"GuiceModule", "net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule"},
         };
     }
 
     @Test(dataProvider = "customModuleInjectionProvider")
     public void testCustomModuleInjection(final String keyName, final String expectedBindValue) {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(Key.get(String.class, Names.named(keyName))),
                 is(expectedBindValue));
     }
 
     @Test
     public void testCustomServiceInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
-        assertThat(serviceInjector.getInstance(SampleDropwizardCustomService.class), notNullValue());
+        final Injector serviceInjector = sampleApp.getServiceInjector();
+        assertThat(serviceInjector.getInstance(SampleCoreCustomService.class), notNullValue());
     }
 
     @Test
     public void testExecutorInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(ExecutorServiceFactory.class), notNullValue());
     }
 
     @Test
     public void testFileStoreInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(FileStore.class), notNullValue());
 
         final TypeLiteral<Map<String, FileStorePlugin>> fileStorePluginMapKey =
@@ -110,7 +110,7 @@ public class SampleDropwizardWebAppFTest {
 
     @Test
     public void testMapStoreInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(MapStore.class), notNullValue());
 
         final TypeLiteral<Map<String, MapStorePlugin>> mapStorePluginMapKey =
@@ -123,7 +123,7 @@ public class SampleDropwizardWebAppFTest {
 
     @Test
     public void testMessageConsumerInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(MessageConsumer.class), notNullValue());
 
         final TypeLiteral<Map<String, MessageConsumerPlugin>> messageConsumerPluginMapKey =
@@ -136,7 +136,7 @@ public class SampleDropwizardWebAppFTest {
 
     @Test
     public void testMessageConsumerCallbackInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
 
         final TypeLiteral<Set<MessageConsumerCallback<?>>> messageCallbackSetKey =
                 new TypeLiteral<Set<MessageConsumerCallback<?>>>(){};
@@ -147,7 +147,7 @@ public class SampleDropwizardWebAppFTest {
 
     @Test
     public void testMessageProducerInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(MessageProducer.class), notNullValue());
 
         final TypeLiteral<Map<String, MessageProducerPlugin>> messageProducerPluginMapKey =
@@ -160,7 +160,7 @@ public class SampleDropwizardWebAppFTest {
 
     @Test
     public void testModelInjection() {
-        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        final Injector serviceInjector = sampleApp.getServiceInjector();
 
         final TypeLiteral<Map<String, ModelSerializer>> modelSerializerMapKey =
                 new TypeLiteral<Map<String, ModelSerializer>>(){};

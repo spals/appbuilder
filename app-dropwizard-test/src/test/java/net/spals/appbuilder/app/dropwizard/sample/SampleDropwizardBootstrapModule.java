@@ -11,7 +11,7 @@ import com.netflix.governator.guice.BootstrapModule;
  *
  * @author tkral
  */
-class SampleBootstrapModule implements BootstrapModule {
+class SampleDropwizardBootstrapModule implements BootstrapModule {
 
     @Override
     public void configure(final BootstrapBinder bootstrapBinder) {

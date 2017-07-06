@@ -12,7 +12,7 @@ import net.spals.appbuilder.annotations.service.AutoBindModule
   * @author tkral
   */
 @AutoBindModule
-private[sample] class SampleAutoBoundModule @Inject() (@ApplicationName applicationName: String)
+private[sample] class SampleFinatraAutoBoundModule @Inject()(@ApplicationName applicationName: String)
   extends TwitterModule {
 
   override def configure(): Unit = {

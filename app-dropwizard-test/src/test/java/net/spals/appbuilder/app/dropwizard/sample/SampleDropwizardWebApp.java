@@ -53,12 +53,12 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
                 .addDefaultServices(MessageConsumer.class, MessageProducer.class)
                 .addDefaultServices(ModelSerializer.class)
                 .build())
-            .addBootstrapModule(new SampleBootstrapModule())
-            .addModule(new SampleGuiceModule());
+            .addBootstrapModule(new SampleDropwizardBootstrapModule())
+            .addModule(new SampleDropwizardGuiceModule());
     }
 
     @Override
-    public void run(Configuration configuration, Environment env) throws Exception {
+    public void run(final Configuration configuration, final Environment env) throws Exception {
         this.webAppDelegate = webAppDelegateBuilder.setEnvironment(env).build();
     }
 }

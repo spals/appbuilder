@@ -16,7 +16,6 @@ import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.config.service.ServiceScan
 import net.spals.appbuilder.graph.model.{ServiceGraph, ServiceGraphFormat}
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter
-import org.reflections.Reflections
 import org.slf4j
 import org.slf4j.LoggerFactory
 
@@ -88,8 +87,8 @@ trait FinatraWebApp extends HttpServer
   private val serviceGraph = new ServiceGraph()
 
   private var bootstrapModule = new FinatraBootstrapModule()
-  private val configModuleBuilder = new AutoBindConfigModule.Builder
-  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder
+  private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
+  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph)
   private val servicesModuleBuilder = new AutoBindServicesModule.Builder
   private var webServerModule = FinatraWebServerModule(serviceGraph)
 
@@ -145,11 +144,9 @@ trait FinatraWebApp extends HttpServer
     bootstrapModule = bootstrapModule.copy(serviceConfig = getServiceConfig,
       staticBootstrapModules = List(
         configModuleBuilder
-          .setApplicationName(getName)
           .setServiceConfig(getServiceConfig)
           .build(),
         serviceGraphModuleBuilder
-          .setServiceGraph(serviceGraph)
           .build()))
 
     addFrameworkModules(

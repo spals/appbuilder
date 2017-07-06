@@ -47,7 +47,8 @@ public abstract class AutoBindConfigModule extends AbstractModule {
     public abstract ServiceScan getServiceScan();
 
     public static class Builder extends AutoBindConfigModule_Builder {
-        public Builder() {
+        public Builder(final String applicationName) {
+            setApplicationName(applicationName);
             // By default, use an empty config and scan
             setServiceConfig(ConfigFactory.empty());
             setServiceScan(ServiceScan.empty());

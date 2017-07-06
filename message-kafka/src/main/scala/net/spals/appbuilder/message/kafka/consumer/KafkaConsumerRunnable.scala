@@ -26,7 +26,7 @@ private[consumer] class KafkaConsumerRunnable (consumer: KafkaConsumer[String, A
   override def run(): Unit = {
     try {
       while (!closed.get()) {
-        val records = consumer.poll(500L)
+        val records = consumer.poll(50L)
         records.iterator().asScala.foreach(record => {
           val deserializedPayload = modelSerializer.deserialize(record.value())
           val consumerCallback = consumerCallbacks.get(deserializedPayload.getClass)

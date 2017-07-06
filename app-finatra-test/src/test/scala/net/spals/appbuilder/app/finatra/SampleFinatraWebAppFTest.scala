@@ -4,7 +4,8 @@ import com.google.inject.name.Names
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
-import net.spals.appbuilder.app.finatra.sample.{SampleCustomService, SampleFinatraWebApp}
+import net.spals.appbuilder.app.finatra.sample.web.{SampleFinatraController, SampleFinatraExceptionMapper, SampleFinatraFilter}
+import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomService, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
@@ -15,6 +16,8 @@ import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.{hasKey, is, notNullValue}
+import org.mockito.ArgumentMatchers.{any, isA}
+import org.mockito.Mockito.verify
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
 
 /**
@@ -61,9 +64,9 @@ class SampleFinatraWebAppFTest {
   @DataProvider def customModuleInjectionProvider(): Array[Array[AnyRef]] = {
     Array(
       Array("AutoBoundModule",
-        "net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp:net.spals.appbuilder.app.finatra.sample.SampleAutoBoundModule"),
-      Array("GuiceModule", "net.spals.appbuilder.app.finatra.sample.SampleGuiceModule"),
-      Array("TwitterModule", "net.spals.appbuilder.app.finatra.sample.SampleTwitterModule")
+        "net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp:net.spals.appbuilder.app.finatra.sample.SampleFinatraAutoBoundModule"),
+      Array("GuiceModule", "net.spals.appbuilder.app.finatra.sample.SampleFinatraGuiceModule"),
+      Array("TwitterModule", "net.spals.appbuilder.app.finatra.sample.SampleFinatraTwitterModule")
     )
   }
 
@@ -76,7 +79,7 @@ class SampleFinatraWebAppFTest {
 
   @Test def testCustomServiceInjection() {
     val serviceInjector = sampleApp.getServiceInjector
-    assertThat(serviceInjector.getInstance(classOf[SampleCustomService]), notNullValue())
+    assertThat(serviceInjector.getInstance(classOf[SampleFinatraCustomService]), notNullValue())
   }
 
   @Test def testExecutorInjection() {
@@ -139,5 +142,17 @@ class SampleFinatraWebAppFTest {
     val modelSerializerMap = serviceInjector.getInstance(Key.get(modelSerializerMapKey))
     assertThat(modelSerializerMap, Matchers.aMapWithSize[String, ModelSerializer](1))
     assertThat(modelSerializerMap, hasKey("pojo"))
+  }
+
+  @Test def testWebControllerInjection() {
+    verify(sampleApp.mockRouter).add(isA(classOf[SampleFinatraController]))
+  }
+
+  @Test def testWebExceptionMapperInjection() {
+    verify(sampleApp.mockRouter).exceptionMapper(isA(classOf[SampleFinatraExceptionMapper]))(any())
+  }
+
+  @Test def testWebFilterInjection() {
+    verify(sampleApp.mockRouter).filter(isA(classOf[SampleFinatraFilter]))
   }
 }

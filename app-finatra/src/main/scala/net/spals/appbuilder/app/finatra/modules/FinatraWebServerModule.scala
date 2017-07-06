@@ -29,13 +29,12 @@ private[finatra] case class FinatraWebServerModule(
   private lazy val wsComponents = new ListBuffer[AnyRef]
 
   override def afterInjection(wsComponent: AnyRef): Unit = {
-//    wsComponents += wsComponent
+    wsComponents += wsComponent
   }
 
   override def configure(): Unit = {
     val typeMatcher = TypeLiteralMatchers.subclassesOf(classOf[Controller])
         .or(TypeLiteralMatchers.subclassesOf(classOf[ExceptionMapper[_]]))
-        .or(TypeLiteralMatchers.subclassesOf(classOf[ExceptionMapperCollection]))
         .or(TypeLiteralMatchers.subclassesOf(classOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]))
 
     bindListener(typeMatcher, this)
@@ -46,20 +45,27 @@ private[finatra] case class FinatraWebServerModule(
   }
 
   private[finatra] def runWebServerAutoBind(router: HttpRouter): Unit = {
-    Option(addCommonFilters).filter(b => b).foreach(router.filter[CommonFilters])
-    Option(addRequestScopeFilter).filter(b => b)
-      .foreach(router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
-
+    // Run web component auto-binding first, before adding CommonFilters.
+    // Those are loaded through Guice which means that they will be added
+    // to the wsComponents list.
     Option(runWebServerAutoBinding).filter(b => b).foreach(b => wsComponents.foreach(
       wsComponent => {
         wsComponent match {
           case controller: Controller => router.add(controller)
-//          case mapper: ExceptionMapper[_] => router.exceptionMapper(mapper)
-          case mappers: ExceptionMapperCollection => router.exceptionMapper(mappers)
-//          case filter: Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response] =>
-//            router.filter(filter)
+          case mapper: AnyRef if mapper.isInstanceOf[ExceptionMapper[_]] => {
+            val exceptionMapper = mapper.asInstanceOf[ExceptionMapper[_ <: Throwable]]
+            router.exceptionMapper(exceptionMapper)
+          }
+          case filter: AnyRef if filter.isInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]] => {
+            val httpFilter = filter.asInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]
+            router.filter(httpFilter)
+          }
         }
       }
     ))
+
+    Option(addCommonFilters).filter(b => b).foreach(router.filter[CommonFilters])
+    Option(addRequestScopeFilter).filter(b => b)
+      .foreach(router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
   }
 }

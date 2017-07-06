@@ -9,7 +9,7 @@ import com.twitter.inject.TwitterModule
   *
   * @author tkral
   */
-private[sample] class SampleTwitterModule extends TwitterModule {
+private[sample] class SampleFinatraTwitterModule extends TwitterModule {
   override protected def configure(): Unit = {
     binder.bind(classOf[String]).annotatedWith(Names.named("TwitterModule")).toInstance(this.getClass.getName)
   }
