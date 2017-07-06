@@ -18,12 +18,12 @@ public class ServiceGraphTest {
     Object[][] isOrphanProvider() {
         return new Object[][] {
                 // Case: Connected vertices
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build(), false},
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(ServiceGraphTest.class)).build(), false},
+                {ServiceGraphVertex.newVertex(Key.get(String.class)), false},
+                {ServiceGraphVertex.newVertex(Key.get(ServiceGraphTest.class)), false},
                 // Case: Unconnected vertex
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(Integer.class)).build(), true},
+                {ServiceGraphVertex.newVertex(Key.get(Integer.class)), true},
                 // Case: Unknown vertex
-                {new ServiceGraphVertex.Builder().setGuiceKey(Key.get(Double.class)).build(), true},
+                {ServiceGraphVertex.newVertex(Key.get(Double.class)), true},
         };
     }
 
@@ -31,9 +31,9 @@ public class ServiceGraphTest {
     public void testIsOrphan(final ServiceGraphVertex vertex, final boolean expectedResult) {
         final ServiceGraph serviceGraph = new ServiceGraph();
 
-        final ServiceGraphVertex vertex1 = new ServiceGraphVertex.Builder().setGuiceKey(Key.get(String.class)).build();
-        final ServiceGraphVertex vertex2 = new ServiceGraphVertex.Builder().setGuiceKey(Key.get(ServiceGraphTest.class)).build();
-        final ServiceGraphVertex vertex3 = new ServiceGraphVertex.Builder().setGuiceKey(Key.get(Integer.class)).build();
+        final ServiceGraphVertex vertex1 = ServiceGraphVertex.newVertex(Key.get(String.class));
+        final ServiceGraphVertex vertex2 = ServiceGraphVertex.newVertex(Key.get(ServiceGraphTest.class));
+        final ServiceGraphVertex vertex3 = ServiceGraphVertex.newVertex(Key.get(Integer.class));
 
         serviceGraph.addVertex(vertex1).addVertex(vertex2).addVertex(vertex3).addEdge(vertex1, vertex2);
         assertThat(serviceGraph.isOrphan(vertex), is(expectedResult));

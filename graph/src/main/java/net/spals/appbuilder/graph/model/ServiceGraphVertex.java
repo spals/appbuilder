@@ -1,17 +1,30 @@
 package net.spals.appbuilder.graph.model;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.base.Objects;
 import com.google.inject.Key;
 import com.google.inject.grapher.Node;
-import org.inferred.freebuilder.FreeBuilder;
 
 import java.util.Optional;
 
 /**
  * @author tkral
  */
-@FreeBuilder
+@AutoValue
 public abstract class ServiceGraphVertex {
+
+    public static ServiceGraphVertex newVertex(final Key<?> guiceKey) {
+        return new AutoValue_ServiceGraphVertex(guiceKey, Optional.empty());
+    }
+
+    public static ServiceGraphVertex newVertex(final Key<?> guiceKey, final Class<?> source) {
+        return new AutoValue_ServiceGraphVertex(guiceKey, Optional.of(source));
+    }
+
+    public static ServiceGraphVertex newVertex(final Node guiceNode) {
+        return new AutoValue_ServiceGraphVertex(guiceNode.getId().getKey(),
+                Optional.ofNullable(guiceNode.getSource()).map(source -> source.getClass()));
+    }
 
     public abstract Key<?> getGuiceKey();
     public abstract Optional<Class<?>> getSource();
@@ -28,12 +41,5 @@ public abstract class ServiceGraphVertex {
     @Override
     public int hashCode() {
         return Objects.hashCode(getGuiceKey(), getSource());
-    }
-
-    public static class Builder extends ServiceGraphVertex_Builder {
-        public Builder setNode(final Node guiceNode) {
-            setGuiceKey(guiceNode.getId().getKey());
-            return setSource(Optional.ofNullable(guiceNode.getSource()).map(source -> source.getClass()));
-        }
     }
 }
