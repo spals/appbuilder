@@ -24,7 +24,6 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 private[finatra] case class FinatraBootstrapModule(
-  moduleTransformers: Seq[ModuleTransformer] = List.empty[ModuleTransformer],
   serviceConfig: Config = ConfigFactory.empty(),
   serviceScan: ServiceScan = ServiceScan.empty(),
   staticBootstrapModules: Seq[Module] = List.empty[Module]
@@ -80,10 +79,7 @@ private[finatra] case class FinatraBootstrapModule(
     })
 
     // Return both static and auto-bound modules to Finatra to be installed
-    val allModules = List(finatraPreBootstrapModule) ++ staticBootstrapModules ++ autoBoundModules
-    // Run all modules through any module transformers
-    val transformedModules = moduleTransformers.foldLeft(allModules.asJavaCollection)((modules, transformer) => transformer.call(modules))
-    transformedModules.asScala.toList
+    List(finatraPreBootstrapModule) ++ staticBootstrapModules ++ autoBoundModules
   }
 
   private[finatra] def validateModules(moduleClasses: Iterable[Class[_]]): Unit = {

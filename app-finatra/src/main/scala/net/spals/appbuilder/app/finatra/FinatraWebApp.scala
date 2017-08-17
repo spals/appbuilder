@@ -1,8 +1,10 @@
 package net.spals.appbuilder.app.finatra
 
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 import com.google.inject.{Injector, Module}
+import com.netflix.governator.guice.ModuleTransformer
 import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings
 import com.twitter.finatra.http.HttpServer
 import com.twitter.finatra.http.routing.HttpRouter
@@ -33,6 +35,11 @@ trait FinatraWebApp extends HttpServer
   with spals.WebAppBuilder[FinatraWebApp] {
 
   private val customModules = new ListBuffer[Module]
+  private val moduleTransformers = new ListBuffer[ModuleTransformer]
+
+  private val servicesModuleBuilder = new AutoBindServicesModule.Builder
+  // See comment in GenericWorkerApp
+  private val servicesModuleIndex = new AtomicInteger(0)
 
   private val EXCLUDED_FLAGS = Set(
     "log.async" // log.async is both a value and a prefix which breaks Typesafe config parsing
@@ -61,7 +68,14 @@ trait FinatraWebApp extends HttpServer
     webServerModule.runWebServerAutoBind(router)
   }
 
-  override def modules = customModules
+  override def modules = {
+    // Insert the services module in the order in which it arrived.
+    customModules.insert(servicesModuleIndex.get, servicesModuleBuilder.build())
+    // Run all modules through all transformations
+    val transformedModules =
+      moduleTransformers.foldLeft(customModules.asJavaCollection)((modules, transformer) => transformer.call(modules))
+    transformedModules.asScala.toSeq
+  }
 
   @Lifecycle
   override protected def postInjectorStartup(): Unit = {
@@ -90,7 +104,6 @@ trait FinatraWebApp extends HttpServer
   private var bootstrapModule = new FinatraBootstrapModule()
   private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
   private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph)
-  private val servicesModuleBuilder = new AutoBindServicesModule.Builder
   private var webServerModule = FinatraWebServerModule(serviceGraph)
 
   override def addModule(module: Module): FinatraWebApp = {
@@ -114,7 +127,7 @@ trait FinatraWebApp extends HttpServer
   }
 
   override def enableBindingOverrides(): FinatraWebApp = {
-    bootstrapModule = bootstrapModule.copy(moduleTransformers = List(new OverrideAllDuplicateBindings))
+    moduleTransformers += new OverrideAllDuplicateBindings
     this
   }
 
@@ -143,6 +156,7 @@ trait FinatraWebApp extends HttpServer
     bootstrapModule = bootstrapModule.copy(serviceScan = serviceScan)
     configModuleBuilder.setServiceScan(serviceScan)
     servicesModuleBuilder.setServiceScan(serviceScan)
+    servicesModuleIndex.set(customModules.size)
     this
   }
 
@@ -157,7 +171,6 @@ trait FinatraWebApp extends HttpServer
 
     addFrameworkModules(
       bootstrapModule,
-      servicesModuleBuilder.build(),
       webServerModule
     )
     // Bind alternate config values under @Flag annotations
