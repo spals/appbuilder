@@ -3,6 +3,7 @@ package net.spals.appbuilder.app.finatra
 import java.time.temporal.ChronoUnit
 
 import com.google.inject.{Injector, Module}
+import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings
 import com.twitter.finatra.http.HttpServer
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.Logging
@@ -109,6 +110,11 @@ trait FinatraWebApp extends HttpServer
 
   override def disableWebServerAutoBinding(): FinatraWebApp = {
     webServerModule = webServerModule.copy(runWebServerAutoBinding = false)
+    this
+  }
+
+  override def enableBindingOverrides(): FinatraWebApp = {
+    bootstrapModule = bootstrapModule.copy(moduleTransformers = List(new OverrideAllDuplicateBindings))
     this
   }
 

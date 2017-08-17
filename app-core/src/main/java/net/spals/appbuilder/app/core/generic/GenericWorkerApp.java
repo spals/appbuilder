@@ -6,6 +6,7 @@ import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
+import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings;
 import com.netflix.governator.lifecycle.LifecycleManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -71,6 +72,12 @@ public abstract class GenericWorkerApp implements App {
         @Override
         public Builder disableErrorOnServiceLeaks() {
             servicesModuleBuilder.setErrorOnServiceLeaks(false);
+            return this;
+        }
+
+        @Override
+        public Builder enableBindingOverrides() {
+            lifecycleInjectorBuilder.withModuleTransformer(new OverrideAllDuplicateBindings());
             return this;
         }
 

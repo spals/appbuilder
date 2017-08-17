@@ -63,6 +63,12 @@ public abstract class JaxRsWebApp implements App {
         }
 
         @Override
+        public Builder enableBindingOverrides() {
+            appDelegateBuilder.enableBindingOverrides();
+            return this;
+        }
+
+        @Override
         public Builder enableRequestScoping() {
             // TODO: Potential error here. If .enableRequestScoping() is called before .setFilterRegistration(...)
             getFilterRegistration().apply(GuiceFilter.class.getName(), new GuiceFilter())

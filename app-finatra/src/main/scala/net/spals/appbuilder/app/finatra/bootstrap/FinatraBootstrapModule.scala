@@ -3,7 +3,7 @@ package net.spals.appbuilder.app.finatra.bootstrap
 import com.google.common.base.Preconditions.checkState
 import com.google.inject.{AbstractModule, Module}
 import com.netflix.governator.LifecycleModule
-import com.netflix.governator.guice.{BootstrapBinder, BootstrapModule, LifecycleInjector, ModuleListBuilder}
+import com.netflix.governator.guice._
 import com.netflix.governator.lifecycle.LifecycleConfigurationProviders
 import com.twitter.inject.{Logging, TwitterModule}
 import com.typesafe.config.{Config, ConfigFactory}
@@ -24,11 +24,11 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 private[finatra] case class FinatraBootstrapModule(
-    serviceConfig: Config = ConfigFactory.empty(),
-    serviceScan: ServiceScan = ServiceScan.empty(),
-    staticBootstrapModules: Seq[Module] = List()
-  )
-  extends TwitterModule
+  moduleTransformers: Seq[ModuleTransformer] = List.empty[ModuleTransformer],
+  serviceConfig: Config = ConfigFactory.empty(),
+  serviceScan: ServiceScan = ServiceScan.empty(),
+  staticBootstrapModules: Seq[Module] = List.empty[Module]
+) extends TwitterModule
   with Logging {
 
   // A guice injector created for bootstraping via Governator
@@ -80,7 +80,10 @@ private[finatra] case class FinatraBootstrapModule(
     })
 
     // Return both static and auto-bound modules to Finatra to be installed
-    List(finatraPreBootstrapModule) ++ staticBootstrapModules ++ autoBoundModules
+    val allModules = List(finatraPreBootstrapModule) ++ staticBootstrapModules ++ autoBoundModules
+    // Run all modules through any module transformers
+    val transformedModules = moduleTransformers.foldLeft(allModules.asJavaCollection)((modules, transformer) => transformer.call(modules))
+    transformedModules.asScala.toList
   }
 
   private[finatra] def validateModules(moduleClasses: Iterable[Class[_]]): Unit = {
