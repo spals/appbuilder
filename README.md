@@ -1,5 +1,15 @@
-[![Build Status](https://travis-ci.org/spals/appbuilder.svg?branch=master)](https://travis-ci.org/spals/appbuilder)
-[![License](https://img.shields.io/badge/license-BSD3-blue.svg)](https://github.com/spals/appbuilder/blob/master/LICENSE)
+[![][Build Status img]][Build Status]
+[![][License img]][License]
+[![][Maven Central img]][Maven Central]
+ 
+[Build Status]:https://travis-ci.org/spals/appbuilder
+[Build Status img]:https://travis-ci.org/spals/appbuilder.svg?branch=master
+
+[License]:LICENSE
+[License img]:https://img.shields.io/badge/license-BSD3-blue.svg
+
+[Maven Central]:https://maven-badges.herokuapp.com/maven-central/net.spals.appbuilder/spals-appbuilder-bom
+[Maven Central img]:https://maven-badges.herokuapp.com/maven-central/net.spals.appbuilder/spals-appbuilder-bom/badge.svg
 
 # AppBuilder
 
