@@ -101,6 +101,7 @@
                             </run>
                         </image>
                     </images>
+                    <skipRun>${skipTests}</skipRun>
                 </configuration>
                 <executions>
                     <execution>

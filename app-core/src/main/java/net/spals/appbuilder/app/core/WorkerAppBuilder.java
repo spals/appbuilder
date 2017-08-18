@@ -51,6 +51,30 @@ public interface WorkerAppBuilder<A extends App> {
      */
     WorkerAppBuilder<A> disableErrorOnServiceLeaks();
 
+    /**
+     * Allow bindings in standard and custom Guice
+     * {@link Module}s to override each other.
+     *
+     * In other words, multiple Guice {@link Module}s
+     * may bind the same singleton service contract
+     * without error. The last bound service implementation
+     * will be the one taken.
+     *
+     * Without this enabled, Guice will throw an error
+     * for multiple bindings:
+     *
+     * A binding to [service] was already configured at [location]
+     *
+     * This setting is really intended for testing
+     * purposes in which a test application is binding
+     * mocked services to replace those in the production
+     * application.
+     *
+     * It is *STRONGLY* recommended that this method is
+     * not used in production applications.
+     */
+    WorkerAppBuilder<A> enableBindingOverrides();
+
     @Beta
     WorkerAppBuilder<A> enableServiceGraph(ServiceGraphFormat graphFormat);
 

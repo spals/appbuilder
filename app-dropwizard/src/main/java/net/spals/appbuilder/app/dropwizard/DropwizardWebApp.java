@@ -85,6 +85,12 @@ public abstract class DropwizardWebApp implements App {
         }
 
         @Override
+        public Builder enableBindingOverrides() {
+            appDelegateBuilder.enableBindingOverrides();
+            return this;
+        }
+
+        @Override
         public Builder enableRequestScoping() {
             appDelegateBuilder.enableRequestScoping();
             return this;

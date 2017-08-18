@@ -3,7 +3,7 @@ package net.spals.appbuilder.app.finatra.bootstrap
 import com.google.common.base.Preconditions.checkState
 import com.google.inject.{AbstractModule, Module}
 import com.netflix.governator.LifecycleModule
-import com.netflix.governator.guice.{BootstrapBinder, BootstrapModule, LifecycleInjector, ModuleListBuilder}
+import com.netflix.governator.guice._
 import com.netflix.governator.lifecycle.LifecycleConfigurationProviders
 import com.twitter.inject.{Logging, TwitterModule}
 import com.typesafe.config.{Config, ConfigFactory}
@@ -24,11 +24,10 @@ import scala.collection.JavaConverters._
   * @author tkral
   */
 private[finatra] case class FinatraBootstrapModule(
-    serviceConfig: Config = ConfigFactory.empty(),
-    serviceScan: ServiceScan = ServiceScan.empty(),
-    staticBootstrapModules: Seq[Module] = List()
-  )
-  extends TwitterModule
+  serviceConfig: Config = ConfigFactory.empty(),
+  serviceScan: ServiceScan = ServiceScan.empty(),
+  staticBootstrapModules: Seq[Module] = List.empty[Module]
+) extends TwitterModule
   with Logging {
 
   // A guice injector created for bootstraping via Governator
