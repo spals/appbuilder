@@ -39,7 +39,7 @@ public abstract class GenericWorkerApp implements App {
 
     public static class Builder extends GenericWorkerApp_Builder implements WorkerAppBuilder<GenericWorkerApp> {
 
-        private final List<Module> orderedModules = new ArrayList<Module>();
+        private final List<Module> orderedModules = new ArrayList<>();
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
         private final ServiceGraph serviceGraph = new ServiceGraph();
 
@@ -51,7 +51,7 @@ public abstract class GenericWorkerApp implements App {
         // Track the index of the services module so that it is added to
         // the orderedModules list in the order in which the ServiceScan
         // arrives (when compared to custom modules). This is important
-        // because binding overrides work on a strict order basis. THe last
+        // because binding overrides work on a strict order basis. The last
         // binding in wins.
         private final AtomicInteger servicesModuleIndex = new AtomicInteger(0);
 
