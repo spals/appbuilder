@@ -2,6 +2,7 @@ package net.spals.appbuilder.app.dropwizard;
 
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
+import com.typesafe.config.Config;
 import io.dropwizard.configuration.ConfigurationSourceProvider;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -111,6 +112,12 @@ public abstract class DropwizardWebApp implements App {
             enableApiRequestTracing(env);
 
             return super.setEnvironment(env);
+        }
+
+        @Override
+        public Builder setServiceConfig(final Config serviceConfig) {
+            appDelegateBuilder.setServiceConfig(serviceConfig);
+            return this;
         }
 
         @Override
