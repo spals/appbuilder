@@ -51,13 +51,18 @@ private[finatra] case class FinatraWebServerModule(
     Option(runWebServerAutoBinding).filter(b => b).foreach(b => wsComponents.foreach(
       wsComponent => {
         wsComponent match {
-          case controller: Controller => router.add(controller)
+          case controller: Controller => {
+            info(s"Binding controller: ${controller.getClass}")
+            router.add(controller)
+          }
           case mapper: AnyRef if mapper.isInstanceOf[ExceptionMapper[_]] => {
             val exceptionMapper = mapper.asInstanceOf[ExceptionMapper[_ <: Throwable]]
+            info(s"Binding exception mapper: ${exceptionMapper.getClass}")
             router.exceptionMapper(exceptionMapper)
           }
           case filter: AnyRef if filter.isInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]] => {
             val httpFilter = filter.asInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]
+            info(s"Binding filter: ${httpFilter.getClass}")
             router.filter(httpFilter)
           }
         }
