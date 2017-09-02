@@ -16,7 +16,9 @@ import org.mockito.Mockito.mock
   *
   * @author tkral
   */
-class SampleFinatraWebApp extends FinatraWebApp {
+object SampleFinatraWebAppMain extends SampleFinatraWebApp
+
+private[finatra] class SampleFinatraWebApp extends FinatraWebApp {
 
   val mockRouter = mock(classOf[HttpRouter])
 
