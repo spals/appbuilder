@@ -45,34 +45,39 @@ private[finatra] case class FinatraWebServerModule(
   }
 
   private[finatra] def runWebServerAutoBind(router: HttpRouter): Unit = {
-    // Run web component auto-binding first, before adding CommonFilters.
-    // Those are loaded through Guice which means that they will be added
-    // to the wsComponents list.
+    val controllers = new ListBuffer[Controller]
+    val exceptionMappers = new ListBuffer[ExceptionMapper[_ <: Throwable]]
+    val filters = new ListBuffer[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]
     Option(runWebServerAutoBinding).filter(b => b).foreach(b => {
       val wsComponentsList = wsComponents.toList
       wsComponentsList.foreach(
         wsComponent => {
           wsComponent match {
-            case controller: Controller => {
-              info(s"Binding controller: ${controller.getClass}")
-              router.add(controller)
-            }
-            case mapper: AnyRef if mapper.isInstanceOf[ExceptionMapper[_]] => {
-              val exceptionMapper = mapper.asInstanceOf[ExceptionMapper[_ <: Throwable]]
-              info(s"Binding exception mapper: ${exceptionMapper.getClass}")
-              router.exceptionMapper(exceptionMapper)
-            }
-            case filter: AnyRef if filter.isInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]] => {
-              val httpFilter = filter.asInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]
-              info(s"Binding filter: ${httpFilter.getClass}")
-              router.filter(httpFilter)
-            }
+            case controller: Controller => controllers += controller
+            case mapper: AnyRef if mapper.isInstanceOf[ExceptionMapper[_]] =>
+              exceptionMappers += mapper.asInstanceOf[ExceptionMapper[_ <: Throwable]]
+            case filter: AnyRef if filter.isInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]] =>
+              filters += filter.asInstanceOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]
           }
         }
     )})
 
+    filters.toList.foreach(filter => {
+      info(s"Binding filter: ${filter.getClass}")
+      router.filter(filter)
+    })
     Option(addCommonFilters).filter(b => b).foreach(router.filter[CommonFilters])
-    Option(addRequestScopeFilter).filter(b => b)
-      .foreach(router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
+    Option(addRequestScopeFilter).filter(b => b).foreach(
+      router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
+
+    exceptionMappers.toList.foreach(exceptionMapper => {
+      info(s"Binding exception mapper: ${exceptionMapper.getClass}")
+      router.exceptionMapper(exceptionMapper)
+    })
+
+    controllers.toList.foreach(controller => {
+      info(s"Binding controller: ${controller.getClass}")
+      router.add(controller)
+    })
   }
 }
