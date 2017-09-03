@@ -13,7 +13,9 @@ import net.spals.appbuilder.model.core.ModelSerializer
   *
   * @author tkral
   */
-class PluginsFinatraWebApp extends FinatraWebApp {
+object PluginsFinatraWebAppMain extends PluginsFinatraWebApp
+
+private[finatra] class PluginsFinatraWebApp extends FinatraWebApp {
 
   setServiceConfigFromClasspath("config/plugins-finatra-service.conf")
   setServiceScan(new ServiceScan.Builder()

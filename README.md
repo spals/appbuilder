@@ -314,6 +314,8 @@ package com.example.calculator.app
 
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 
+object CalculatorWebAppMain extends CalculatorWebApp
+
 class CalculatorWebApp extends FinatraWebApp {
 
   setServiceScan(new ServiceScan.Builder()

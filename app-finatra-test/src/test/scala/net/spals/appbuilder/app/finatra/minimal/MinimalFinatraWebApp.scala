@@ -7,6 +7,8 @@ import net.spals.appbuilder.app.finatra.FinatraWebApp
   *
   * @author tkral
   */
+object MinimalFinatraWebAppMain extends MinimalFinatraWebApp
+
 private[finatra] class MinimalFinatraWebApp extends FinatraWebApp {
 
   build()
