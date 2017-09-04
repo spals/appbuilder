@@ -1,7 +1,9 @@
 package net.spals.appbuilder.app.dropwizard;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
+import com.typesafe.config.Config;
 import io.dropwizard.configuration.ConfigurationSourceProvider;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -31,7 +33,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 @FreeBuilder
 public abstract class DropwizardWebApp implements App {
 
-    abstract Bootstrap<?> getBootstrap();
     public abstract Environment getEnvironment();
 
     public static class Builder extends DropwizardWebApp_Builder implements WebAppBuilder<DropwizardWebApp> {
@@ -40,7 +41,11 @@ public abstract class DropwizardWebApp implements App {
 
         public Builder(final Bootstrap<?> bootstrap, final Logger logger) {
             this.appDelegateBuilder = new JaxRsWebApp.Builder(bootstrap.getApplication().getName(), logger);
-            setBootstrap(bootstrap);
+            // A little bit of a hack here, since I'm not super keen on constructors
+            // with side-effects. But given the Dropwizard pattern espoused by AppBuilder,
+            // we really need the ConfigurationSourceProvider registered with the Bootstrap
+            // as soon as possible.
+            registerConfigurationSourceProvider(bootstrap);
             addBootstrapModule(new BootstrapModuleWrapper(new DropwizardBootstrapModule(bootstrap)));
         }
 
@@ -113,19 +118,28 @@ public abstract class DropwizardWebApp implements App {
             return super.setEnvironment(env);
         }
 
-        @Override
-        public Builder setServiceConfigFromClasspath(final String serviceConfigFileName) {
+        @VisibleForTesting
+        void registerConfigurationSourceProvider(final Bootstrap<?> bootstrap) {
             // Create a ConfigurationSourceProvider which reads from the classpath
             final ConfigurationSourceProvider classpathConfigSourceProvider = path ->
-                    getBootstrap().getApplication().getClass().getClassLoader().getResourceAsStream(path);
+                    bootstrap.getApplication().getClass().getClassLoader().getResourceAsStream(path);
             // Enable variable substitution with environment variables
             final ConfigurationSourceProvider envVarConfigSourceProvider =
                     new SubstitutingSourceProvider(classpathConfigSourceProvider,
                             new EnvironmentVariableSubstitutor(false /*strict*/));
 
-            getBootstrap().setConfigurationSourceProvider(envVarConfigSourceProvider);
-            appDelegateBuilder.setServiceConfigFromClasspath(serviceConfigFileName);
+            bootstrap.setConfigurationSourceProvider(envVarConfigSourceProvider);
+        }
 
+        @Override
+        public Builder setServiceConfig(final Config serviceConfig) {
+            appDelegateBuilder.setServiceConfig(serviceConfig);
+            return this;
+        }
+
+        @Override
+        public Builder setServiceConfigFromClasspath(final String serviceConfigFileName) {
+            appDelegateBuilder.setServiceConfigFromClasspath(serviceConfigFileName);
             return this;
         }
 
