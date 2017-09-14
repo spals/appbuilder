@@ -2,6 +2,7 @@ package net.spals.appbuilder.mapstore.dynamodb
 
 import java.util.Optional
 
+import io.opentracing.mock.MockTracer
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions
 import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey._
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between
@@ -23,7 +24,7 @@ class DynamoDBMapStorePluginIT {
   private val LOGGER = LoggerFactory.getLogger(classOf[DynamoDBMapStorePluginIT])
 
   private lazy val dynamoDBClient = {
-    val dynamoDBClientProvider = new DynamoDBClientProvider
+    val dynamoDBClientProvider = new DynamoDBClientProvider(new MockTracer())
     dynamoDBClientProvider.awsAccessKeyId = "DUMMY"
     dynamoDBClientProvider.awsSecretKey = "DUMMY"
     dynamoDBClientProvider.endpoint = s"http://${System.getenv("DYNAMODB_IP")}:${System.getenv("DYNAMODB_PORT")}"

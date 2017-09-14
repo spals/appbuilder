@@ -7,9 +7,11 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
-import com.google.inject.Provider
+import com.google.inject.{Inject, Provider}
 import com.netflix.governator.annotations.Configuration
 import com.typesafe.config.ConfigException
+import io.opentracing.Tracer
+import io.opentracing.contrib.aws.TracingRequestHandler
 import net.spals.appbuilder.annotations.service.AutoBindProvider
 
 import scala.util.Try
@@ -21,7 +23,9 @@ import scala.util.Try
   * @author tkral
   */
 @AutoBindProvider
-private[dynamodb] class DynamoDBClientProvider extends Provider[AmazonDynamoDB] {
+private[dynamodb] class DynamoDBClientProvider @Inject() (
+  tracer: Tracer
+) extends Provider[AmazonDynamoDB] {
 
   @NotNull
   @Configuration("mapStore.dynamoDB.awsAccessKeyId")
@@ -39,6 +43,7 @@ private[dynamodb] class DynamoDBClientProvider extends Provider[AmazonDynamoDB] 
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val dynamoDBClientBuilder = AmazonDynamoDBClientBuilder.standard()
       .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+      .withRequestHandlers(new TracingRequestHandler(tracer))
 
     endpoint match {
       case httpEndpoint if httpEndpoint.startsWith("http://") => {

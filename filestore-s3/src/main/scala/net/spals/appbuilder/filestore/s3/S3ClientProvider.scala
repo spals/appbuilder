@@ -6,9 +6,11 @@ import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.google.inject.Provider
+import com.google.inject.{Inject, Provider}
 import com.netflix.governator.annotations.Configuration
 import com.typesafe.config.ConfigException
+import io.opentracing.Tracer
+import io.opentracing.contrib.aws.TracingRequestHandler
 import net.spals.appbuilder.annotations.service.AutoBindProvider
 
 import scala.util.Try
@@ -17,7 +19,9 @@ import scala.util.Try
   * @author tkral
   */
 @AutoBindProvider
-private[s3] class S3ClientProvider extends Provider[AmazonS3] {
+private[s3] class S3ClientProvider @Inject() (
+  tracer: Tracer
+) extends Provider[AmazonS3] {
 
   @NotNull
   @Configuration("fileStore.s3.awsAccessKeyId")
@@ -35,6 +39,7 @@ private[s3] class S3ClientProvider extends Provider[AmazonS3] {
     val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val s3ClientBuilder = AmazonS3ClientBuilder.standard()
       .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+      .withRequestHandlers(new TracingRequestHandler(tracer))
 
     endpoint match {
       case httpEndpoint if httpEndpoint.startsWith("http://") => {

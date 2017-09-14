@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.internal.SkipMd5CheckStrategy._
 import com.amazonaws.services.s3.transfer.TransferManager
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
+import io.opentracing.mock.MockTracer
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.model._
 import org.hamcrest.MatcherAssert._
@@ -33,7 +34,7 @@ class S3FileStorePluginIT {
     System.setProperty(DISABLE_GET_OBJECT_MD5_VALIDATION_PROPERTY, "true")
     System.setProperty(DISABLE_PUT_OBJECT_MD5_VALIDATION_PROPERTY, "true")
 
-    val s3ClientProvider = new S3ClientProvider
+    val s3ClientProvider = new S3ClientProvider(new MockTracer())
     s3ClientProvider.awsAccessKeyId = "DUMMY"
     s3ClientProvider.awsSecretKey = "DUMMY"
     s3ClientProvider.endpoint = s"http://${System.getenv("S3_IP")}:${System.getenv("S3_PORT")}"
