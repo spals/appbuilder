@@ -2,7 +2,6 @@ package net.spals.appbuilder.app.finatra.plugins
 
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
-import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.FileStore
 import net.spals.appbuilder.mapstore.core.MapStore
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
@@ -20,7 +19,6 @@ private[finatra] class PluginsFinatraWebApp extends FinatraWebApp {
   setServiceConfigFromClasspath("config/plugins-finatra-service.conf")
   setServiceScan(new ServiceScan.Builder()
     .addServicePackages("net.spals.appbuilder.app.finatra.plugins")
-    .addDefaultServices(classOf[ExecutorServiceFactory])
     .addServicePlugins("net.spals.appbuilder.filestore.s3", classOf[FileStore])
     .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", classOf[MapStore])
     .addServicePlugins("net.spals.appbuilder.mapstore.dynamodb", classOf[MapStore])

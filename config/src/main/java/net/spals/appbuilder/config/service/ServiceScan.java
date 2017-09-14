@@ -36,6 +36,16 @@ public interface ServiceScan {
 
         public Builder() {
             setReflections(EMPTY_REFLECTIONS);
+            // Executor and monitoring services are special because they
+            // are used widely throughout the framework in several modules.
+            // As such, the service scan will guarantee that core executor
+            // and monitoring services are always injected without the
+            // application author having to do so manually. However, they
+            // will have to install plugins manually
+            addServicePackages(
+                "net.spals.appbuilder.executor.core",
+                "net.spals.appbuilder.monitor.core"
+            );
         }
 
         public Builder addDefaultServices(final Class<?> serviceClass) {
