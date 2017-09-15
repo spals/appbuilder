@@ -7,6 +7,8 @@ import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
+import io.opentracing.NoopTracer;
+import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomService;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
@@ -168,5 +170,11 @@ public class SampleDropwizardWebAppFTest {
                 serviceInjector.getInstance(Key.get(modelSerializerMapKey));
         assertThat(modelSerializerMap, aMapWithSize(1));
         assertThat(modelSerializerMap, hasKey("pojo"));
+    }
+
+    @Test
+    public void testMonitorInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
     }
 }

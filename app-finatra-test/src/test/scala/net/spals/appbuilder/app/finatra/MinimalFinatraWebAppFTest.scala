@@ -1,7 +1,9 @@
 package net.spals.appbuilder.app.finatra
 
 import com.github.mustachejava.MustacheFactory
-import com.google.inject.{Key, Stage, TypeLiteral}
+import com.google.inject._
+import com.googlecode.catchexception.CatchException.verifyException
+import com.googlecode.catchexception.ThrowingCallable
 import com.twitter.finagle.filter.LogFormatter
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.stats.StatsReceiver
@@ -9,12 +11,13 @@ import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.finatra.http.exceptions.ExceptionManager
 import com.twitter.finatra.http.marshalling.{DefaultMessageBodyReader, DefaultMessageBodyWriter}
 import com.twitter.finatra.http.response.ResponseBuilder
+import io.opentracing.Tracer
 import net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{instanceOf, is, notNullValue}
 import org.slf4j
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
-
 /**
   * Functional tests for a minimal [[FinatraWebApp]]
   *
@@ -64,7 +67,7 @@ class MinimalFinatraWebAppFTest {
   }
 
   @DataProvider
-  def defaultServiceInjectorProvider(): Array[Array[AnyRef]] = {
+  def defaultServiceInjectionProvider(): Array[Array[AnyRef]] = {
     Array(
       Array(TypeLiteral.get(classOf[DefaultMessageBodyReader])),
       Array(TypeLiteral.get(classOf[DefaultMessageBodyWriter])),
@@ -76,10 +79,28 @@ class MinimalFinatraWebAppFTest {
     )
   }
 
-  @Test(dataProvider = "defaultServiceInjectorProvider")
-  def testDefaultServiceInjector(typeLiteral: TypeLiteral[_]) {
+  @Test(dataProvider = "defaultServiceInjectionProvider")
+  def testDefaultServiceInjectoion(typeLiteral: TypeLiteral[_]) {
     val serviceInjector = minimalApp.getServiceInjector
     val service = serviceInjector.getInstance(Key.get(typeLiteral)).asInstanceOf[AnyRef]
     assertThat(service, notNullValue())
+  }
+
+  @DataProvider
+  def noDefaultServiceInjectionProvider(): Array[Array[AnyRef]] = {
+    Array(
+      Array(TypeLiteral.get(classOf[ExecutorServiceFactory])),
+      Array(TypeLiteral.get(classOf[Tracer]))
+    )
+  }
+
+  @Test(dataProvider = "noDefaultServiceInjectionProvider")
+  def testNoDefaultServiceInjection(typeLiteral: TypeLiteral[_]): Unit = {
+    val serviceInjector = minimalApp.getServiceInjector
+
+    val serviceLookup = new ThrowingCallable {
+      override def call(): Unit = serviceInjector.getInstance(Key.get(typeLiteral))
+    }
+    verifyException(serviceLookup, classOf[ConfigurationException])
   }
 }

@@ -5,6 +5,8 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
+import io.opentracing.NoopTracer;
+import io.opentracing.Tracer;
 import net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule;
 import net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule;
 import net.spals.appbuilder.app.core.sample.SampleCoreCustomService;
@@ -168,5 +170,11 @@ public class SampleGenericWorkerAppFTest {
                 serviceInjector.getInstance(Key.get(modelSerializerMapKey));
         assertThat(modelSerializerMap, aMapWithSize(1));
         assertThat(modelSerializerMap, hasKey("pojo"));
+    }
+
+    @Test
+    public void testMonitorInjection() {
+        final Injector serviceInjector = sampleApp.getServiceInjector();
+        assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
     }
 }

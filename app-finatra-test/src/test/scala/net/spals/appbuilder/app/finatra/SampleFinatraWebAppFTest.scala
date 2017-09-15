@@ -4,6 +4,7 @@ import com.google.inject.name.Names
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
+import io.opentracing.{NoopTracer, Tracer}
 import net.spals.appbuilder.app.finatra.sample.web.{SampleFinatraController, SampleFinatraExceptionMapper, SampleFinatraFilter}
 import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomService, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
@@ -15,7 +16,7 @@ import net.spals.appbuilder.message.core.{MessageConsumer, MessageConsumerCallba
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.{hasKey, is, notNullValue}
+import org.hamcrest.Matchers.{hasKey, instanceOf, is, notNullValue}
 import org.mockito.ArgumentMatchers.{any, isA}
 import org.mockito.Mockito.verify
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
@@ -142,6 +143,11 @@ class SampleFinatraWebAppFTest {
     val modelSerializerMap = serviceInjector.getInstance(Key.get(modelSerializerMapKey))
     assertThat(modelSerializerMap, Matchers.aMapWithSize[String, ModelSerializer](1))
     assertThat(modelSerializerMap, hasKey("pojo"))
+  }
+
+  @Test def testMonitorInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[Tracer]), instanceOf[Tracer](classOf[NoopTracer]))
   }
 
   @Test def testWebControllerInjection() {
