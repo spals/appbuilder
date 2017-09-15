@@ -1,5 +1,6 @@
 package net.spals.appbuilder.app.finatra.plugins
 
+import io.opentracing.Tracer
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
 import net.spals.appbuilder.filestore.core.FileStore
@@ -25,6 +26,7 @@ private[finatra] class PluginsFinatraWebApp extends FinatraWebApp {
     .addServicePlugins("net.spals.appbuilder.message.kafka", classOf[MessageConsumer], classOf[MessageProducer])
     .addServicePlugins("net.spals.appbuilder.message.kinesis", classOf[MessageConsumer], classOf[MessageProducer])
     .addServicePlugins("net.spals.appbuilder.model.protobuf", classOf[ModelSerializer])
+    .addServicePlugins("net.spals.appbuilder.monitor.lightstep", classOf[Tracer])
     .build())
   build()
 

@@ -7,6 +7,7 @@ import com.typesafe.config.ConfigFactory;
 import net.spals.appbuilder.config.TaggedConfig;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
+import net.spals.appbuilder.monitor.core.TracerTag;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -46,6 +47,10 @@ public class AutoBindConfigModuleTest {
                 .setGlobalId("myId")
                 .setDestination("kafka").build();
 
+        final Map<String, Object> configMapTracing = ImmutableMap.of("myTag.tracing.tagValue", "value");
+        final TracerTag expectedTracerTag = new TracerTag.Builder().setTag("myTag")
+                .setValue("value").build();
+
         final Map<String, Object> configMapMultiConsumer = ImmutableMap.<String, Object>builder()
                 .put("myTag1.consumer.channel", "myChannel")
                 .put("myTag1.consumer.format", "json")
@@ -71,11 +76,14 @@ public class AutoBindConfigModuleTest {
                 // Case: No configs found for auto-binding
                 {ConfigFactory.empty(), "consumer", MessageConsumerConfig.class, Collections.emptyMap()},
                 {ConfigFactory.empty(), "producer", MessageProducerConfig.class, Collections.emptyMap()},
+                {ConfigFactory.empty(), "tracing", TracerTag.class, Collections.emptyMap()},
                 // Basic cases
                 {ConfigFactory.parseMap(configMapConsumer), "consumer", MessageConsumerConfig.class,
                         ImmutableMap.of("myTag", expectedConsumerConfig)},
                 {ConfigFactory.parseMap(configMapProducer), "producer", MessageProducerConfig.class,
                         ImmutableMap.of("myTag", expectedProducerConfig)},
+                {ConfigFactory.parseMap(configMapTracing), "tracing", TracerTag.class,
+                        ImmutableMap.of("myTag", expectedTracerTag)},
                 // Case: Multiple auto-bound configurations
                 {ConfigFactory.parseMap(configMapMultiConsumer), "consumer", MessageConsumerConfig.class,
                         ImmutableMap.of("myTag1", expectedConsumerConfig1, "myTag2", expectedConsumerConfig2)},

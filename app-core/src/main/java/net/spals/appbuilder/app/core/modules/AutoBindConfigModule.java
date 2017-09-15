@@ -22,6 +22,7 @@ import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
 import net.spals.appbuilder.config.service.ServiceScan;
+import net.spals.appbuilder.monitor.core.TracerTag;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,7 @@ public abstract class AutoBindConfigModule extends AbstractModule {
 
         autoBindConfigs(binder(), MessageConsumerConfig.class, parseConfigs("consumer", MessageConsumerConfig.class));
         autoBindConfigs(binder(), MessageProducerConfig.class, parseConfigs("producer", MessageProducerConfig.class));
+        autoBindConfigs(binder(), TracerTag.class, parseConfigs("tracing", TracerTag.class));
     }
 
     @VisibleForTesting

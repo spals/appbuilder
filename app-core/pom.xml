@@ -84,7 +84,6 @@
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-monitor-core</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.bcel</groupId>

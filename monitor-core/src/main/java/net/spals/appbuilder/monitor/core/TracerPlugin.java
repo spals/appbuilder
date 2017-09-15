@@ -2,6 +2,8 @@ package net.spals.appbuilder.monitor.core;
 
 import io.opentracing.Tracer;
 
+import java.util.Map;
+
 /**
  * A plugin definition for creating a
  * {@link Tracer} object specific to a
@@ -11,5 +13,5 @@ import io.opentracing.Tracer;
  */
 public interface TracerPlugin {
 
-    Tracer createTracer();
+    Tracer createTracer(final Map<String, TracerTag> tracerTagMap);
 }

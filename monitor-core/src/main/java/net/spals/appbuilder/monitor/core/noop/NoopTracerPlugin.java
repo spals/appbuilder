@@ -5,6 +5,9 @@ import io.opentracing.NoopTracerFactory;
 import io.opentracing.Tracer;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.monitor.core.TracerPlugin;
+import net.spals.appbuilder.monitor.core.TracerTag;
+
+import java.util.Map;
 
 /**
  * A {@link TracerPlugin} for the
@@ -16,7 +19,7 @@ import net.spals.appbuilder.monitor.core.TracerPlugin;
 class NoopTracerPlugin implements TracerPlugin {
 
     @Override
-    public Tracer createTracer() {
+    public Tracer createTracer(final Map<String, TracerTag> tracerTagMap) {
         return NoopTracerFactory.create();
     }
 }

@@ -1,6 +1,5 @@
 package net.spals.appbuilder.monitor.lightstep
 
-import java.util.Collections
 import javax.validation.constraints.{NotNull, Pattern}
 
 import com.google.inject.Inject
@@ -15,8 +14,8 @@ import net.spals.appbuilder.monitor.core.{TracerPlugin, TracerTag}
 import scala.collection.JavaConverters._
 
 /**
-  * A [[TracerPlugin]] for a Lightstep
-  * Java [[Tracer]] instance.
+  * Implementation of [[TracerPlugin]] which
+  * uses Lightstep [[JRETracer]].
   *
   * @author tkral
   */
@@ -39,10 +38,7 @@ private[lightstep] class LightstepTracerPlugin @Inject() (
   @Configuration("tracing.lightstep.collectorProtocol")
   private[lightstep] var collectorProtocol: String = "http"
 
-  @Configuration("tracing.lightstep.tracerTags")
-  private[lightstep] var tracerTags: java.util.List[TracerTag] = Collections.emptyList[TracerTag]()
-
-  override def createTracer(): Tracer = {
+  override def createTracer(tracerTagMap: java.util.Map[String, TracerTag]): Tracer = {
     val optionsBuilder = new Options.OptionsBuilder()
       .withAccessToken(accessToken)
       .withComponentName(applicationName)
@@ -50,7 +46,8 @@ private[lightstep] class LightstepTracerPlugin @Inject() (
 
     Option(collectorHost).foreach(optionsBuilder.withCollectorHost(_))
     Option(collectorPort).filter(_ != 0).foreach(optionsBuilder.withCollectorPort(_))
-    tracerTags.asScala.foreach(tracerTag => optionsBuilder.withTag(tracerTag.getKey, tracerTag.getValue))
+    tracerTagMap.values().asScala
+      .foreach(tracerTag => optionsBuilder.withTag(tracerTag.getKey, tracerTag.getValue))
 
     new JRETracer(optionsBuilder.build())
   }

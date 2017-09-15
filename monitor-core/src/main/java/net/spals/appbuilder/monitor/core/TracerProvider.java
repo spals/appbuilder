@@ -20,16 +20,19 @@ class TracerProvider implements Provider<Tracer> {
     private volatile String tracingSystem = "noop";
 
     private final Map<String, TracerPlugin> tracerPluginMap;
+    private final Map<String, TracerTag> tracerTagMap;
 
     @Inject
-    TracerProvider(final Map<String, TracerPlugin> tracerPluginMap) {
+    TracerProvider(final Map<String, TracerPlugin> tracerPluginMap,
+                   final Map<String, TracerTag> tracerTagMap) {
         this.tracerPluginMap = tracerPluginMap;
+        this.tracerTagMap = tracerTagMap;
     }
 
     @Override
     public Tracer get() {
         return Optional.ofNullable(tracerPluginMap.get(tracingSystem))
-            .map(tracerPlugin -> tracerPlugin.createTracer())
+            .map(tracerPlugin -> tracerPlugin.createTracer(tracerTagMap))
             .orElseThrow(() -> new ConfigException.BadValue("tracing.system",
                 "No Tracing plugin found for : " + tracingSystem));
     }
