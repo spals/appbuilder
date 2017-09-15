@@ -1,6 +1,7 @@
 package net.spals.appbuilder.config.service;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 
@@ -27,25 +28,49 @@ public interface ServiceScan {
     Reflections getReflections();
 
     static ServiceScan empty() {
-        return new ServiceScan.Builder().build();
+        return new ServiceScan.Builder()
+            // Provide an empty Reflections instance. We do this here
+            // because we don't want the empty ServiceScan to include
+            // any default packages (e.g. executor and monitor core packages).
+            // So this circumvents the UNSET_REFLECTIONS check but
+            // still has the same effect.
+            .setReflections(new Reflections(Predicates.alwaysFalse()))
+            .build();
     }
 
     class Builder extends ServiceScan_Builder {
 
-        private static Reflections EMPTY_REFLECTIONS = new Reflections(Predicates.alwaysFalse());
+        // Default service packages are special because they are used
+        // widely throughout the framework in several modules.
+        //
+        // As such, the service scan will guarantee that they
+        // are always injected without the application author
+        // having to do so explicitly.
+        //
+        // However, default service packages will be skipped if
+        // the caller provides a Reflections instance directly.
+        // Also, plugins to these services have to be explicitly
+        // added.
+        //
+        // *IMPORTANT NOTE*: Any packages added here should also
+        // be added as runtime-scoped dependencies in the app-core
+        // module to guarantee that they are always available.
+        private static Set<String> DEFAULT_SERVICE_PACKAGES = ImmutableSet.of(
+            "net.spals.appbuilder.executor.core",
+            "net.spals.appbuilder.monitor.core"
+        );
+
+        // This is a special marker which represents the fact
+        // that the caller has not provided a Reflections instance
+        // via the setReflections setter. This is important to know
+        // in the build method because we'll honor any Reflections
+        // instance provided by the caller. Otherwise, we'll create
+        // a new one based on the service packages provided.
+        private static Reflections UNSET_REFLECTIONS =
+                new Reflections(Predicates.alwaysFalse());
 
         public Builder() {
-            setReflections(EMPTY_REFLECTIONS);
-            // Executor and monitoring services are special because they
-            // are used widely throughout the framework in several modules.
-            // As such, the service scan will guarantee that core executor
-            // and monitoring services are always injected without the
-            // application author having to do so manually. However, they
-            // will have to install plugins manually
-            addServicePackages(
-                "net.spals.appbuilder.executor.core",
-                "net.spals.appbuilder.monitor.core"
-            );
+            setReflections(UNSET_REFLECTIONS);
         }
 
         public Builder addDefaultServices(final Class<?> serviceClass) {
@@ -80,7 +105,9 @@ public interface ServiceScan {
         public ServiceScan build() {
             // Honor any Reflections object which is directly injected into the builder.
             // This is most useful for testing purposes.
-            if (getReflections() == EMPTY_REFLECTIONS && !getServicePackages().isEmpty()) {
+            if (getReflections() == UNSET_REFLECTIONS) {
+                // Guarantee that default service packages are added
+                addAllServicePackages(DEFAULT_SERVICE_PACKAGES);
                 setReflections(new Reflections(getServicePackages().stream()
                         .toArray(String[]::new)));
             }
