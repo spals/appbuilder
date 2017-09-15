@@ -5,6 +5,7 @@ import com.google.inject.Provider;
 import com.netflix.governator.annotations.Configuration;
 import com.typesafe.config.ConfigException;
 import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 
 import java.util.Map;
@@ -31,9 +32,14 @@ class TracerProvider implements Provider<Tracer> {
 
     @Override
     public Tracer get() {
-        return Optional.ofNullable(tracerPluginMap.get(tracingSystem))
+        // Lookup the tracer from the available plugins
+        final Tracer tracer = Optional.ofNullable(tracerPluginMap.get(tracingSystem))
             .map(tracerPlugin -> tracerPlugin.createTracer(tracerTagMap))
             .orElseThrow(() -> new ConfigException.BadValue("tracing.system",
                 "No Tracing plugin found for : " + tracingSystem));
+
+        // Register the tracer as the global tracer
+        GlobalTracer.register(tracer);
+        return tracer;
     }
 }
