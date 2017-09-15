@@ -47,7 +47,7 @@ class S3FileStorePluginIT {
 
   private lazy val s3TransferManager = {
     val executorServiceFactory = mock(classOf[ExecutorServiceFactory])
-    when(executorServiceFactory.createFixedThreadPool(m_anyInt(), m_any()))
+    when(executorServiceFactory.createFixedThreadPool(m_anyInt(), m_any(classOf[Class[_]])))
       .thenReturn(Executors.newSingleThreadExecutor())
 
     val s3TransferManagerProvider = new S3TransferManagerProvider(s3Client, executorServiceFactory)
