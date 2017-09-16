@@ -2,6 +2,7 @@ package net.spals.appbuilder.app.core.matcher;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Binding;
+import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.ElementSource;
@@ -52,6 +53,23 @@ public class BindingMatchers {
         }
     }
 
+    public static Matcher<Binding<?>> withKeyTypeSubclassOf(final Class<?> keyTypeSuperClass) {
+        return new WithKeyTypeSubclassOf(keyTypeSuperClass);
+    }
+
+    private static class WithKeyTypeSubclassOf extends AbstractMatcher<Binding<?>>
+            implements Serializable {
+        private final Matcher<TypeLiteral<?>> subclassOfMatcher;
+
+        private WithKeyTypeSubclassOf(final Class<?> keyTypeSuperClass) {
+            this.subclassOfMatcher = TypeLiteralMatchers.subclassesOf(keyTypeSuperClass);
+        }
+
+        @Override
+        public boolean matches(final Binding<?> binding) {
+            return subclassOfMatcher.matches(binding.getKey().getTypeLiteral());
+        }
+    }
     public static Matcher<Binding<?>> withSourcePackage(final String sourcePackage) {
         return new WithSourcePackage(sourcePackage);
     }

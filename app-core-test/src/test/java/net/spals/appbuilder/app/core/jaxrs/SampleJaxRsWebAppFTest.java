@@ -6,6 +6,9 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.google.inject.servlet.GuiceFilter;
 import com.typesafe.config.Config;
+import io.opentracing.NoopTracer;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import net.spals.appbuilder.app.core.generic.MinimalGenericWorkerAppFTest;
 import net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule;
 import net.spals.appbuilder.app.core.sample.SampleCoreCustomService;
@@ -66,7 +69,6 @@ public class SampleJaxRsWebAppFTest {
             .setServiceConfigFromClasspath("config/sample-jaxrs-service.conf")
             .setServiceScan(new ServiceScan.Builder()
                     .addServicePackages("net.spals.appbuilder.app.core.sample")
-                    .addDefaultServices(ExecutorServiceFactory.class)
                     .addDefaultServices(FileStore.class)
                     .addDefaultServices(MapStore.class)
                     .addDefaultServices(MessageConsumer.class, MessageProducer.class)
@@ -195,8 +197,19 @@ public class SampleJaxRsWebAppFTest {
     }
 
     @Test
+    public void testMonitorInjection() {
+        final Injector serviceInjector = sampleApp.getServiceInjector();
+        assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
+    }
+
+    @Test
     public void testRequestScopeEnabled() {
         assertThat(registeredFilters, hasEntry(is("com.google.inject.servlet.GuiceFilter"), instanceOf(GuiceFilter.class)));
+    }
+
+    @Test
+    public void testServerTracingInjection() {
+        verify(configurable).register(isA(ServerTracingDynamicFeature.class));
     }
 
     @DataProvider

@@ -1,9 +1,16 @@
 package net.spals.appbuilder.app.core.jaxrs;
 
+import com.google.inject.ConfigurationException;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.typesafe.config.ConfigFactory;
+import io.opentracing.Tracer;
 import net.spals.appbuilder.app.core.generic.GenericWorkerApp;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import javax.servlet.Filter;
@@ -12,6 +19,7 @@ import javax.ws.rs.core.Configurable;
 
 import java.util.function.BiFunction;
 
+import static com.googlecode.catchexception.CatchException.verifyException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -46,5 +54,19 @@ public class MinimalJaxRsWebAppFTest {
     @Test
     public void testMinimalServiceConfig() {
         assertThat(minimalApp.getServiceConfig(), is(ConfigFactory.empty()));
+    }
+
+    @DataProvider
+    Object[][] noDefaultServiceInjectionProvider() {
+        return new Object[][] {
+                {TypeLiteral.get(ExecutorServiceFactory.class)},
+                {TypeLiteral.get(Tracer.class)},
+        };
+    }
+
+    @Test(dataProvider = "noDefaultServiceInjectionProvider")
+    public void testNoDefaultServiceInjection(final TypeLiteral<?> typeLiteral) {
+        final Injector serviceInjector = minimalApp.getServiceInjector();
+        verifyException(() -> serviceInjector.getInstance(Key.get(typeLiteral)), ConfigurationException.class);
     }
 }

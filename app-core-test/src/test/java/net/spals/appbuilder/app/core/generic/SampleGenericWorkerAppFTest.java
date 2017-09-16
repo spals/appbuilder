@@ -8,8 +8,8 @@ import com.typesafe.config.Config;
 import io.opentracing.NoopTracer;
 import io.opentracing.Tracer;
 import net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule;
-import net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule;
 import net.spals.appbuilder.app.core.sample.SampleCoreCustomService;
+import net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
@@ -45,7 +45,6 @@ public class SampleGenericWorkerAppFTest {
             .setServiceConfigFromClasspath("config/sample-generic-service.conf")
             .setServiceScan(new ServiceScan.Builder()
                     .addServicePackages("net.spals.appbuilder.app.core.sample")
-                    .addDefaultServices(ExecutorServiceFactory.class)
                     .addDefaultServices(FileStore.class)
                     .addDefaultServices(MapStore.class)
                     .addDefaultServices(MessageConsumer.class, MessageProducer.class)
