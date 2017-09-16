@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A full sample [[DropwizardWebApp]] which uses all default services
+ * A full sample {@link DropwizardWebApp} which uses all default services
  * and bindings.
  *
  * @author tkral

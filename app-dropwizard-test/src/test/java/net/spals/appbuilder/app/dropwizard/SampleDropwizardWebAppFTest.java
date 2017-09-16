@@ -22,8 +22,8 @@ import net.spals.appbuilder.message.core.MessageProducer;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -44,13 +44,13 @@ public class SampleDropwizardWebAppFTest {
             new DropwizardTestSupport<>(SampleDropwizardWebApp.class, SampleDropwizardWebApp.APP_CONFIG_FILE_NAME);
     private DropwizardWebApp webAppDelegate;
 
-    @BeforeTest
+    @BeforeClass
     void classSetup() {
         testServerWrapper.before();
         webAppDelegate = ((SampleDropwizardWebApp)testServerWrapper.getApplication()).getDelegate();
     }
 
-    @AfterTest
+    @AfterClass
     void classTearDown() {
         testServerWrapper.after();
     }

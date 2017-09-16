@@ -21,8 +21,8 @@ import net.spals.appbuilder.message.core.producer.MessageProducerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
 import net.spals.appbuilder.monitor.core.TracerPlugin;
 import net.spals.appbuilder.monitor.core.TracerTag;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -41,13 +41,13 @@ public class PluginsDropwizardWebAppFTest {
             new DropwizardTestSupport<>(PluginsDropwizardWebApp.class, PluginsDropwizardWebApp.APP_CONFIG_FILE_NAME);
     private DropwizardWebApp webAppDelegate;
 
-    @BeforeTest
+    @BeforeClass
     void classSetup() {
         testServerWrapper.before();
         webAppDelegate = ((PluginsDropwizardWebApp)testServerWrapper.getApplication()).getDelegate();
     }
 
-    @AfterTest
+    @AfterClass
     void classTearDown() {
         testServerWrapper.after();
     }

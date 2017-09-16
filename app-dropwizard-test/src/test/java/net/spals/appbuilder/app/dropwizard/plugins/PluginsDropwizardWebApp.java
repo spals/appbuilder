@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A [[DropwizardWebApp]] which uses all various service plugins.
+ * A {@link DropwizardWebApp} which uses all various service plugins.
  *
  * @author tkral
  */

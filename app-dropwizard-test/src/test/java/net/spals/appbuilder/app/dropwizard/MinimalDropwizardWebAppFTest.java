@@ -12,8 +12,8 @@ import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.minimal.MinimalDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -35,13 +35,13 @@ public class MinimalDropwizardWebAppFTest {
             new DropwizardTestSupport<>(MinimalDropwizardWebApp.class, new Configuration());
     private DropwizardWebApp webAppDelegate;
 
-    @BeforeTest
+    @BeforeClass
     void classSetup() {
         testServerWrapper.before();
         webAppDelegate = ((MinimalDropwizardWebApp)testServerWrapper.getApplication()).getDelegate();
     }
 
-    @AfterTest
+    @AfterClass
     void classTearDown() {
         testServerWrapper.after();
     }
