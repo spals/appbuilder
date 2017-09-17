@@ -115,6 +115,7 @@
         <module>model-protobuf</module>
         <module>model-protobuf-test</module>
         <module>monitor-core</module>
+        <module>monitor-core-test</module>
         <module>monitor-lightstep</module>
     </modules>
 

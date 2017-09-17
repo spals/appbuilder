@@ -1,5 +1,6 @@
 package net.spals.appbuilder.monitor.core;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netflix.governator.annotations.Configuration;
@@ -18,7 +19,8 @@ import java.util.Optional;
 class TracerProvider implements Provider<Tracer> {
 
     @Configuration("tracing.system")
-    private volatile String tracingSystem = "noop";
+    @VisibleForTesting
+    volatile String tracingSystem = "noop";
 
     private final Map<String, TracerPlugin> tracerPluginMap;
     private final Map<String, TracerTag> tracerTagMap;
