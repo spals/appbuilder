@@ -10,15 +10,17 @@ import com.amazonaws.services.s3.internal.SkipMd5CheckStrategy._
 import com.amazonaws.services.s3.transfer.TransferManager
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
-import io.opentracing.mock.MockTracer
+import io.opentracing.mock.{MockSpan, MockTracer}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.model._
+import net.spals.appbuilder.filestore.s3.S3SpanMatcher.s3Span
 import org.hamcrest.MatcherAssert._
-import org.hamcrest.Matchers.{hasToString, is, not, stringContainsInOrder}
+import org.hamcrest.Matchers._
+import org.hamcrest.{Description, Matchers, TypeSafeMatcher}
 import org.mockito.ArgumentMatchers.{any => m_any, anyInt => m_anyInt}
 import org.mockito.Mockito.{mock, when}
 import org.slf4j.LoggerFactory
-import org.testng.annotations.{BeforeClass, Test}
+import org.testng.annotations.{BeforeClass, BeforeMethod, Test}
 
 /**
   * Integration tests for [[S3FileStorePlugin]]
@@ -29,15 +31,17 @@ class S3FileStorePluginIT {
 
   private val LOGGER = LoggerFactory.getLogger(classOf[S3FileStorePluginIT])
 
+  private val s3Endpoint = s"http://${System.getenv("S3_IP")}:${System.getenv("S3_PORT")}"
+  private val s3Tracer = new MockTracer()
   private lazy val s3ClientProvider = {
     // Turn off MD5 checks because we're going against a Fake S3
     System.setProperty(DISABLE_GET_OBJECT_MD5_VALIDATION_PROPERTY, "true")
     System.setProperty(DISABLE_PUT_OBJECT_MD5_VALIDATION_PROPERTY, "true")
 
-    val s3ClientProvider = new S3ClientProvider(new MockTracer())
+    val s3ClientProvider = new S3ClientProvider(s3Tracer)
     s3ClientProvider.awsAccessKeyId = "DUMMY"
     s3ClientProvider.awsSecretKey = "DUMMY"
-    s3ClientProvider.endpoint = s"http://${System.getenv("S3_IP")}:${System.getenv("S3_PORT")}"
+    s3ClientProvider.endpoint = s3Endpoint
 
     LOGGER.info(s"Connecting to S3 instance at ${s3ClientProvider.endpoint}")
     s3ClientProvider
@@ -69,6 +73,10 @@ class S3FileStorePluginIT {
     fileStorePlugin.createBucket()
   }
 
+  @BeforeMethod def resetTracer() {
+    s3Tracer.reset()
+  }
+
   @Test def testPutFile() {
     val fileKey = new FileStoreKey.Builder()
       .setPartition("S3FileStorePluginIT")
@@ -83,6 +91,7 @@ class S3FileStorePluginIT {
     assertThat(fileMetadata.getURI, hasToString[URI](s"${s3ClientProvider.endpoint}/s3filestorepluginit-filestore/S3FileStorePluginIT/testPutFile.txt"))
     assertThat(fileMetadata.getSecurityLevel, is(FileSecurityLevel.PUBLIC))
     assertThat(fileMetadata.getStoreLocation, is(FileStoreLocation.REMOTE))
+    assertThat(s3Tracer.finishedSpans(), contains[MockSpan](s3Span(s3Endpoint, "PUT")))
   }
 
   @Test def testPutFileReplace() {
@@ -103,6 +112,7 @@ class S3FileStorePluginIT {
 
     // Verify that the contents of the file have been replaced
     assertThat(Resources.asCharSource(fileMetadata.getURI().toURL(), Charsets.UTF_8).read(), stringContainsInOrder("12345"))
+    assertThat(s3Tracer.finishedSpans(), contains[MockSpan](s3Span(s3Endpoint, "PUT"), s3Span(s3Endpoint, "PUT")))
   }
 
   @Test def testGetFile() {
@@ -118,6 +128,7 @@ class S3FileStorePluginIT {
     val getFileMetadata = fileStorePlugin.getFileMetadata(fileKey)
     assertThat(getFileMetadata, not(Optional.empty[FileMetadata]))
     assertThat(getFileMetadata.get, is(putFileMetadata))
+    assertThat(s3Tracer.finishedSpans(), contains[MockSpan](s3Span(s3Endpoint, "PUT"), s3Span(s3Endpoint, "HEAD")))
   }
 
   @Test def testDeleteFile() {
@@ -137,5 +148,31 @@ class S3FileStorePluginIT {
     assertThat(deletedFile, is(true))
     assertThat(getFileMetadata, is(Optional.empty[FileMetadata]))
     assertThat(getFileContent, is(Optional.empty[InputStream]))
+    assertThat(s3Tracer.finishedSpans(), contains[MockSpan](s3Span(s3Endpoint, "PUT"),
+      s3Span(s3Endpoint, "DELETE"), s3Span(s3Endpoint, "HEAD"), s3Span(s3Endpoint, "HEAD")))
+  }
+}
+
+private object S3SpanMatcher {
+
+  def s3Span(url: String, method: String): S3SpanMatcher =
+    S3SpanMatcher(url, method)
+}
+
+private case class S3SpanMatcher(url: String, method: String) extends TypeSafeMatcher[MockSpan] {
+
+  override def matchesSafely(mockSpan: MockSpan): Boolean = {
+    Matchers.hasEntry[String, AnyRef]("component", "java-aws-sdk").matches(mockSpan.tags()) &&
+      Matchers.hasEntry[String, AnyRef]("http.method", method).matches(mockSpan.tags()) &&
+      Matchers.hasEntry[String, AnyRef]("http.url", url).matches(mockSpan.tags()) &&
+      Matchers.hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
+      "Amazon S3".equals(mockSpan.operationName())
+  }
+
+  override def describeTo(description: Description): Unit = {
+    description.appendText("an S3 span tagged with method ")
+    description.appendText(method)
+    description.appendText(" and url ")
+    description.appendText(url)
   }
 }
