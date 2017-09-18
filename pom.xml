@@ -93,6 +93,7 @@
         <module>config</module>
         <module>config-test</module>
         <module>executor-core</module>
+        <module>executor-core-test</module>
         <module>filestore-core</module>
         <module>filestore-core-test</module>
         <module>filestore-s3</module>

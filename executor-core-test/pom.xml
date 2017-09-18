@@ -9,34 +9,38 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.spals.appbuilder</groupId>
-    <artifactId>spals-appbuilder-executor-core</artifactId>
+    <artifactId>spals-appbuilder-executor-core-test</artifactId>
     <version>0.0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
+            <groupId>eu.codearte.catch-exception</groupId>
+            <artifactId>catch-exception</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.netflix.governator</groupId>
-            <artifactId>governator-api</artifactId>
+            <groupId>eu.codearte.catch-exception</groupId>
+            <artifactId>catch-throwable</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-concurrent</artifactId>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-annotations</artifactId>
+            <artifactId>spals-appbuilder-executor-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.inferred</groupId>
-            <artifactId>freebuilder</artifactId>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>java-hamcrest</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
         </dependency>
     </dependencies>
 

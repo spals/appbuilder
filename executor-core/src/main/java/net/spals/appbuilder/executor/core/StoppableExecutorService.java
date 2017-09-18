@@ -1,5 +1,6 @@
 package net.spals.appbuilder.executor.core;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,21 +18,21 @@ import java.util.concurrent.*;
  */
 class StoppableExecutorService implements ExecutorService {
 
-    private final ExecutorService executorServiceDelegate;
+    private final ExecutorService delegate;
 
     private final Logger logger;
 
     private final long shutdown;
     private final TimeUnit shutdownUnit;
 
-    StoppableExecutorService(final ExecutorService executorServiceDelegate,
-                             final ExecutorServiceFactory.Key executorServiceKey,
+    StoppableExecutorService(final ExecutorService delegate,
+                             final ExecutorServiceFactory.Key key,
                              final long shutdown,
                              final TimeUnit shutdownUnit) {
-        this.executorServiceDelegate = executorServiceDelegate;
+        this.delegate = delegate;
 
-        final String loggerName = String.format("%s[%s]", executorServiceKey.getParentClass().getName(),
-                Joiner.on(',').join(executorServiceKey.getTags()));
+        final String loggerName = String.format("%s[%s]", key.getParentClass().getName(),
+                Joiner.on(',').join(key.getTags()));
         this.logger = LoggerFactory.getLogger(loggerName);
 
         this.shutdown = shutdown;
@@ -40,56 +41,76 @@ class StoppableExecutorService implements ExecutorService {
 
     @Override
     public boolean awaitTermination(final long timeout, final TimeUnit unit) throws InterruptedException {
-        return executorServiceDelegate.awaitTermination(timeout, unit);
+        return delegate.awaitTermination(timeout, unit);
+    }
+
+    @Override
+    public void execute(final Runnable command) {
+        delegate.execute(command);
+    }
+
+    @VisibleForTesting
+    ExecutorService getDelegate() {
+        return delegate;
+    }
+
+    @VisibleForTesting
+    Logger getLogger() {
+        return logger;
+    }
+
+    @VisibleForTesting
+    long getShutdown() {
+        return shutdown;
+    }
+
+    @VisibleForTesting
+    TimeUnit getShutdownUnit() {
+        return shutdownUnit;
     }
 
     @Override
     public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks) throws InterruptedException {
-        return executorServiceDelegate.invokeAll(tasks);
+        return delegate.invokeAll(tasks);
     }
 
     @Override
     public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks,
                                          final long timeout,
                                          final TimeUnit unit) throws InterruptedException {
-        return executorServiceDelegate.invokeAll(tasks, timeout, unit);
+        return delegate.invokeAll(tasks, timeout, unit);
     }
 
     @Override
     public <T> T invokeAny(final Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-        return executorServiceDelegate.invokeAny(tasks);
+        return delegate.invokeAny(tasks);
     }
 
     @Override
     public <T> T invokeAny(final Collection<? extends Callable<T>> tasks,
                            final long timeout,
                            final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return executorServiceDelegate.invokeAny(tasks, timeout, unit);
+        return delegate.invokeAny(tasks, timeout, unit);
     }
 
     @Override
     public boolean isShutdown() {
-        return executorServiceDelegate.isShutdown();
+        return delegate.isShutdown();
     }
 
     @Override
     public boolean isTerminated() {
-        return executorServiceDelegate.isTerminated();
-    }
-
-    @Override
-    public void execute(final Runnable command) {
-        executorServiceDelegate.execute(command);
+        return delegate.isTerminated();
     }
 
     @Override
     public void shutdown() {
-        executorServiceDelegate.shutdown();
+        delegate.shutdown();
     }
 
     @Override
     public List<Runnable> shutdownNow() {
-        return executorServiceDelegate.shutdownNow();
+        return delegate.shutdownNow();
     }
 
     synchronized void stop() {
@@ -119,16 +140,16 @@ class StoppableExecutorService implements ExecutorService {
 
     @Override
     public <T> Future<T> submit(final Callable<T> task) {
-        return executorServiceDelegate.submit(task);
+        return delegate.submit(task);
     }
 
     @Override
     public <T> Future<T> submit(final Runnable task, final T result) {
-        return executorServiceDelegate.submit(task, result);
+        return delegate.submit(task, result);
     }
 
     @Override
     public Future<?> submit(final Runnable task) {
-        return executorServiceDelegate.submit(task);
+        return delegate.submit(task);
     }
 }
