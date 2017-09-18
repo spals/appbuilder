@@ -10,12 +10,12 @@ import java.util.concurrent.*;
 
 /**
  * An {@link ExecutorService} delegater which provides
- * a {@link #stop()} method to run a gracefully shutdown
+ * a {@link #stop()} method to run a graceful shutdown
  * of the executor.
  *
  * @author tkral
  */
-class DelegatingManagedExecutorService implements ExecutorService {
+class StoppableExecutorService implements ExecutorService {
 
     private final ExecutorService executorServiceDelegate;
 
@@ -24,10 +24,10 @@ class DelegatingManagedExecutorService implements ExecutorService {
     private final long shutdown;
     private final TimeUnit shutdownUnit;
 
-    DelegatingManagedExecutorService(final ExecutorService executorServiceDelegate,
-                                     final ExecutorServiceFactory.Key executorServiceKey,
-                                     final long shutdown,
-                                     final TimeUnit shutdownUnit) {
+    StoppableExecutorService(final ExecutorService executorServiceDelegate,
+                             final ExecutorServiceFactory.Key executorServiceKey,
+                             final long shutdown,
+                             final TimeUnit shutdownUnit) {
         this.executorServiceDelegate = executorServiceDelegate;
 
         final String loggerName = String.format("%s[%s]", executorServiceKey.getParentClass().getName(),

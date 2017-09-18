@@ -2,12 +2,13 @@ package net.spals.appbuilder.app.dropwizard;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
+import io.opentracing.NoopTracer;
+import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.plugins.PluginsDropwizardWebApp;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
@@ -18,12 +19,13 @@ import net.spals.appbuilder.message.core.MessageProducer;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import net.spals.appbuilder.monitor.core.TracerPlugin;
+import net.spals.appbuilder.monitor.core.TracerTag;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Map;
-import java.util.concurrent.FutureTask;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -39,13 +41,13 @@ public class PluginsDropwizardWebAppFTest {
             new DropwizardTestSupport<>(PluginsDropwizardWebApp.class, PluginsDropwizardWebApp.APP_CONFIG_FILE_NAME);
     private DropwizardWebApp webAppDelegate;
 
-    @BeforeTest
+    @BeforeClass
     void classSetup() {
         testServerWrapper.before();
         webAppDelegate = ((PluginsDropwizardWebApp)testServerWrapper.getApplication()).getDelegate();
     }
 
-    @AfterTest
+    @AfterClass
     void classTearDown() {
         testServerWrapper.after();
     }
@@ -132,5 +134,34 @@ public class PluginsDropwizardWebAppFTest {
         assertThat(modelSerializerMap, aMapWithSize(2));
         assertThat(modelSerializerMap, hasKey("pojo"));
         assertThat(modelSerializerMap, hasKey("protobuf"));
+    }
+
+    @Test
+    public void testTracerInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
+
+        final TypeLiteral<Map<String, TracerPlugin>> tracerPluginMapKey =
+                new TypeLiteral<Map<String, TracerPlugin>>(){};
+        final Map<String, TracerPlugin> tracerPluginMap =
+                serviceInjector.getInstance(Key.get(tracerPluginMapKey));
+        assertThat(tracerPluginMap, aMapWithSize(2));
+        assertThat(tracerPluginMap, hasKey("lightstep"));
+        assertThat(tracerPluginMap, hasKey("noop"));
+    }
+
+    @Test
+    public void testTracerTagInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+
+        final TypeLiteral<Map<String, TracerTag>> tracerTagMapKey =
+                new TypeLiteral<Map<String, TracerTag>>(){};
+        final Map<String, TracerTag> tracerTagMap =
+                serviceInjector.getInstance(Key.get(tracerTagMapKey));
+        assertThat(tracerTagMap, aMapWithSize(2));
+        assertThat(tracerTagMap, hasEntry(is("key1"),
+            is(new TracerTag.Builder().setTag("key1").setValue("value").build())));
+        assertThat(tracerTagMap, hasEntry(is("key2"),
+            is(new TracerTag.Builder().setTag("key2").setValue(2).build())));
     }
 }

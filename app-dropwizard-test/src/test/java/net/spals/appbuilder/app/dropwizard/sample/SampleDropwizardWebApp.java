@@ -7,7 +7,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -17,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A full sample [[DropwizardWebApp]] which uses all default services
+ * A full sample {@link DropwizardWebApp} which uses all default services
  * and bindings.
  *
  * @author tkral
@@ -47,7 +46,6 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.sample")
-                .addDefaultServices(ExecutorServiceFactory.class)
                 .addDefaultServices(FileStore.class)
                 .addDefaultServices(MapStore.class)
                 .addDefaultServices(MessageConsumer.class, MessageProducer.class)

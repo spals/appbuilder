@@ -7,6 +7,8 @@ import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
+import io.opentracing.NoopTracer;
+import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomService;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
@@ -20,8 +22,8 @@ import net.spals.appbuilder.message.core.MessageProducer;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -42,13 +44,13 @@ public class SampleDropwizardWebAppFTest {
             new DropwizardTestSupport<>(SampleDropwizardWebApp.class, SampleDropwizardWebApp.APP_CONFIG_FILE_NAME);
     private DropwizardWebApp webAppDelegate;
 
-    @BeforeTest
+    @BeforeClass
     void classSetup() {
         testServerWrapper.before();
         webAppDelegate = ((SampleDropwizardWebApp)testServerWrapper.getApplication()).getDelegate();
     }
 
-    @AfterTest
+    @AfterClass
     void classTearDown() {
         testServerWrapper.after();
     }
@@ -168,5 +170,11 @@ public class SampleDropwizardWebAppFTest {
                 serviceInjector.getInstance(Key.get(modelSerializerMapKey));
         assertThat(modelSerializerMap, aMapWithSize(1));
         assertThat(modelSerializerMap, hasKey("pojo"));
+    }
+
+    @Test
+    public void testMonitorInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
     }
 }

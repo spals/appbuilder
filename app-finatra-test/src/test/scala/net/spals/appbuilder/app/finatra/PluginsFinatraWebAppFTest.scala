@@ -1,9 +1,7 @@
 package net.spals.appbuilder.app.finatra
 
-import java.util.concurrent.FutureTask
-
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core.Cluster
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
@@ -13,9 +11,10 @@ import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
+import net.spals.appbuilder.monitor.core.{TracerPlugin, TracerTag}
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.{hasKey, notNullValue}
+import org.hamcrest.Matchers.{hasKey, is, notNullValue}
 import org.testng.annotations.{AfterClass, BeforeClass, Test}
 
 /**
@@ -104,5 +103,27 @@ class PluginsFinatraWebAppFTest {
     assertThat(modelSerializerMap, Matchers.aMapWithSize[String, ModelSerializer](2))
     assertThat(modelSerializerMap, hasKey("pojo"))
     assertThat(modelSerializerMap, hasKey("protobuf"))
+  }
+
+  @Test def testTracerInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+
+    val tracerPluginMapKey = new TypeLiteral[java.util.Map[String, TracerPlugin]](){}
+    val tracerPluginMap = serviceInjector.getInstance(Key.get(tracerPluginMapKey))
+    assertThat(tracerPluginMap, Matchers.aMapWithSize[String, TracerPlugin](2))
+    assertThat(tracerPluginMap, hasKey("lightstep"))
+    assertThat(tracerPluginMap, hasKey("noop"))
+  }
+
+  @Test def testTracerTagInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+
+    val tracerTagMapKey = new TypeLiteral[java.util.Map[String, TracerTag]](){}
+    val tracerTagMap = serviceInjector.getInstance(Key.get(tracerTagMapKey))
+    assertThat(tracerTagMap, Matchers.aMapWithSize[String, TracerTag](2))
+    assertThat(tracerTagMap, Matchers.hasEntry[String, TracerTag](is("key1"),
+      is(new TracerTag.Builder().setTag("key1").setValue("value").build())))
+    assertThat(tracerTagMap, Matchers.hasEntry[String, TracerTag](is("key2"),
+      is(new TracerTag.Builder().setTag("key2").setValue(Int.box(2)).build())))
   }
 }

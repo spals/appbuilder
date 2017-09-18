@@ -32,6 +32,8 @@ public abstract class JaxRsWebApp implements App {
     public static class Builder extends JaxRsWebApp_Builder implements WebAppBuilder<JaxRsWebApp> {
 
         private final GenericWorkerApp.Builder appDelegateBuilder;
+        private final JaxRsMonitorModule.Builder monitorModuleBuilder =
+                new JaxRsMonitorModule.Builder();
         private final JaxRsWebServerModule.Builder webServerModuleBuilder =
                 new JaxRsWebServerModule.Builder();
 
@@ -84,6 +86,7 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public Builder setConfigurable(final Configurable<?> configurable) {
+            monitorModuleBuilder.setConfigurable(configurable);
             webServerModuleBuilder.setConfigurable(configurable);
             return super.setConfigurable(configurable);
         }
@@ -108,10 +111,12 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public JaxRsWebApp build() {
+            appDelegateBuilder.addModule(monitorModuleBuilder.build());
+
             webServerModuleBuilder.setServiceGraph(appDelegateBuilder.getServiceGraph());
             appDelegateBuilder.addModule(webServerModuleBuilder.build());
-            final GenericWorkerApp appDelegate = appDelegateBuilder.build();
 
+            final GenericWorkerApp appDelegate = appDelegateBuilder.build();
             super.setLogger(appDelegate.getLogger());
             super.setName(appDelegate.getName());
             super.setServiceConfig(appDelegate.getServiceConfig());

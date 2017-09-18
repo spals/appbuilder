@@ -67,8 +67,13 @@
         <kinesis-client.version>1.7.4</kinesis-client.version>
         <kinesis-producer.version>0.12.3</kinesis-producer.version>
         <kryo-serializers.version>0.41</kryo-serializers.version>
+        <lightstep.tracer.version>0.12.15</lightstep.tracer.version>
         <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
+        <opentracing.aws.version>0.0.2</opentracing.aws.version>
+        <opentracing.concurrent.version>0.0.2</opentracing.concurrent.version>
+        <opentracing.jaxrs2.version>0.0.9</opentracing.jaxrs2.version>
+        <opentracing.version>0.30.0</opentracing.version>
         <protobuf.version>3.3.0</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
@@ -109,6 +114,9 @@
         <module>model-core-test</module>
         <module>model-protobuf</module>
         <module>model-protobuf-test</module>
+        <module>monitor-core</module>
+        <module>monitor-core-test</module>
+        <module>monitor-lightstep</module>
     </modules>
 
     <dependencyManagement>
@@ -163,6 +171,11 @@
                 <groupId>com.github.jlmauduy</groupId>
                 <artifactId>ascii-graphs_${scala.version}</artifactId>
                 <version>${ascii-graphs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lightstep.tracer</groupId>
+                <artifactId>lightstep-tracer-jre</artifactId>
+                <version>${lightstep.tracer.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.netflix.governator</groupId>
@@ -266,6 +279,49 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-api</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-noop</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-mock</artifactId>
+                <version>${opentracing.version}</version>
+                <scope>tests</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-util</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-aws-sdk</artifactId>
+                <version>${opentracing.aws.version}</version>
+                <!-- Exclude so that we can bring in our own version of the SDK -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.amazonaws</groupId>
+                        <artifactId>aws-java-sdk</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-concurrent</artifactId>
+                <version>${opentracing.concurrent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-jaxrs2</artifactId>
+                <version>${opentracing.jaxrs2.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet-api.version}</version>
@@ -332,6 +388,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-monitor-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-app-dropwizard</artifactId>
                 <version>${project.version}</version>
@@ -369,6 +430,11 @@
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-model-protobuf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-monitor-lightstep</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -47,6 +47,10 @@
             <artifactId>config</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-jaxrs2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
@@ -74,7 +78,16 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-executor-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-graph</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-monitor-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.bcel</groupId>

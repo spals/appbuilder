@@ -5,9 +5,9 @@ import io.dropwizard.Application;
 import io.dropwizard.Configuration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A [[DropwizardWebApp]] which uses all various service plugins.
+ * A {@link DropwizardWebApp} which uses all various service plugins.
  *
  * @author tkral
  */
@@ -46,13 +46,13 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.plugins")
-                .addDefaultServices(ExecutorServiceFactory.class)
                 .addServicePlugins("net.spals.appbuilder.filestore.s3", FileStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.dynamodb", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.message.kafka", MessageConsumer.class, MessageProducer.class)
                 .addServicePlugins("net.spals.appbuilder.message.kinesis", MessageConsumer.class, MessageProducer.class)
                 .addServicePlugins("net.spals.appbuilder.model.protobuf", ModelSerializer.class)
+                .addServicePlugins("net.spals.appbuilder.monitor.lightstep", Tracer.class)
                 .build());
     }
 

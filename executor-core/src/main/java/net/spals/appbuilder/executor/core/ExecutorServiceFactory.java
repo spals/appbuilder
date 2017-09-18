@@ -11,14 +11,28 @@ import java.util.concurrent.ExecutorService;
 public interface ExecutorServiceFactory {
 
     ExecutorService createFixedThreadPool(int nThreads,
-                                          Class<?> parentClass,
-                                          String... nameSuffixes);
+                                          Key key);
 
-    ExecutorService createCachedThreadPool(Class<?> parentClass,
-                                           String... nameSuffixes);
+    default ExecutorService createFixedThreadPool(int nThreads,
+                                                  Class<?> parentClass,
+                                                  String... tags) {
+        return createFixedThreadPool(nThreads,
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+    }
 
-    ExecutorService createSingleThreadExecutor(Class<?> parentClass,
-                                               String... nameSuffixes);
+    ExecutorService createCachedThreadPool(Key key);
+
+    default ExecutorService createCachedThreadPool(Class<?> parentClass,
+                                                   String... tags) {
+        return createCachedThreadPool(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+    }
+
+    ExecutorService createSingleThreadExecutor(Key key);
+
+    default ExecutorService createSingleThreadExecutor(Class<?> parentClass,
+                                                       String... tags) {
+        return createSingleThreadExecutor(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+    }
 
     @FreeBuilder
     interface Key {
