@@ -1,21 +1,16 @@
 package net.spals.appbuilder.app.core.jaxrs;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
-import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.ProvisionListener;
-import com.netflix.governator.lifecycle.DefaultLifecycleListener;
+import com.google.inject.spi.ProvisionListener.ProvisionInvocation;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import net.spals.appbuilder.app.core.matcher.BindingMatchers;
-import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.core.Configurable;
 
 /**
