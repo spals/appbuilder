@@ -5,10 +5,7 @@ import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import net.spals.appbuilder.app.dropwizard.tracing.TracingDropwizardWebApp;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -20,7 +17,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Functional tests for a minimal {@link DropwizardWebApp}
+ * Functional tests for request tracing in a {@link DropwizardWebApp}
+ * (see {@link TracingDropwizardWebApp}).
  *
  * @author tkral
  */
@@ -36,6 +34,11 @@ public class TracingDropwizardWebAppFTest {
     void classSetup() {
         testServerWrapper.before();
         mockTracer = ((TracingDropwizardWebApp)testServerWrapper.getApplication()).getMockTracer();
+    }
+
+    @BeforeMethod
+    void resetTracer() {
+        mockTracer.reset();
     }
 
     @AfterClass
@@ -58,23 +61,15 @@ public class TracingDropwizardWebAppFTest {
         final WebTarget webTarget = webClient.target(target);
         webTarget.request().get();
 
-        final MockSpan mockSpan = findMockSpan(expectedOperationName);
+        final List<MockSpan> mockSpans = mockTracer.finishedSpans();
+        assertThat("No finished spans found.", mockSpans, hasSize(1));
+
+        final MockSpan mockSpan = mockSpans.get(0);
         assertThat(mockSpan.generatedErrors(), empty());
+        assertThat(mockSpan.operationName(), is(expectedOperationName));
         assertThat(mockSpan.tags(), hasEntry("http.method", "GET"));
         assertThat(mockSpan.tags(), hasEntry("http.status_code", 200));
         assertThat(mockSpan.tags(), hasEntry("http.url", target));
         assertThat(mockSpan.tags(), hasEntry("span.kind", "server"));
-    }
-
-    private MockSpan findMockSpan(final String expectedOperationName) {
-        final List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-        assertThat("No finished spans found.", finishedSpans, hasSize(greaterThan(0)));
-
-        final Optional<MockSpan> mockSpan = finishedSpans.stream()
-                .filter(span -> expectedOperationName.equals(span.operationName()))
-                .findAny();
-        assertThat("Could not find span with operationName '" + expectedOperationName + "'",
-                mockSpan, not(Optional.empty()));
-        return mockSpan.get();
     }
 }

@@ -14,6 +14,7 @@ import com.twitter.util.StorageUnit
 import com.typesafe.config._
 import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServiceGraphModule, AutoBindServicesModule}
 import net.spals.appbuilder.app.finatra.bootstrap.FinatraBootstrapModule
+import net.spals.appbuilder.app.finatra.modules.FinatraMonitorModule
 import net.spals.appbuilder.app.finatra.modules.{AutoBindConfigFlagsModule, FinatraWebServerModule}
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.config.service.ServiceScan
@@ -65,6 +66,8 @@ trait FinatraWebApp extends HttpServer
   // ========== Twitter HttpServer ==========
 
   override protected def configureHttp(router: HttpRouter): Unit = {
+    // TODO (tkral): Does this work with post-routing filters?
+    monitorModule.runMonitoringAutoBind(router)
     webServerModule.runWebServerAutoBind(router)
   }
 
@@ -103,6 +106,7 @@ trait FinatraWebApp extends HttpServer
 
   private var bootstrapModule = new FinatraBootstrapModule()
   private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
+  private val monitorModule = new FinatraMonitorModule
   private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph)
   private var webServerModule = FinatraWebServerModule(serviceGraph)
 
@@ -171,6 +175,7 @@ trait FinatraWebApp extends HttpServer
 
     addFrameworkModules(
       bootstrapModule,
+      monitorModule,
       webServerModule
     )
     // Bind alternate config values under @Flag annotations
