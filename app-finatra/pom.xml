@@ -35,6 +35,10 @@
             <artifactId>inject-request-scope_${scala.version}</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-jaxrs2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-app-core</artifactId>
         </dependency>

@@ -52,6 +52,10 @@
             <artifactId>catch-throwable</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-executor-core</artifactId>
         </dependency>
