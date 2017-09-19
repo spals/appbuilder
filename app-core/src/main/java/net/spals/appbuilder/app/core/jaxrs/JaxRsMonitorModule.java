@@ -1,12 +1,15 @@
 package net.spals.appbuilder.app.core.jaxrs;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.ProvisionListener.ProvisionInvocation;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.jaxrs2.server.ServerSpanDecorator;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import net.spals.appbuilder.app.core.matcher.BindingMatchers;
+import net.spals.appbuilder.app.core.monitor.ParamSpanDecorator;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +47,11 @@ public abstract class JaxRsMonitorModule extends AbstractModule
     void registerTracer(final Tracer tracer) {
         LOGGER.info("Enabling JaxRs server request tracing with OpenTracing");
         final ServerTracingDynamicFeature serverTracing =
-                new ServerTracingDynamicFeature.Builder(tracer).build();
+                new ServerTracingDynamicFeature.Builder(tracer)
+                        .withDecorators(ImmutableList.of(ServerSpanDecorator.STANDARD_TAGS,
+                                ServerSpanDecorator.HTTP_WILDCARD_PATH_OPERATION_NAME,
+                                new ParamSpanDecorator()))
+                        .build();
         getConfigurable().register(serverTracing);
     }
 }

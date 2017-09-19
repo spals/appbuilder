@@ -5,6 +5,7 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -21,6 +22,12 @@ public class TracingDropwizardResource {
     @GET
     @Path("noAnnotation")
     public Response getTracingNoAnnotation() {
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("noAnnotation/{id}")
+    public Response getTrachingNoAnnotation(@PathParam("id") final String id) {
         return Response.ok().build();
     }
 

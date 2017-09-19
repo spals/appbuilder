@@ -4,11 +4,9 @@ import com.google.inject.TypeLiteral
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
 import com.twitter.finagle.{Filter, http => finaglehttp}
 import com.twitter.finatra.http.Controller
-import com.twitter.finatra.http.exceptions.{ExceptionMapper, ExceptionMapperCollection}
-import com.twitter.finatra.http.filters.CommonFilters
+import com.twitter.finatra.http.exceptions.ExceptionMapper
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
-import com.twitter.inject.requestscope.FinagleRequestScopeFilter
 import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers
 import net.spals.appbuilder.graph.model.ServiceGraph
 
@@ -19,8 +17,6 @@ import scala.collection.mutable.ListBuffer
   */
 private[finatra] case class FinatraWebServerModule(
     serviceGraph: ServiceGraph,
-    addCommonFilters: Boolean = true,
-    addRequestScopeFilter: Boolean = false,
     runWebServerAutoBinding: Boolean = true
   ) extends TwitterModule
   with InjectionListener[AnyRef]
@@ -66,9 +62,6 @@ private[finatra] case class FinatraWebServerModule(
       info(s"Binding filter: ${filter.getClass}")
       router.filter(filter)
     })
-    Option(addCommonFilters).filter(b => b).foreach(router.filter[CommonFilters])
-    Option(addRequestScopeFilter).filter(b => b).foreach(
-      router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
 
     exceptionMappers.toList.foreach(exceptionMapper => {
       info(s"Binding exception mapper: ${exceptionMapper.getClass}")

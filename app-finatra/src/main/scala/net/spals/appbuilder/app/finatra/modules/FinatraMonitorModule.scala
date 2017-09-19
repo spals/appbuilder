@@ -10,7 +10,7 @@ import net.spals.appbuilder.app.core.matcher.BindingMatchers
 import net.spals.appbuilder.app.finatra.monitor.FinatraTracingFilter
 
 /**
-  * Created by timkral on 9/18/17.
+  * @author tkral
   */
 private[finatra] class FinatraMonitorModule
   extends TwitterModule
@@ -32,8 +32,8 @@ private[finatra] class FinatraMonitorModule
     }
   }
 
-  private[finatra] def runMonitoringAutoBind(router: HttpRouter): Unit = {
+  private[finatra] def runMonitoringAutoBind(router: HttpRouter) = {
     Option(tracerRef.get()).map(new FinatraTracingFilter(_))
-      .foreach(router.filter(_, beforeRouting = true))
+      .foreach(router.filter(_, beforeRouting = false))
   }
 }

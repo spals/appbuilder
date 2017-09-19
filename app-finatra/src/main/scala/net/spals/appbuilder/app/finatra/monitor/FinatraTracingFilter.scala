@@ -42,10 +42,11 @@ private[finatra] class FinatraTracingFilter (
     val extractedSpanContext: SpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
       new ServerHeadersExtractTextMap(headerMap))
 
-    val spanBuilder = tracer.buildSpan(request.path)
+    val spanBuilder = tracer.buildSpan(createOperationName(request))
       .withTag(Tags.SPAN_KIND.getKey, Tags.SPAN_KIND_SERVER)
       .withTag(Tags.HTTP_METHOD.getKey, request.method.name)
-      .withTag(Tags.HTTP_URL.getKey, request.uri)
+    // Add all param key, value pairs as tags
+    request.params.foreach(param => spanBuilder.withTag(s"param.${param._1}", s"${param._2}"))
 
     Option(extractedSpanContext).foreach(spanBuilder.asChildOf(_))
 
@@ -59,6 +60,13 @@ private[finatra] class FinatraTracingFilter (
       case Throw(e) =>
         Tags.HTTP_STATUS.set(span, Status.InternalServerError.code)
         finishSpan(span)
+    }
+  }
+
+  private[finatra] def createOperationName(request: Request): String = {
+    // Replace all param values with param keys
+    request.params.toList.foldRight(request.path) { (param, path) =>
+      path.replaceAll(param._2, s":${param._1}")
     }
   }
 

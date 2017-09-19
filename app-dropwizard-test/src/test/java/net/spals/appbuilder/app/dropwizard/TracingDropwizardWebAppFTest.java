@@ -72,4 +72,23 @@ public class TracingDropwizardWebAppFTest {
         assertThat(mockSpan.tags(), hasEntry("http.url", target));
         assertThat(mockSpan.tags(), hasEntry("span.kind", "server"));
     }
+
+    @Test
+    public void testServerRequestTracingWithParams() {
+        final String target = "http://localhost:" + testServerWrapper.getLocalPort() + "/tracing/noAnnotation/123";
+        final WebTarget webTarget = webClient.target(target);
+        webTarget.request().get();
+
+        final List<MockSpan> mockSpans = mockTracer.finishedSpans();
+        assertThat("No finished spans found.", mockSpans, hasSize(1));
+
+        final MockSpan mockSpan = mockSpans.get(0);
+        assertThat(mockSpan.generatedErrors(), empty());
+        assertThat(mockSpan.operationName(), is("tracing/noAnnotation/{id}"));
+        assertThat(mockSpan.tags(), hasEntry("http.method", "GET"));
+        assertThat(mockSpan.tags(), hasEntry("http.status_code", 200));
+        assertThat(mockSpan.tags(), hasEntry("http.url", target));
+        assertThat(mockSpan.tags(), hasEntry("param.id", "123"));
+        assertThat(mockSpan.tags(), hasEntry("span.kind", "server"));
+    }
 }

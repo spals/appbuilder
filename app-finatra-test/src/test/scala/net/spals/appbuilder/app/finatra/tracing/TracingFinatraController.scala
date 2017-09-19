@@ -15,4 +15,8 @@ private[tracing] class TracingFinatraController extends Controller {
   get("/tracing") { request: Request =>
     response.ok
   }
+
+  get("/tracing/:id") { request: Request =>
+    response.ok
+  }
 }
