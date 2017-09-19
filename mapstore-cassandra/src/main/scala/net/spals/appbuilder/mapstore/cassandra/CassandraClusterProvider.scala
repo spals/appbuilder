@@ -3,6 +3,8 @@ package net.spals.appbuilder.mapstore.cassandra
 import com.datastax.driver.core.Cluster
 import com.datastax.driver.core.Cluster.Initializer
 import com.google.inject.{Inject, Provider}
+import io.opentracing.Tracer
+import io.opentracing.contrib.cassandra.TracingCluster
 import net.spals.appbuilder.annotations.service.AutoBindProvider
 
 /**
@@ -12,10 +14,11 @@ import net.spals.appbuilder.annotations.service.AutoBindProvider
   */
 @AutoBindProvider
 private[cassandra] class CassandraClusterProvider @Inject()(
-  initializer: Initializer
+  initializer: Initializer,
+  tracer: Tracer
 ) extends Provider[Cluster] {
 
   override def get(): Cluster = {
-    Cluster.buildFrom(initializer)
+    new TracingCluster(initializer, tracer)
   }
 }

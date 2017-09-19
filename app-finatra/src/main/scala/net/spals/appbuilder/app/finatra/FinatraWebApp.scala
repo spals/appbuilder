@@ -1,19 +1,23 @@
 package net.spals.appbuilder.app.finatra
 
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
 import com.google.inject.{Injector, Module}
 import com.netflix.governator.guice.ModuleTransformer
 import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings
+import com.twitter.finagle.{http => finaglehttp}
 import com.twitter.finatra.http.HttpServer
+import com.twitter.finatra.http.filters.CommonFilters
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.Logging
 import com.twitter.inject.annotations.Lifecycle
+import com.twitter.inject.requestscope.FinagleRequestScopeFilter
 import com.twitter.util.StorageUnit
 import com.typesafe.config._
 import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServiceGraphModule, AutoBindServicesModule}
 import net.spals.appbuilder.app.finatra.bootstrap.FinatraBootstrapModule
+import net.spals.appbuilder.app.finatra.modules.FinatraMonitorModule
 import net.spals.appbuilder.app.finatra.modules.{AutoBindConfigFlagsModule, FinatraWebServerModule}
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.config.service.ServiceScan
@@ -65,6 +69,12 @@ trait FinatraWebApp extends HttpServer
   // ========== Twitter HttpServer ==========
 
   override protected def configureHttp(router: HttpRouter): Unit = {
+    // Add pre-routing filters before anything else
+    Option(addCommonFilters.get()).filter(b => b).foreach(router.filter[CommonFilters])
+    Option(addRequestScopeFilter.get()).filter(b => b).foreach(
+      router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
+
+    monitorModule.runMonitoringAutoBind(router)
     webServerModule.runWebServerAutoBind(router)
   }
 
@@ -97,12 +107,16 @@ trait FinatraWebApp extends HttpServer
 
   // ========== Spals AppBuilder ==========
 
+  private val addCommonFilters = new AtomicBoolean(true)
+  private val addRequestScopeFilter = new AtomicBoolean(false)
+
   // Alternative configuration outside of Flags
   private var altConfig: Option[Config] = None
   private val serviceGraph = new ServiceGraph()
 
   private var bootstrapModule = new FinatraBootstrapModule()
   private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
+  private val monitorModule = new FinatraMonitorModule
   private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph)
   private var webServerModule = FinatraWebServerModule(serviceGraph)
 
@@ -112,7 +126,7 @@ trait FinatraWebApp extends HttpServer
   }
 
   def disableCommonFilters(): FinatraWebApp = {
-    webServerModule = webServerModule.copy(addCommonFilters = false)
+    addCommonFilters.set(false)
     this
   }
 
@@ -132,7 +146,7 @@ trait FinatraWebApp extends HttpServer
   }
 
   override def enableRequestScoping(): FinatraWebApp = {
-    webServerModule = webServerModule.copy(addRequestScopeFilter = true)
+    addRequestScopeFilter.set(true)
     this
   }
 
@@ -171,6 +185,7 @@ trait FinatraWebApp extends HttpServer
 
     addFrameworkModules(
       bootstrapModule,
+      monitorModule,
       webServerModule
     )
     // Bind alternate config values under @Flag annotations

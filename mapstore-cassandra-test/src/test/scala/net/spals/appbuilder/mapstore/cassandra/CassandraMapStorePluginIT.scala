@@ -2,17 +2,17 @@ package net.spals.appbuilder.mapstore.cassandra
 
 import java.util.Optional
 
-import com.datastax.driver.core.Cluster
-import com.datastax.driver.core.Cluster.Initializer
+import io.opentracing.mock.{MockSpan, MockTracer}
+import net.spals.appbuilder.mapstore.cassandra.CassandraSpanMatcher.cassandraSpan
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions
-import net.spals.appbuilder.mapstore.core.model.MultiValueMapRangeKey.in
 import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey._
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between
 import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all
 import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.{contains, empty, is}
-import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
+import org.hamcrest.Matchers.{contains, empty, hasEntry, hasKey, is, startsWith}
+import org.hamcrest.{Description, TypeSafeMatcher}
+import org.testng.annotations._
 
 import scala.collection.JavaConverters._
 
@@ -31,12 +31,14 @@ class CassandraMapStorePluginIT {
     initializerProvider.get()
   }
 
+  private val cassandraTracer = new MockTracer()
   private lazy val cluster = {
-    val clusterProvider = new CassandraClusterProvider(clusterInitializer)
+    val clusterProvider = new CassandraClusterProvider(clusterInitializer, cassandraTracer)
     clusterProvider.get()
   }
 
-  private lazy val mapStorePlugin = new CassandraMapStorePlugin(applicationName = "CassandraMapStorePluginIT", cluster)
+  private val applicationName = "CassandraMapStorePluginIT"
+  private lazy val mapStorePlugin = new CassandraMapStorePlugin(applicationName, cluster)
 
   private val hashTableName = "hashTable"
   private val hashTableKey = new MapStoreTableKey.Builder()
@@ -52,6 +54,10 @@ class CassandraMapStorePluginIT {
   @BeforeClass def createTables() {
     mapStorePlugin.createTable(hashTableName, hashTableKey)
     mapStorePlugin.createTable(rangeTableName, rangeTableKey)
+  }
+
+  @BeforeMethod def resetTracer() {
+    cassandraTracer.reset()
   }
 
   @AfterClass(alwaysRun = true) def dropTables() {
@@ -76,12 +82,18 @@ class CassandraMapStorePluginIT {
   def testEmptyGetItem(tableName: String,
                        storeKey: MapStoreKey) {
     assertThat(mapStorePlugin.getItem(tableName, storeKey), is(Optional.empty[java.util.Map[String, AnyRef]]))
+    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
+      cassandraSpan(applicationName.toLowerCase, "SELECT")
+    ))
   }
 
   @Test(dataProvider = "emptyGetProvider")
   def testEmptyGetItems(tableName: String,
                         storeKey: MapStoreKey) {
     assertThat(mapStorePlugin.getItems(tableName, storeKey, defaultOptions()), empty[java.util.Map[String, AnyRef]])
+    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
+      cassandraSpan(applicationName.toLowerCase, "SELECT")
+    ))
   }
 
   @DataProvider def putItemProvider(): Array[Array[AnyRef]] = {
@@ -122,6 +134,11 @@ class CassandraMapStorePluginIT {
                   expectedResult: Map[String, AnyRef]) {
     assertThat(mapStorePlugin.putItem(tableName, storeKey, payload.asJava), is(expectedResult.asJava))
     assertThat(mapStorePlugin.getItem(tableName, storeKey), is(Optional.of(expectedResult.asJava)))
+    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
+      cassandraSpan(applicationName.toLowerCase, "INSERT"),
+      cassandraSpan(applicationName.toLowerCase, "SELECT"),
+      cassandraSpan(applicationName.toLowerCase, "SELECT")
+    ))
   }
 
   @DataProvider def updateItemProvider(): Array[Array[AnyRef]] = {
@@ -142,6 +159,10 @@ class CassandraMapStorePluginIT {
 
     assertThat(mapStorePlugin.updateItem(rangeTableName, storeKey, payload.asJava), is(expectedResult.asJava))
     assertThat(mapStorePlugin.getItem(rangeTableName, storeKey), is(Optional.of(expectedResult.asJava)))
+    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
+      cassandraSpan(applicationName.toLowerCase, "UPDATE"),
+      cassandraSpan(applicationName.toLowerCase, "SELECT")
+    ))
   }
 
   @DataProvider def getItemsProvider(): Array[Array[AnyRef]] = {
@@ -188,5 +209,36 @@ class CassandraMapStorePluginIT {
                    expectedResults: List[Map[String, AnyRef]]) {
     assertThat(mapStorePlugin.getItems(rangeTableName, storeKey, defaultOptions()),
       contains[java.util.Map[String, AnyRef]](expectedResults.map(_.asJava): _*))
+    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
+      cassandraSpan(applicationName.toLowerCase, "SELECT")
+    ))
+  }
+}
+
+private object CassandraSpanMatcher {
+
+  def cassandraSpan(dbInstance: String, dbStatementOp: String): CassandraSpanMatcher =
+    CassandraSpanMatcher(dbInstance, dbStatementOp)
+}
+
+private case class CassandraSpanMatcher(
+  dbInstance: String,
+  dbStatementOp: String
+) extends TypeSafeMatcher[MockSpan] {
+
+  override def matchesSafely(mockSpan: MockSpan): Boolean = {
+    hasEntry[String, AnyRef]("component", "java-cassandra").matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("db.instance", dbInstance).matches(mockSpan.tags()) &&
+      hasEntry[String, String](is("db.statement"), startsWith(dbStatementOp)).matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("db.type", "cassandra").matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
+      hasKey[String]("peer.hostname").matches(mockSpan.tags()) &&
+      hasKey[String]("peer.port").matches(mockSpan.tags()) &&
+      "execute".equals(mockSpan.operationName())
+  }
+
+  override def describeTo(description: Description): Unit = {
+    description.appendText("a Cassandra span tagged with db instance ")
+    description.appendText(dbInstance)
   }
 }

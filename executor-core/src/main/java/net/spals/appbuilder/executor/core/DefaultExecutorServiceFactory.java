@@ -1,6 +1,7 @@
 package net.spals.appbuilder.executor.core;
 
 import com.google.inject.Inject;
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.governator.annotations.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
@@ -72,11 +73,11 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     StoppableExecutorService decorateExecutorService(final ExecutorService delegate,
                                                      final Key key) {
         // First, wrap the delegate as a traced executor service so we get nice asynchronous tracing
-        final ExecutorService tracedExecutorService = new TracedExecutorService(delegate, tracer);
+        final ExecutorService traceableExecutorService = new TraceableExecutorService(delegate, tracer);
         // Second, wrap the delegate as a stoppable executor service so we can gracefully shutdown
         // at the end of the application's life
         final StoppableExecutorService stoppableExecutorService =
-                new StoppableExecutorService(tracedExecutorService, key, shutdown, shutdownUnit);
+                new StoppableExecutorService(traceableExecutorService, key, shutdown, shutdownUnit);
 
         return stoppableExecutorService;
     }
@@ -84,6 +85,11 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     void logExecutorService(final String description, final Key key) {
         LOGGER.info("Created " + description + " executor service for " + key.getParentClass().getSimpleName() +
                 "(" + key.getTags() + ")");
+    }
+
+    @VisibleForTesting
+    Map<Key, StoppableExecutorService> getStoppableExecutorServices() {
+        return stoppableExecutorServices;
     }
 
     @PreDestroy
