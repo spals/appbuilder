@@ -23,6 +23,10 @@
             <artifactId>governator-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-cassandra-driver</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
         </dependency>
@@ -37,6 +41,10 @@
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-mapstore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-monitor-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

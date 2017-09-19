@@ -71,6 +71,7 @@
         <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
         <opentracing.aws.version>0.0.2</opentracing.aws.version>
+        <opentracing.cassandra.version>0.0.2</opentracing.cassandra.version>
         <opentracing.concurrent.version>0.0.2</opentracing.concurrent.version>
         <opentracing.jaxrs2.version>0.0.9</opentracing.jaxrs2.version>
         <opentracing.version>0.30.0</opentracing.version>
@@ -311,6 +312,11 @@
                         <artifactId>aws-java-sdk</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-cassandra-driver</artifactId>
+                <version>${opentracing.cassandra.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing.contrib</groupId>

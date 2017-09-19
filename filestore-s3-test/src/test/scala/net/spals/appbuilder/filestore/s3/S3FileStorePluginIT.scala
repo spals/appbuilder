@@ -16,7 +16,7 @@ import net.spals.appbuilder.filestore.core.model._
 import net.spals.appbuilder.filestore.s3.S3SpanMatcher.s3Span
 import org.hamcrest.MatcherAssert._
 import org.hamcrest.Matchers._
-import org.hamcrest.{Description, Matchers, TypeSafeMatcher}
+import org.hamcrest.{Description, TypeSafeMatcher}
 import org.mockito.ArgumentMatchers.{any => m_any, anyInt => m_anyInt}
 import org.mockito.Mockito.{mock, when}
 import org.slf4j.LoggerFactory
@@ -162,10 +162,10 @@ private object S3SpanMatcher {
 private case class S3SpanMatcher(url: String, method: String) extends TypeSafeMatcher[MockSpan] {
 
   override def matchesSafely(mockSpan: MockSpan): Boolean = {
-    Matchers.hasEntry[String, AnyRef]("component", "java-aws-sdk").matches(mockSpan.tags()) &&
-      Matchers.hasEntry[String, AnyRef]("http.method", method).matches(mockSpan.tags()) &&
-      Matchers.hasEntry[String, AnyRef]("http.url", url).matches(mockSpan.tags()) &&
-      Matchers.hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
+    hasEntry[String, AnyRef]("component", "java-aws-sdk").matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("http.method", method).matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("http.url", url).matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
       "Amazon S3".equals(mockSpan.operationName())
   }
 

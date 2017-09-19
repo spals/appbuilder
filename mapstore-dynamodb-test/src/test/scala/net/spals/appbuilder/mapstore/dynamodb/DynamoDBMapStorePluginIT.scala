@@ -10,8 +10,8 @@ import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all
 import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
 import net.spals.appbuilder.mapstore.dynamodb.DynamoDBSpanMatcher.dynamoDBSpan
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.{contains, empty, is}
-import org.hamcrest.{Description, Matchers, TypeSafeMatcher}
+import org.hamcrest.Matchers.{contains, empty, hasEntry, is}
+import org.hamcrest.{Description, TypeSafeMatcher}
 import org.slf4j.LoggerFactory
 import org.testng.annotations._
 
@@ -206,10 +206,10 @@ private object DynamoDBSpanMatcher {
 private case class DynamoDBSpanMatcher(url: String, method: String) extends TypeSafeMatcher[MockSpan] {
 
   override def matchesSafely(mockSpan: MockSpan): Boolean = {
-    Matchers.hasEntry[String, AnyRef]("component", "java-aws-sdk").matches(mockSpan.tags()) &&
-      Matchers.hasEntry[String, AnyRef]("http.method", method).matches(mockSpan.tags()) &&
-      Matchers.hasEntry[String, AnyRef]("http.url", url).matches(mockSpan.tags()) &&
-      Matchers.hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
+    hasEntry[String, AnyRef]("component", "java-aws-sdk").matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("http.method", method).matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("http.url", url).matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
       "AmazonDynamoDBv2".equals(mockSpan.operationName())
   }
 
