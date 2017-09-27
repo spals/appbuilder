@@ -2,7 +2,7 @@ package net.spals.appbuilder.message.kinesis.producer
 
 import javax.validation.constraints.NotNull
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials, BasicSessionCredentials}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.producer.{KinesisProducer, KinesisProducerConfiguration}
 import com.google.inject.Provider
@@ -28,12 +28,17 @@ private[producer] class KinesisProducerProvider() extends Provider[KinesisProduc
   @Configuration("messageProducer.kinesis.awsSecretKey")
   private var awsSecretKey: String = null
 
+  @Configuration("messageProducer.kinesis.awsSessionToken")
+  private var awsSessionToken: String = null
+
   @NotNull
   @Configuration("messageProducer.kinesis.endpoint")
   private var endpoint: String = null
 
   override def get(): KinesisProducer = {
-    val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+    val awsCredentials = Option(awsSessionToken)
+      .map(sessionToken => new BasicSessionCredentials(awsAccessKeyId, awsSecretKey, sessionToken))
+      .getOrElse(new BasicAWSCredentials(awsAccessKeyId, awsSecretKey))
 
     val config = new KinesisProducerConfiguration()
       .setCredentialsProvider(new AWSStaticCredentialsProvider(awsCredentials))

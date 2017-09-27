@@ -2,7 +2,7 @@ package net.spals.appbuilder.filestore.s3
 
 import javax.validation.constraints.NotNull
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials, BasicSessionCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
@@ -31,12 +31,17 @@ private[s3] class S3ClientProvider @Inject() (
   @Configuration("fileStore.s3.awsSecretKey")
   private[s3] var awsSecretKey: String = null
 
+  @Configuration("fileStore.s3.awsSessionToken")
+  private[s3] var awsSessionToken: String = null
+
   @NotNull
   @Configuration("fileStore.s3.endpoint")
   private[s3] var endpoint: String = null
 
   override def get(): AmazonS3 = {
-    val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+    val awsCredentials = Option(awsSessionToken)
+      .map(sessionToken => new BasicSessionCredentials(awsAccessKeyId, awsSecretKey, sessionToken))
+      .getOrElse(new BasicAWSCredentials(awsAccessKeyId, awsSecretKey))
     val s3ClientBuilder = AmazonS3ClientBuilder.standard()
       .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
       .withRequestHandlers(new TracingRequestHandler(tracer))
