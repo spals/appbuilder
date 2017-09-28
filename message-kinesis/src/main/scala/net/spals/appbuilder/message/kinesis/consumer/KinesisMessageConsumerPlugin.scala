@@ -3,7 +3,7 @@ package net.spals.appbuilder.message.kinesis.consumer
 import java.util.UUID
 import javax.validation.constraints.{Min, NotNull}
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials, BasicSessionCredentials}
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.{IRecordProcessor, IRecordProcessorFactory}
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.google.inject.Inject
@@ -41,6 +41,9 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   @Configuration("messageConsumer.kinesis.awsSecretKey")
   private var awsSecretKey: String = null
 
+  @Configuration("messageConsumer.kinesis.awsSessionToken")
+  private var awsSessionToken: String = null
+
   @NotNull
   @Configuration("messageConsumer.kinesis.endpoint")
   private var endpoint: String = null
@@ -53,7 +56,9 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
     val kinesisConsumerConfig = KinesisConsumerConfig(consumerConfig)
     val consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap
 
-    val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+    val awsCredentials = Option(awsSessionToken)
+      .map(sessionToken => new BasicSessionCredentials(awsAccessKeyId, awsSecretKey, sessionToken))
+      .getOrElse(new BasicAWSCredentials(awsAccessKeyId, awsSecretKey))
     val workerId = s"${kinesisConsumerConfig.getWorkerId}:${UUID.randomUUID()}"
 
     val worker = new Worker.Builder()

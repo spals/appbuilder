@@ -2,7 +2,7 @@ package net.spals.appbuilder.mapstore.dynamodb
 
 import javax.validation.constraints.NotNull
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials, BasicSessionCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
@@ -35,12 +35,17 @@ private[dynamodb] class DynamoDBClientProvider @Inject() (
   @Configuration("mapStore.dynamoDB.awsSecretKey")
   private[dynamodb] var awsSecretKey: String = null
 
+  @Configuration("fileStore.dynamoDB.awsSessionToken")
+  private[dynamodb] var awsSessionToken: String = null
+
   @NotNull
   @Configuration("mapStore.dynamoDB.endpoint")
   private[dynamodb] var endpoint: String = null
 
   override def get(): AmazonDynamoDB = {
-    val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+    val awsCredentials = Option(awsSessionToken)
+      .map(sessionToken => new BasicSessionCredentials(awsAccessKeyId, awsSecretKey, sessionToken))
+      .getOrElse(new BasicAWSCredentials(awsAccessKeyId, awsSecretKey))
     val dynamoDBClientBuilder = AmazonDynamoDBClientBuilder.standard()
       .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
       .withRequestHandlers(new TracingRequestHandler(tracer))

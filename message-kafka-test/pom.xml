@@ -87,7 +87,7 @@
                             <alias>kafka</alias>
                             <run>
                                 <env>
-                                    <ADVERTISED_HOST_NAME>${kafka.ip}</ADVERTISED_HOST_NAME>
+                                    <ADVERTISED_HOST>${kafka.ip}</ADVERTISED_HOST>
                                     <ADVERTISED_PORT>${kafka.port}</ADVERTISED_PORT>
                                 </env>
                                 <ports>
@@ -95,7 +95,8 @@
                                     <port>${kafka.port}:9092</port>
                                 </ports>
                                 <wait>
-                                    <time>2000</time>
+                                    <log>kafka entered RUNNING state</log>
+                                    <time>5000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                             </run>
