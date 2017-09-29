@@ -21,7 +21,7 @@ before_install:
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/settings.xml -O ${TRAVIS_BUILD_DIR}/.travis/settings.xml
 
 script:
-  - mvn --batch-mode --settings .travis/settings.xml --show-version verify
+  - mvn --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
 
 before_deploy:
   - mvn --settings .travis/settings.xml --show-version dependency:resolve -Ddeploy
