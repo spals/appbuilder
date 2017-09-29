@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>14</version>
+        <version>15</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -119,6 +119,7 @@
         <module>monitor-core</module>
         <module>monitor-core-test</module>
         <module>monitor-lightstep</module>
+        <module>reporting</module>
     </modules>
 
     <dependencyManagement>
@@ -294,7 +295,7 @@
                 <groupId>io.opentracing</groupId>
                 <artifactId>opentracing-mock</artifactId>
                 <version>${opentracing.version}</version>
-                <scope>tests</scope>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentracing</groupId>
@@ -355,8 +356,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-app-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-config</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-config-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
@@ -365,8 +378,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-executor-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-filestore-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-filestore-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
@@ -375,8 +400,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-graph-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-mapstore-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-mapstore-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
@@ -396,8 +433,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-model-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-monitor-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-monitor-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
@@ -406,8 +455,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-dropwizard-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-app-finatra</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-finatra-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
@@ -416,8 +477,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-filestore-s3-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-mapstore-cassandra</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-mapstore-cassandra-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
@@ -426,8 +499,20 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-mapstore-dynamodb-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-message-kafka</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-message-kafka-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
@@ -438,6 +523,12 @@
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-model-protobuf</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-model-protobuf-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
