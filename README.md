@@ -1,9 +1,13 @@
 [![][Build Status img]][Build Status]
+[![][Coveralls img]][Coveralls]
 [![][License img]][License]
 [![][Maven Central img]][Maven Central]
  
 [Build Status]:https://travis-ci.org/spals/appbuilder
 [Build Status img]:https://travis-ci.org/spals/appbuilder.svg?branch=master
+
+[Coveralls]:https://coveralls.io/github/spals/appbuilder?branch=master
+[Coveralls img]:https://coveralls.io/repos/github/spals/appbuilder/badge.svg?branch=master
 
 [License]:LICENSE
 [License img]:https://img.shields.io/badge/license-BSD3-blue.svg
