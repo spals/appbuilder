@@ -41,7 +41,9 @@ public class LocalFSFileStorePluginFTest {
         assertThat(fileMetadata.getURI().getPath(),
                 is(String.format("%s/LocalFSFileStorePluginFTest/testPutFile.txt", basePath)));
         assertThat(fileMetadata.getSecurityLevel(), is(FileSecurityLevel.PUBLIC));
+        assertThat(fileMetadata.getSecurityLevel().isPublic(), is(true));
         assertThat(fileMetadata.getStoreLocation(), is(FileStoreLocation.LOCAL));
+        assertThat(fileMetadata.getStoreLocation().isLocal(), is(true));
         assertThat(java.nio.file.Files.getPosixFilePermissions(Paths.get(fileMetadata.getURI())), hasItem(OTHERS_READ));
     }
 
@@ -122,5 +124,6 @@ public class LocalFSFileStorePluginFTest {
 
         assertThat(java.nio.file.Files.getPosixFilePermissions(Paths.get(fileMetadata.getURI())), not(hasItem(OTHERS_READ)));
         assertThat(fileStorePlugin.getFileMetadata(fileKey).get().getSecurityLevel(), is(FileSecurityLevel.PRIVATE));
+        assertThat(fileStorePlugin.getFileMetadata(fileKey).get().getSecurityLevel().isPrivate(), is(true));
     }
 }
