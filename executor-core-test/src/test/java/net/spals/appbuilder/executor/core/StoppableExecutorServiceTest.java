@@ -3,6 +3,7 @@ package net.spals.appbuilder.executor.core;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -99,5 +100,65 @@ public class StoppableExecutorServiceTest {
         stoppableExecutorService.stop();
         verify(executorService).shutdown();
         verify(executorService).shutdownNow();
+    }
+
+    @Test
+    public void testExecute() throws InterruptedException {
+        final ExecutorService delegate = mock(ExecutorService.class);
+
+        final ExecutorServiceFactory.Key executorServiceKey = new ExecutorServiceFactory.Key.Builder()
+                .setParentClass(this.getClass())
+                .build();
+        final StoppableExecutorService stoppableExecutorService =
+                new StoppableExecutorService(delegate, executorServiceKey, 1L, TimeUnit.SECONDS);
+
+        final Runnable r = () -> {};
+        stoppableExecutorService.execute(r);
+        verify(delegate).execute(same(r));
+    }
+
+    @Test
+    public void testSubmitCallable() {
+        final ExecutorService delegate = mock(ExecutorService.class);
+
+        final ExecutorServiceFactory.Key executorServiceKey = new ExecutorServiceFactory.Key.Builder()
+                .setParentClass(this.getClass())
+                .build();
+        final StoppableExecutorService stoppableExecutorService =
+                new StoppableExecutorService(delegate, executorServiceKey, 1L, TimeUnit.SECONDS);
+
+        final Callable<Void> c = () -> (Void)null;
+        stoppableExecutorService.submit(c);
+        verify(delegate).submit(same(c));
+    }
+
+    @Test
+    public void testSubmitRunnable() {
+        final ExecutorService delegate = mock(ExecutorService.class);
+
+        final ExecutorServiceFactory.Key executorServiceKey = new ExecutorServiceFactory.Key.Builder()
+                .setParentClass(this.getClass())
+                .build();
+        final StoppableExecutorService stoppableExecutorService =
+                new StoppableExecutorService(delegate, executorServiceKey, 1L, TimeUnit.SECONDS);
+
+        final Runnable r = () -> {};
+        stoppableExecutorService.submit(r);
+        verify(delegate).submit(same(r));
+    }
+
+    @Test
+    public void testSubmitRunnableResult() {
+        final ExecutorService delegate = mock(ExecutorService.class);
+
+        final ExecutorServiceFactory.Key executorServiceKey = new ExecutorServiceFactory.Key.Builder()
+                .setParentClass(this.getClass())
+                .build();
+        final StoppableExecutorService stoppableExecutorService =
+                new StoppableExecutorService(delegate, executorServiceKey, 1L, TimeUnit.SECONDS);
+
+        final Runnable r = () -> {};
+        stoppableExecutorService.submit(r, 1L);
+        verify(delegate).submit(same(r), eq(1L));
     }
 }
