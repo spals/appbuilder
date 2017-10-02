@@ -4,6 +4,7 @@ import com.google.inject.Binding;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.matcher.Matchers;
 
 import java.io.Serializable;
 
@@ -19,40 +20,11 @@ public class BindingMatchers {
     private BindingMatchers() {  }
 
     public static Matcher<Binding<?>> any() {
-        return ANY;
-    }
-
-    private static final Matcher<Binding<?>> ANY = new BindingMatchers.Any();
-
-    private static class Any extends AbstractMatcher<Binding<?>>
-        implements Serializable {
-
-        @Override
-        public boolean matches(final Binding<?> binding) {
-            return true;
-        }
+        return keyTypeThat(TypeLiteralMatchers.any());
     }
 
     public static Matcher<Binding<?>> none() {
-        return new Not(ANY);
-    }
-
-    public static <T extends Binding<T>> Matcher<Binding<?>> not(final Matcher<Binding<?>> matcher) {
-        return new Not(matcher);
-    }
-
-    private static class Not extends AbstractMatcher<Binding<?>>
-        implements Serializable {
-        final Matcher<Binding<?>> delegate;
-
-        private Not(Matcher<Binding<?>> delegate) {
-            this.delegate = checkNotNull(delegate, "delegate");
-        }
-
-        @Override
-        public boolean matches(final Binding<?> binding) {
-            return !delegate.matches(binding);
-        }
+        return Matchers.not(any());
     }
 
     public static Matcher<Binding<?>> keyTypeThat(final Matcher<TypeLiteral<?>> typeMatcher) {

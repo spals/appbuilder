@@ -14,8 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Configurable;
 
+import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.BindingMatchers.keyTypeThat;
-import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.subclassOf;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
 
 /**
  * @author tkral
@@ -32,7 +33,7 @@ public abstract class JaxRsMonitorModule extends AbstractModule
 
     @Override
     protected void configure() {
-        final Matcher bindingMatcher = keyTypeThat(subclassOf(Tracer.class));
+        final Matcher bindingMatcher = keyTypeThat(rawTypeThat(subclassesOf(Tracer.class)));
         bindListener(bindingMatcher, this);
     }
 

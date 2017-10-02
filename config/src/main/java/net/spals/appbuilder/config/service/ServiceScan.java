@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Binding;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
-import net.spals.appbuilder.config.matcher.BindingMatchers;
+import com.google.inject.matcher.Matchers;
 import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
@@ -13,9 +13,10 @@ import org.reflections.Reflections;
 import java.util.Arrays;
 import java.util.Set;
 
+import static com.google.inject.matcher.Matchers.inSubpackage;
 import static net.spals.appbuilder.config.matcher.BindingMatchers.keyTypeThat;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.hasParameterTypeThat;
-import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.inPackage;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
 
 /**
  * Bean for holding configuration for a service scan.
@@ -38,7 +39,8 @@ public interface ServiceScan {
 
     default Matcher<TypeLiteral<?>> asTypeLiteralMatcher() {
         return getServicePackages().stream()
-            .map(servicePackage -> inPackage(servicePackage).or(hasParameterTypeThat(inPackage(servicePackage))))
+            .map(servicePackage -> rawTypeThat(inSubpackage(servicePackage))
+                .or(hasParameterTypeThat(rawTypeThat(inSubpackage(servicePackage)))))
             .reduce(TypeLiteralMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
     }
 

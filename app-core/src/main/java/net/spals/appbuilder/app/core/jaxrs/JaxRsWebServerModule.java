@@ -4,9 +4,11 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import org.inferred.freebuilder.FreeBuilder;
@@ -21,8 +23,9 @@ import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.annotatedWith;
-import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.subclassOf;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
 
 /**
  * @author tkral
@@ -45,10 +48,10 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
     protected void configure() {
         final Matcher typeMatcher = annotatedWith(Path.class)
                 .or(annotatedWith(Provider.class))
-                .or(subclassOf(DynamicFeature.class))
-                .or(subclassOf(ExceptionMapper.class))
-                .or(subclassOf(ContainerRequestFilter.class))
-                .or(subclassOf(ContainerResponseFilter.class));
+                .or(rawTypeThat(subclassesOf(DynamicFeature.class)))
+                .or(rawTypeThat(subclassesOf(ExceptionMapper.class)))
+                .or(rawTypeThat(subclassesOf(ContainerRequestFilter.class)))
+                .or(rawTypeThat(subclassesOf(ContainerResponseFilter.class)));
         bindListener(typeMatcher, this);
     }
 

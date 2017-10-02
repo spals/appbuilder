@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.matcher.Matchers;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -15,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Arrays.asList;
 
 /**
  * Matcher implementations for use with {@link TypeLiteral}.
@@ -54,18 +54,7 @@ public class TypeLiteralMatchers {
     }
 
     public static Matcher<TypeLiteral<?>> any() {
-        return ANY;
-    }
-
-    private static final Matcher<TypeLiteral<?>> ANY = new Any();
-
-    private static class Any extends AbstractMatcher<TypeLiteral<?>>
-        implements Serializable {
-
-        @Override
-        public boolean matches(final TypeLiteral<?> typeLiteral) {
-            return true;
-        }
+        return typeLiteralThat(Matchers.any());
     }
 
     public static Matcher<TypeLiteral<?>> hasParameterTypeThat(final Matcher<TypeLiteral<?>> typeMatcher) {
@@ -95,61 +84,43 @@ public class TypeLiteralMatchers {
         }
     }
 
-    public static Matcher<TypeLiteral<?>> inPackage(final String packagePrefix) {
-        return new InPackage(packagePrefix);
-    }
-
-    private static class InPackage extends AbstractMatcher<TypeLiteral<?>>
-        implements Serializable {
-        private final String packagePrefix;
-
-        public InPackage(final String packagePrefix) {
-            this.packagePrefix = packagePrefix;
-        }
-
-        @Override
-        public boolean matches(final TypeLiteral<?> typeLiteral) {
-            return typeLiteral.getRawType().getPackage().getName().startsWith(packagePrefix);
-        }
-    }
-
     public static Matcher<TypeLiteral<?>> none() {
-        return new Not(ANY);
+        return Matchers.not(any());
     }
 
-    public static Matcher<TypeLiteral<?>> not(final Matcher<TypeLiteral<?>> matcher) {
-        return new Not(matcher);
+    public static Matcher<TypeLiteral<?>> rawTypeThat(final Matcher<Class> rawTypeMatcher) {
+        return new RawTypeThat(rawTypeMatcher);
     }
 
-    private static class Not extends AbstractMatcher<TypeLiteral<?>>
+    private static class RawTypeThat extends AbstractMatcher<TypeLiteral<?>>
         implements Serializable {
-        private final Matcher<TypeLiteral<?>> delegate;
+        private final Matcher<Class> rawTypeMatcher;
 
-        private Not(final Matcher<TypeLiteral<?>> delegate) {
-            this.delegate = checkNotNull(delegate, "delegate");
+        public RawTypeThat(final Matcher<Class> rawTypeMatcher) {
+            this.rawTypeMatcher = rawTypeMatcher;
         }
 
         @Override
         public boolean matches(final TypeLiteral<?> typeLiteral) {
-            return !delegate.matches(typeLiteral);
+            return rawTypeMatcher.matches(typeLiteral.getRawType());
         }
     }
 
-    public static Matcher<TypeLiteral<?>> subclassOf(final Class<?> superclass) {
-        return new SubclassOf(superclass);
+    public static Matcher<TypeLiteral<?>> typeLiteralThat(final Matcher<Object> objectMatcher) {
+        return new TypeLiteralThat(objectMatcher);
     }
 
-    private static class SubclassOf extends AbstractMatcher<TypeLiteral<?>>
+    private static class TypeLiteralThat extends AbstractMatcher<TypeLiteral<?>>
         implements Serializable {
-        private final Class<?> superclass;
+        private final Matcher<Object> objectMatcher;
 
-        public SubclassOf(final Class<?> superclass) {
-            this.superclass = Preconditions.checkNotNull(superclass, "superclass");
+        public TypeLiteralThat(final Matcher<Object> objectMatcher) {
+            this.objectMatcher = objectMatcher;
         }
 
         @Override
         public boolean matches(final TypeLiteral<?> typeLiteral) {
-            return superclass.isAssignableFrom(typeLiteral.getRawType());
+            return objectMatcher.matches(typeLiteral);
         }
     }
 }

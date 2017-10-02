@@ -2,6 +2,8 @@ package net.spals.appbuilder.graph.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matcher;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
@@ -10,6 +12,7 @@ import org.jgrapht.graph.DefaultEdge;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of a {@link org.jgrapht.DirectedGraph}
@@ -115,6 +118,12 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
         return vertexSet().stream()
             .filter(vertex -> guiceKey.equals(vertex.getGuiceKey()))
             .findAny();
+    }
+
+    public Set<ServiceGraphVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
+        return vertexSet().stream()
+            .filter(vertex -> typeMatcher.matches(vertex.getGuiceKey().getTypeLiteral()))
+            .collect(Collectors.toSet());
     }
 
     @Override

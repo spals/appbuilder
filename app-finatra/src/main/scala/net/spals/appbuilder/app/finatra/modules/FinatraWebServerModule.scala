@@ -1,13 +1,14 @@
 package net.spals.appbuilder.app.finatra.modules
 
 import com.google.inject.TypeLiteral
+import com.google.inject.matcher.Matchers.subclassesOf
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
 import com.twitter.finagle.{Filter, http => finaglehttp}
 import com.twitter.finatra.http.Controller
 import com.twitter.finatra.http.exceptions.ExceptionMapper
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
-import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.subclassOf
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat
 import net.spals.appbuilder.graph.model.ServiceGraph
 
 import scala.collection.mutable.ListBuffer
@@ -29,9 +30,9 @@ private[finatra] case class FinatraWebServerModule(
   }
 
   override def configure(): Unit = {
-    val typeMatcher = subclassOf(classOf[Controller])
-        .or(subclassOf(classOf[ExceptionMapper[_]]))
-        .or(subclassOf(classOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]))
+    val typeMatcher = rawTypeThat(subclassesOf(classOf[Controller]))
+        .or(rawTypeThat(subclassesOf(classOf[ExceptionMapper[_]])))
+        .or(rawTypeThat(subclassesOf(classOf[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]])))
 
     bindListener(typeMatcher, this)
   }

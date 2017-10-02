@@ -2,13 +2,14 @@ package net.spals.appbuilder.app.finatra.modules
 
 import java.util.concurrent.atomic.AtomicReference
 
+import com.google.inject.matcher.Matchers.subclassesOf
 import com.google.inject.spi.ProvisionListener
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
 import io.opentracing.Tracer
 import net.spals.appbuilder.app.finatra.monitor.FinatraTracingFilter
 import net.spals.appbuilder.config.matcher.BindingMatchers.keyTypeThat
-import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.subclassOf
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat
 
 /**
   * @author tkral
@@ -20,7 +21,7 @@ private[finatra] class FinatraMonitorModule
   private val tracerRef = new AtomicReference[Tracer]()
 
   override def configure(): Unit = {
-    val bindingMatcher = keyTypeThat(subclassOf(classOf[Tracer]))
+    val bindingMatcher = keyTypeThat(rawTypeThat(subclassesOf(classOf[Tracer])))
     bindListener(bindingMatcher, this)
   }
 
