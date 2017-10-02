@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import static net.spals.appbuilder.config.matcher.BindingMatchers.keyTypeThat;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.hasParameterTypeThat;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.inPackage;
 
 /**
@@ -37,7 +38,7 @@ public interface ServiceScan {
 
     default Matcher<TypeLiteral<?>> asTypeLiteralMatcher() {
         return getServicePackages().stream()
-            .map(servicePackage -> inPackage(servicePackage))
+            .map(servicePackage -> inPackage(servicePackage).or(hasParameterTypeThat(inPackage(servicePackage))))
             .reduce(TypeLiteralMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
     }
 

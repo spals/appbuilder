@@ -9,9 +9,13 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Arrays.asList;
 
 /**
  * Matcher implementations for use with {@link TypeLiteral}.
@@ -64,6 +68,33 @@ public class TypeLiteralMatchers {
         }
     }
 
+    public static Matcher<TypeLiteral<?>> hasParameterTypeThat(final Matcher<TypeLiteral<?>> typeMatcher) {
+        return new HasParameterTypeThat(typeMatcher);
+    }
+
+    private static class HasParameterTypeThat extends AbstractMatcher<TypeLiteral<?>>
+        implements Serializable {
+        private final Matcher<TypeLiteral<?>> typeMatcher;
+
+        private HasParameterTypeThat(final Matcher<TypeLiteral<?>> typeMatcher) {
+            this.typeMatcher = checkNotNull(typeMatcher, "typeMatcher");
+        }
+
+        @Override
+        public boolean matches(final TypeLiteral<?> typeLiteral) {
+            if (!(typeLiteral.getType() instanceof ParameterizedType)) {
+                return false;
+            }
+
+            final ParameterizedType parameterizedType = (ParameterizedType) typeLiteral.getType();
+            final List<Type> parameterTypes = Arrays.asList(parameterizedType.getActualTypeArguments());
+            return parameterTypes.stream()
+                .map(parameterType -> TypeLiteral.get(parameterType))
+                .filter(parameterTypeLiteral -> typeMatcher.matches(parameterTypeLiteral))
+                .findAny().isPresent();
+        }
+    }
+
     public static Matcher<TypeLiteral<?>> inPackage(final String packagePrefix) {
         return new InPackage(packagePrefix);
     }
@@ -80,7 +111,6 @@ public class TypeLiteralMatchers {
         public boolean matches(final TypeLiteral<?> typeLiteral) {
             return typeLiteral.getRawType().getPackage().getName().startsWith(packagePrefix);
         }
-
     }
 
     public static Matcher<TypeLiteral<?>> none() {
@@ -93,9 +123,9 @@ public class TypeLiteralMatchers {
 
     private static class Not extends AbstractMatcher<TypeLiteral<?>>
         implements Serializable {
-        final Matcher<TypeLiteral<?>> delegate;
+        private final Matcher<TypeLiteral<?>> delegate;
 
-        private Not(Matcher<TypeLiteral<?>> delegate) {
+        private Not(final Matcher<TypeLiteral<?>> delegate) {
             this.delegate = checkNotNull(delegate, "delegate");
         }
 
