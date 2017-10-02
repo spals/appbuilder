@@ -1,59 +1,171 @@
 package net.spals.appbuilder.graph.model;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Key;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.EdgeFactory;
+import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
+ * An implementation of a {@link org.jgrapht.DirectedGraph}
+ * which stores relationships between micro-services.
+ *
  * @author tkral
  */
-public class ServiceGraph {
+public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> {
 
-    private final Multimap<ServiceGraphVertex, ServiceGraphVertex> outboundEdges = HashMultimap.create();
-    private final Multimap<ServiceGraphVertex, ServiceGraphVertex> inboundEdges = HashMultimap.create();
+    private final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> delegate;
 
-    private final Set<ServiceGraphVertex> vertices = new HashSet<>();
-
-    public synchronized ServiceGraph addEdge(final Key<?> fromKey, final Key<?> toKey) {
-        return addEdge(ServiceGraphVertex.newVertex(fromKey),
-                       ServiceGraphVertex.newVertex(toKey));
+    public ServiceGraph() {
+        this(new DirectedAcyclicGraph<>(DefaultEdge.class));
     }
 
-    public synchronized ServiceGraph addEdge(final ServiceGraphVertex fromVertex, final ServiceGraphVertex toVertex) {
-        outboundEdges.put(fromVertex, toVertex);
-        inboundEdges.put(toVertex, fromVertex);
-        return this;
+    @VisibleForTesting
+    ServiceGraph(DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> delegate) {
+        this.delegate = delegate;
     }
 
-    public ServiceGraph addVertex(final Key<?> key) {
-        return addVertex(ServiceGraphVertex.newVertex(key));
+    @Override
+    public int inDegreeOf(final ServiceGraphVertex<?> vertex) {
+        return delegate.inDegreeOf(vertex);
     }
 
-    public ServiceGraph addVertex(final ServiceGraphVertex vertex) {
-        vertices.add(vertex);
-        return this;
+    @Override
+    public Set<DefaultEdge> incomingEdgesOf(final ServiceGraphVertex<?> vertex) {
+        return delegate.incomingEdgesOf(vertex);
     }
 
-    public Map<ServiceGraphVertex, Collection<ServiceGraphVertex>> getInboundEdges() {
-        return inboundEdges.asMap();
+    @Override
+    public int outDegreeOf(final ServiceGraphVertex<?> vertex) {
+        return delegate.outDegreeOf(vertex);
     }
 
-    public Map<ServiceGraphVertex, Collection<ServiceGraphVertex>> getOutboundEdges() {
-        return outboundEdges.asMap();
+    @Override
+    public Set<DefaultEdge> outgoingEdgesOf(final ServiceGraphVertex<?> vertex) {
+        return delegate.outgoingEdgesOf(vertex);
     }
 
-    public Set<ServiceGraphVertex> getVertices() {
-        return vertices;
+    @Override
+    public Set<DefaultEdge> getAllEdges(final ServiceGraphVertex<?> sourceVertex,
+                                        final ServiceGraphVertex<?> targetVertex) {
+        return delegate.getAllEdges(sourceVertex, targetVertex);
     }
 
-    public boolean isOrphan(final ServiceGraphVertex vertex) {
-        // An orphan is one without any outbound or inbound edges
-        return outboundEdges.get(vertex).isEmpty() &&
-                inboundEdges.get(vertex).isEmpty();
+    @Override
+    public DefaultEdge getEdge(final ServiceGraphVertex<?> sourceVertex,
+                               final ServiceGraphVertex<?> targetVertex) {
+        return delegate.getEdge(sourceVertex, targetVertex);
+    }
+
+    @Override
+    public EdgeFactory<ServiceGraphVertex<?>, DefaultEdge> getEdgeFactory() {
+        return delegate.getEdgeFactory();
+    }
+
+    @Override
+    public DefaultEdge addEdge(final ServiceGraphVertex<?> sourceVertex,
+                               final ServiceGraphVertex<?> targetVertex) {
+        return delegate.addEdge(sourceVertex, targetVertex);
+    }
+
+    @Override
+    public boolean addEdge(final ServiceGraphVertex<?> sourceVertex,
+                           final ServiceGraphVertex<?> targetVertex,
+                           final DefaultEdge defaultEdge) {
+        return delegate.addEdge(sourceVertex, targetVertex, defaultEdge);
+    }
+
+    @Override
+    public boolean addVertex(final ServiceGraphVertex<?> vertex) {
+        return delegate.addVertex(vertex);
+    }
+
+    @Override
+    public boolean containsEdge(final ServiceGraphVertex<?> sourceVertex,
+                                final ServiceGraphVertex<?> targetVertex) {
+        return delegate.containsEdge(sourceVertex, targetVertex);
+    }
+
+    @Override
+    public boolean containsEdge(final DefaultEdge edge) {
+        return delegate.containsEdge(edge);
+    }
+
+    @Override
+    public boolean containsVertex(final ServiceGraphVertex<?> vertex) {
+        return delegate.containsVertex(vertex);
+    }
+
+    @Override
+    public Set<DefaultEdge> edgeSet() {
+        return delegate.edgeSet();
+    }
+
+    @Override
+    public Set<DefaultEdge> edgesOf(final ServiceGraphVertex<?> vertex) {
+        return delegate.edgesOf(vertex);
+    }
+
+    public Optional<ServiceGraphVertex<?>> findVertex(final Key<?> guiceKey) {
+        return vertexSet().stream()
+            .filter(vertex -> guiceKey.equals(vertex.getGuiceKey()))
+            .findAny();
+    }
+
+    @Override
+    public boolean removeAllEdges(final Collection<? extends DefaultEdge> edges) {
+        return delegate.removeAllEdges(edges);
+    }
+
+    @Override
+    public Set<DefaultEdge> removeAllEdges(final ServiceGraphVertex<?> sourceVertex,
+                                           final ServiceGraphVertex<?> targetVertex) {
+        return delegate.removeAllEdges(sourceVertex, targetVertex);
+    }
+
+    @Override
+    public boolean removeAllVertices(final Collection<? extends ServiceGraphVertex<?>> vertices) {
+        return delegate.removeAllVertices(vertices);
+    }
+
+    @Override
+    public DefaultEdge removeEdge(final ServiceGraphVertex<?> sourceVertex,
+                                  final ServiceGraphVertex<?> targetVertex) {
+        return delegate.removeEdge(sourceVertex, targetVertex);
+    }
+
+    @Override
+    public boolean removeEdge(final DefaultEdge edge) {
+        return delegate.removeEdge(edge);
+    }
+
+    @Override
+    public boolean removeVertex(final ServiceGraphVertex<?> vertex) {
+        return delegate.removeVertex(vertex);
+    }
+
+    @Override
+    public Set<ServiceGraphVertex<?>> vertexSet() {
+        return delegate.vertexSet();
+    }
+
+    @Override
+    public ServiceGraphVertex<?> getEdgeSource(final DefaultEdge edge) {
+        return delegate.getEdgeSource(edge);
+    }
+
+    @Override
+    public ServiceGraphVertex<?> getEdgeTarget(final DefaultEdge edge) {
+        return delegate.getEdgeTarget(edge);
+    }
+
+    @Override
+    public double getEdgeWeight(final DefaultEdge edge) {
+        return delegate.getEdgeWeight(edge);
     }
 }

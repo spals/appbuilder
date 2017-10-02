@@ -11,23 +11,14 @@ import java.util.Optional;
  * @author tkral
  */
 @AutoValue
-public abstract class ServiceGraphVertex {
+public abstract class ServiceGraphVertex<T> {
 
-    public static ServiceGraphVertex newVertex(final Key<?> guiceKey) {
-        return new AutoValue_ServiceGraphVertex(guiceKey, Optional.empty());
+    public static <T2> ServiceGraphVertex<T2> newVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
+        return new AutoValue_ServiceGraphVertex(guiceKey, serviceInstance);
     }
 
-    public static ServiceGraphVertex newVertex(final Key<?> guiceKey, final Class<?> source) {
-        return new AutoValue_ServiceGraphVertex(guiceKey, Optional.of(source));
-    }
-
-    public static ServiceGraphVertex newVertex(final Node guiceNode) {
-        return new AutoValue_ServiceGraphVertex(guiceNode.getId().getKey(),
-                Optional.ofNullable(guiceNode.getSource()).map(source -> source.getClass()));
-    }
-
-    public abstract Key<?> getGuiceKey();
-    public abstract Optional<Class<?>> getSource();
+    public abstract Key<T> getGuiceKey();
+    public abstract T getServiceInstance();
 
     @Override
     public boolean equals(final Object obj) {
@@ -35,11 +26,11 @@ public abstract class ServiceGraphVertex {
             return false;
         }
         final ServiceGraphVertex that = (ServiceGraphVertex) obj;
-        return Objects.equal(getGuiceKey(), that.getGuiceKey()) && Objects.equal(getSource(), that.getSource());
+        return Objects.equal(getGuiceKey(), that.getGuiceKey()) && Objects.equal(getServiceInstance(), that.getServiceInstance());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getGuiceKey(), getSource());
+        return Objects.hashCode(getGuiceKey(), getServiceInstance());
     }
 }

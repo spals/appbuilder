@@ -25,26 +25,26 @@ class AsciiServiceGraphWriter implements ServiceGraphWriter {
 
     @Override
     public void writeServiceGraph() {
-        final GraphBuilder<AsciiServiceGraphVertex> asciiGraphBuilder = new GraphBuilder<>();
-        // 1. Add all the edges to the graph builder
-        final Stream<SimpleImmutableEntry<ServiceGraphVertex, ServiceGraphVertex>> singleEdges =
-                serviceGraph.getOutboundEdges().entrySet().stream()
-                .flatMap(multiEdgeEntry -> {
-                    final Stream<SimpleImmutableEntry<ServiceGraphVertex, ServiceGraphVertex>> edges =
-                        multiEdgeEntry.getValue().stream()
-                                .map(toVertex -> new SimpleImmutableEntry(multiEdgeEntry.getKey(), toVertex));
-                    return edges;
-                });
-        singleEdges.forEach(singleEdgeEntry ->
-                asciiGraphBuilder.addEdge(new AsciiServiceGraphVertex(singleEdgeEntry.getKey()), new AsciiServiceGraphVertex(singleEdgeEntry.getValue())));
-        // 2. Add all orphaned vertices.
-        serviceGraph.getVertices().stream().filter(vertex -> serviceGraph.isOrphan(vertex))
-                .forEach(orphanVertex -> asciiGraphBuilder.addVertex(new AsciiServiceGraphVertex(orphanVertex)));
-
-        final Graph<AsciiServiceGraphVertex> asciiGraph = asciiGraphBuilder.build();
-        final GraphLayouter<AsciiServiceGraphVertex> asciiGraphLayouter = new GraphLayouter<>();
-        asciiGraphLayouter.setVertical(false);
-
-        LOGGER.info(String.format("%n%s", asciiGraphLayouter.layout(asciiGraph)));
+//        final GraphBuilder<AsciiServiceGraphVertex> asciiGraphBuilder = new GraphBuilder<>();
+//        // 1. Add all the edges to the graph builder
+//        final Stream<SimpleImmutableEntry<ServiceGraphVertex, ServiceGraphVertex>> singleEdges =
+//                serviceGraph.getOutboundEdges().entrySet().stream()
+//                .flatMap(multiEdgeEntry -> {
+//                    final Stream<SimpleImmutableEntry<ServiceGraphVertex, ServiceGraphVertex>> edges =
+//                        multiEdgeEntry.getValue().stream()
+//                                .map(toVertex -> new SimpleImmutableEntry(multiEdgeEntry.getKey(), toVertex));
+//                    return edges;
+//                });
+//        singleEdges.forEach(singleEdgeEntry ->
+//                asciiGraphBuilder.addEdge(new AsciiServiceGraphVertex(singleEdgeEntry.getKey()), new AsciiServiceGraphVertex(singleEdgeEntry.getValue())));
+//        // 2. Add all orphaned vertices.
+//        serviceGraph.getVertices().stream().filter(vertex -> serviceGraph.isOrphan(vertex))
+//                .forEach(orphanVertex -> asciiGraphBuilder.addVertex(new AsciiServiceGraphVertex(orphanVertex)));
+//
+//        final Graph<AsciiServiceGraphVertex> asciiGraph = asciiGraphBuilder.build();
+//        final GraphLayouter<AsciiServiceGraphVertex> asciiGraphLayouter = new GraphLayouter<>();
+//        asciiGraphLayouter.setVertical(false);
+//
+//        LOGGER.info(String.format("%n%s", asciiGraphLayouter.layout(asciiGraph)));
     }
 }
