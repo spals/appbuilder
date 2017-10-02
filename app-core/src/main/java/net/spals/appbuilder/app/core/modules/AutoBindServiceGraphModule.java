@@ -24,12 +24,14 @@ import java.util.stream.Collectors;
 @FreeBuilder
 public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
+    public abstract String getApplicationName();
     public abstract ServiceGraphFormat getGraphFormat();
     public abstract ServiceGraph getServiceGraph();
     public abstract ServiceScan getServiceScan();
 
     public static class Builder extends AutoBindServiceGraphModule_Builder {
-        public Builder(final ServiceGraph serviceGraph) {
+        public Builder(final String applicationName, final ServiceGraph serviceGraph) {
+            setApplicationName(applicationName);
             setServiceGraph(serviceGraph);
             setGraphFormat(ServiceGraphFormat.NONE);
             setServiceScan(ServiceScan.empty());
@@ -44,7 +46,8 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         binder().bindListener(BindingMatchers.any(), serviceGraphListener);
 
         // 2. Bind the serviceGraphWriter instance
-        final ServiceGraphWriter serviceGraphWriter = new ServiceGraphWriter(getGraphFormat(), getServiceScan());
+        final ServiceGraphWriter serviceGraphWriter =
+            new ServiceGraphWriter(getApplicationName(), getGraphFormat(), getServiceScan());
         binder().bind(ServiceGraphWriter.class).toInstance(serviceGraphWriter);
     }
 

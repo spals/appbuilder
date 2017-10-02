@@ -2,15 +2,15 @@ package net.spals.appbuilder.graph.model;
 
 import com.google.common.base.CharMatcher;
 import com.google.inject.Key;
+import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import net.spals.appbuilder.annotations.config.ApplicationName;
 import org.hamcrest.Matcher;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Type;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -71,49 +71,76 @@ public class ServiceGraphVertexTest {
     @DataProvider
     Object[][] simpleTypeNameProvider() {
         return new Object[][] {
-            {String.class, "String"},
-            {String[].class, "String[]"},
-            {ServiceGraphVertexTest.class, "AsciiServiceGraphVertexTest"},
-            {ServiceGraphVertexTest[].class, "AsciiServiceGraphVertexTest[]"},
-            {CharMatcher.class, "com.google.common.base.CharMatcher"},
+            {String.class, "", "String"},
+            {String[].class, new String[0], "String[]"},
+            {ServiceGraphVertexTest.class, new ServiceGraphVertexTest(), "ServiceGraphVertexTest"},
+            {ServiceGraphVertexTest[].class, new ServiceGraphVertexTest[0], "ServiceGraphVertexTest[]"},
+            {CharMatcher.class, CharMatcher.any(), "com.google.common.base.CharMatcher"},
         };
     }
 
     @Test(dataProvider = "simpleTypeNameProvider")
-    public void testSimpleTypeName(final Class<?> simpleType, final String expectedName) {
-        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(simpleType), null);
+    public void testSimpleTypeName(final Class<? extends Object> simpleType,
+                                   final Object serviceInstance,
+                                   final String expectedName) {
+        final TypeLiteral<? extends Object> typeLiteral = TypeLiteral.get(simpleType);
+        final Key<Object> key = (Key<Object>) Key.get(typeLiteral);
+        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(key, serviceInstance);
         assertThat(vertex.simpleTypeName(simpleType), is(expectedName));
     }
 
-//    @DataProvider
-//    Object[][] genericTypeNameProvider() {
-//        return new Object[][] {
-//            {new TypeLiteral<Set<String>>(){}, "Set<String>"},
-//            {new TypeLiteral<Set<ServiceGraphVertexTest>>(){}, "Set<AsciiServiceGraphVertexTest>"},
-//            {new TypeLiteral<Map<String, String>>(){}, "Map<String, String>"},
-//            {new TypeLiteral<Map.Entry<String, String>>(){}, "Map.Entry<String, String>"},
-//            {new TypeLiteral<Set<Map.Entry<String, String>>>(){}, "Set<Map.Entry<String, String>>"},
-//            {new TypeLiteral<Provider<String>>(){}, "Provider<String>"},
-//        };
-//    }
-//
-//    @Test(dataProvider = "genericTypeNameProvider")
-//    public void testGenericTypeName(final TypeLiteral<?> typeLiteral, final String expectedName) {
-//        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(typeLiteral), null);
-//        assertThat(vertex.genericTypeName(typeLiteral), is(expectedName));
-//    }
+    @DataProvider
+    Object[][] genericTypeNameProvider() {
+        return new Object[][] {
+            {new TypeLiteral<Set<String>>(){},
+                Collections.<String>emptySet(),
+                "Set<String>"},
+            {new TypeLiteral<Set<ServiceGraphVertexTest>>(){},
+                Collections.<ServiceGraphVertexTest>emptySet(),
+                "Set<ServiceGraphVertexTest>"},
+            {new TypeLiteral<Map<String, String>>(){},
+                Collections.<String, String>emptyMap(),
+                "Map<String, String>"},
+            {new TypeLiteral<Map.Entry<String, String>>(){},
+                new AbstractMap.SimpleEntry<String, String>("a", "b"),
+                "Map.Entry<String, String>"},
+            {new TypeLiteral<Set<Map.Entry<String, String>>>(){},
+                Collections.singleton(new AbstractMap.SimpleEntry<String, String>("a", "b")),
+                "Set<Map.Entry<String, String>>"},
+            {new TypeLiteral<Provider<String>>(){},
+                new Provider<String>() {
+                    @Override
+                    public String get() {
+                        return "";
+                    }
+                },
+                "Provider<String>"},
+        };
+    }
+
+    @Test(dataProvider = "genericTypeNameProvider")
+    public void testGenericTypeName(final TypeLiteral<Object> typeLiteral,
+                                    final Object serviceInstance,
+                                    final String expectedName) {
+        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(typeLiteral), serviceInstance);
+        assertThat(vertex.genericTypeName(typeLiteral), is(expectedName));
+    }
 
     @DataProvider
     Object[][] typeLiteralNameProvider() {
         return new Object[][] {
-            {TypeLiteral.get(String.class), "String"},
-            {new TypeLiteral<Set<Map.Entry<String, String>>>(){}, "Set<Map.Entry<String, String>>"},
+            {TypeLiteral.get(String.class), "", "String"},
+            {new TypeLiteral<Set<Map.Entry<String, String>>>(){},
+                Collections.singleton(new AbstractMap.SimpleEntry<String, String>("a", "b")),
+                "Set<Map.Entry<String, String>>"},
         };
     }
 
     @Test(dataProvider = "typeLiteralNameProvider")
-    public void testTypeLiternalName(final TypeLiteral<?> typeLiteral, final String expectedName) {
-        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(typeLiteral),null);
+    public void testTypeLiteralName(final TypeLiteral<Object> typeLiteral,
+                                    final Object serviceInstance,
+                                    final String expectedName) {
+        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(typeLiteral), serviceInstance);
         assertThat(vertex.typeLiteralName(typeLiteral), is(expectedName));
     }
 }

@@ -14,6 +14,7 @@ import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
+import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -42,17 +43,18 @@ public class SampleGenericWorkerAppFTest {
     private final Logger LOGGER = LoggerFactory.getLogger(MinimalGenericWorkerAppFTest.class);
 
     private final GenericWorkerApp sampleApp = new GenericWorkerApp.Builder("sample", LOGGER)
-            .setServiceConfigFromClasspath("config/sample-generic-service.conf")
-            .setServiceScan(new ServiceScan.Builder()
-                    .addServicePackages("net.spals.appbuilder.app.core.sample")
-                    .addDefaultServices(FileStore.class)
-                    .addDefaultServices(MapStore.class)
-                    .addDefaultServices(MessageConsumer.class, MessageProducer.class)
-                    .addDefaultServices(ModelSerializer.class)
-                    .build())
-            .addBootstrapModule(new SampleCoreBootstrapModule())
-            .addModule(new SampleCoreGuiceModule())
-            .build();
+        .enableServiceGraph(ServiceGraphFormat.ASCII)
+        .setServiceConfigFromClasspath("config/sample-generic-service.conf")
+        .setServiceScan(new ServiceScan.Builder()
+            .addServicePackages("net.spals.appbuilder.app.core.sample")
+            .addDefaultServices(FileStore.class)
+            .addDefaultServices(MapStore.class)
+            .addDefaultServices(MessageConsumer.class, MessageProducer.class)
+            .addDefaultServices(ModelSerializer.class)
+            .build())
+        .addBootstrapModule(new SampleCoreBootstrapModule())
+        .addModule(new SampleCoreGuiceModule())
+        .build();
 
     @DataProvider
     Object[][] serviceConfigProvider() {

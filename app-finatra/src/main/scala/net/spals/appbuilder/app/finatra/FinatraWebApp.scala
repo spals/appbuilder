@@ -117,7 +117,7 @@ trait FinatraWebApp extends HttpServer
   private var bootstrapModule = new FinatraBootstrapModule()
   private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
   private val monitorModule = new FinatraMonitorModule
-  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph)
+  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceGraph)
   private var webServerModule = FinatraWebServerModule(serviceGraph)
 
   override def addModule(module: Module): FinatraWebApp = {

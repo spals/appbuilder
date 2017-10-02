@@ -1,6 +1,7 @@
 package net.spals.appbuilder.app.core.jaxrs;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
@@ -8,6 +9,7 @@ import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import net.spals.appbuilder.graph.model.ServiceGraph;
+import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.lang.reflect.Type;
 
 /**
  * @author tkral
@@ -52,6 +55,11 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
     public void afterInjection(final Object wsComponent) {
         LOGGER.info("Registering WebServer component: {}", wsComponent);
         getConfigurable().register(wsComponent);
+
+        final Key<Object> wsKey = (Key<Object>) Key.get(TypeLiteral.get(wsComponent.getClass()));
+        final ServiceGraphVertex<?> wsVertex = ServiceGraphVertex.newVertex(wsKey, wsComponent);
+        getServiceGraph().addVertex(wsVertex);
+        getServiceGraph().addEdge(wsVertex, theWebServerVertex);
     }
 
     @Override
@@ -60,14 +68,40 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         if (isActive()) {
             // Add a dummy WEBSERVER vertex to the service grapher to show how WebServer components
             // relate to one another
-//            final Key<WEBSERVER> wsKey = Key.get(WEBSERVER.class);
-//            final Key<I> wsComponentKey = Key.get(typeLiteral);
-//            getServiceGraph().addVertex(wsKey).addVertex(wsComponentKey).addEdge(wsComponentKey, wsKey);
+            if (!getServiceGraph().containsVertex(theWebServerVertex)) {
+                getServiceGraph().addVertex(theWebServerVertex);
+            }
 
             typeEncounter.register(this);
         }
     }
 
-    private static WEBSERVER theWebServer = new WEBSERVER();
-    private static class WEBSERVER { }
+    private static WebServerVertex theWebServerVertex = new WebServerVertex();
+
+    /**
+     * Special {@link ServiceGraphVertex} instance which
+     * represents the application's web server.
+     *
+     * All auto-bound webserver components will have an outgoing
+     * edge to this vertex in order to show a complete graph.
+     *
+     * @author tkral
+     */
+    static class WebServerVertex extends ServiceGraphVertex<String> {
+
+        @Override
+        public Key<String> getGuiceKey() {
+            return Key.get(String.class);
+        }
+
+        @Override
+        public String getServiceInstance() {
+            return "WEBSERVER";
+        }
+
+        @Override
+        public String toString() {
+            return getServiceInstance();
+        }
+    }
 }

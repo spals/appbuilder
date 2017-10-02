@@ -11,6 +11,9 @@ import com.google.inject.TypeLiteral;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.WildcardType;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -49,10 +52,15 @@ public abstract class ServiceGraphVertex<T> {
 
         final StringBuilder sb = new StringBuilder();
         if (serviceAnnotationType != null) {
-            sb.append(annotationTypeName(serviceAnnotationType, Optional.ofNullable(getGuiceKey().getAnnotation()))).append(' ');
+            sb.append(annotationTypeName(serviceAnnotationType, Optional.ofNullable(getGuiceKey().getAnnotation())))
+                .append(String.format("%n"));
         }
 
-        sb.append(typeLiteralName(getGuiceKey().getTypeLiteral()));
+        if (canPrintConstant(getServiceInstance())) {
+            sb.append("\"" + String.valueOf(getServiceInstance()) + "\"");
+        } else {
+            sb.append(typeLiteralName(getGuiceKey().getTypeLiteral()));
+        }
         return sb.toString();
     }
 
@@ -75,29 +83,47 @@ public abstract class ServiceGraphVertex<T> {
         return sb.toString();
     }
 
-//    @VisibleForTesting
-//    String genericTypeName(final TypeLiteral<T> typeLiteral) {
-//        if (typeLiteral.getRawType().isArray()) {
-//            return simpleTypeName((Class) typeLiteral.getRawType());
-//        }
-//
-//        final StringBuilder sb = new StringBuilder();
-//        sb.append(simpleTypeName(typeLiteral.getRawType())).append('<');
-//
-//        final ParameterizedType parameterizedType = (ParameterizedType) genericTypeLiteral.getType();
-//        final List<String> parameterizedTypeNames = Arrays.asList(parameterizedType.getActualTypeArguments()).stream()
-//            .map(typeArg -> typeLiteralName(TypeLiteral.get(typeArg)))
-//            .collect(Collectors.toList());
-//
-//        sb.append(Joiner.on(", ").join(parameterizedTypeNames)).append('>');
-//        return sb.toString();
-//    }
+    @VisibleForTesting
+    boolean canPrintConstant(final T serviceInstance) {
+        return isConstant(serviceInstance) &&
+            String.valueOf(serviceInstance).length() < 64;
+    }
+
+    @VisibleForTesting
+    String genericTypeName(final TypeLiteral<?> typeLiteral) {
+        if (typeLiteral.getRawType().isArray()) {
+            return simpleTypeName((Class) typeLiteral.getRawType());
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append(simpleTypeName(typeLiteral.getRawType())).append('<');
+
+        final ParameterizedType parameterizedType = (ParameterizedType) typeLiteral.getType();
+        final List<String> parameterizedTypeNames = Arrays.asList(parameterizedType.getActualTypeArguments()).stream()
+            .map(typeArg -> {
+                if (typeArg instanceof WildcardType) {
+                    return "?";
+                }
+                return typeLiteralName(TypeLiteral.get(typeArg));
+            })
+            .collect(Collectors.toList());
+
+        sb.append(Joiner.on(", ").join(parameterizedTypeNames)).append('>');
+        return sb.toString();
+    }
+
+    @VisibleForTesting
+    boolean isConstant(final T serviceInstance) {
+        return String.class.isAssignableFrom(serviceInstance.getClass())
+            || Path.class.isAssignableFrom(serviceInstance.getClass());
+    }
 
     @VisibleForTesting
     String simpleTypeName(final Class<?> simpleType) {
         // Strip off the package names for standard Java classes, standard AppBuilder classes,
         // and standard Guice classes
-        if (simpleType.getCanonicalName().startsWith("java.lang") || simpleType.getCanonicalName().startsWith("java.util")
+        if (simpleType.getCanonicalName().startsWith("java.lang")
+            || simpleType.getCanonicalName().startsWith("java.util")
             || simpleType.getCanonicalName().startsWith("net.spals.appbuilder")
             || simpleType.getCanonicalName().startsWith("com.google.inject")) {
             final List<String> nameParts = Splitter.on('.').splitToList(simpleType.getCanonicalName());
@@ -118,8 +144,7 @@ public abstract class ServiceGraphVertex<T> {
         if (type instanceof Class) {
             sb.append(simpleTypeName((Class) type));
         } else {
-            sb.append(typeLiteral);
-//            sb.append(genericTypeName(typeLiteral));
+            sb.append(genericTypeName(typeLiteral));
         }
 
         return sb.toString();

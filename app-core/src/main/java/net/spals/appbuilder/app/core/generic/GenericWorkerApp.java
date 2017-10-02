@@ -62,7 +62,7 @@ public abstract class GenericWorkerApp implements App {
                         bootstrapBinder.requireExactBindingAnnotations();
                     });
             this.configModuleBuilder = new AutoBindConfigModule.Builder(name);
-            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph);
+            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceGraph);
 
             setName(name);
             setLogger(logger);
