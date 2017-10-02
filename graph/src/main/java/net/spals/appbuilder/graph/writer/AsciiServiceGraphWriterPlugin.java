@@ -16,7 +16,7 @@ class AsciiServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
         final GraphBuilder<ServiceGraphVertex> asciiGraphBuilder = new GraphBuilder<>();
         // Add all the edges to the graph builder
         serviceGraph.edgeSet().forEach(edge ->
-            asciiGraphBuilder.addEdge(edge.getSourceVertex(), edge.getTargetVertex()));
+            asciiGraphBuilder.addEdge(serviceGraph.getEdgeSource(edge), serviceGraph.getEdgeTarget(edge)));
 
         final Graph<ServiceGraphVertex> asciiGraph = asciiGraphBuilder.build();
         final GraphLayouter<ServiceGraphVertex> asciiGraphLayouter = new GraphLayouter<>();
