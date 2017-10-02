@@ -7,7 +7,6 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import org.inferred.freebuilder.FreeBuilder;
@@ -21,7 +20,9 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.lang.reflect.Type;
+
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.annotatedWith;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.subclassOf;
 
 /**
  * @author tkral
@@ -42,12 +43,12 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
 
     @Override
     protected void configure() {
-        final Matcher typeMatcher = TypeLiteralMatchers.annotatedWith(Path.class)
-                .or(TypeLiteralMatchers.annotatedWith(Provider.class))
-                .or(TypeLiteralMatchers.subclassesOf(DynamicFeature.class))
-                .or(TypeLiteralMatchers.subclassesOf(ExceptionMapper.class))
-                .or(TypeLiteralMatchers.subclassesOf(ContainerRequestFilter.class))
-                .or(TypeLiteralMatchers.subclassesOf(ContainerResponseFilter.class));
+        final Matcher typeMatcher = annotatedWith(Path.class)
+                .or(annotatedWith(Provider.class))
+                .or(subclassOf(DynamicFeature.class))
+                .or(subclassOf(ExceptionMapper.class))
+                .or(subclassOf(ContainerRequestFilter.class))
+                .or(subclassOf(ContainerResponseFilter.class));
         bindListener(typeMatcher, this);
     }
 

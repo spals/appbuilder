@@ -55,39 +55,21 @@ public class BindingMatchers {
         }
     }
 
-    public static Matcher<Binding<?>> keyTypeInPackage(final String keyTypePackagePrefix) {
-        return new KeyTypeInPackage(keyTypePackagePrefix);
+    public static Matcher<Binding<?>> keyTypeThat(final Matcher<TypeLiteral<?>> typeMatcher) {
+        return new KeyTypeThat(typeMatcher);
     }
 
-    private static class KeyTypeInPackage extends AbstractMatcher<Binding<?>>
+    private static class KeyTypeThat extends AbstractMatcher<Binding<?>>
         implements Serializable {
-        private final Matcher<TypeLiteral<?>> inPackageMatcher;
+        private final Matcher<TypeLiteral<?>> typeMatcher;
 
-        private KeyTypeInPackage(final String keyTypePackagePrefix) {
-            this.inPackageMatcher = TypeLiteralMatchers.inPackage(keyTypePackagePrefix);
+        private KeyTypeThat(final Matcher<TypeLiteral<?>> typeMatcher) {
+            this.typeMatcher = typeMatcher;
         }
 
         @Override
         public boolean matches(final Binding<?> binding) {
-            return inPackageMatcher.matches(binding.getKey().getTypeLiteral());
-        }
-    }
-
-    public static Matcher<Binding<?>> keyTypeSubclassOf(final Class<?> keyTypeSuperClass) {
-        return new KeyTypeSubclassOf(keyTypeSuperClass);
-    }
-
-    private static class KeyTypeSubclassOf extends AbstractMatcher<Binding<?>>
-        implements Serializable {
-        private final Matcher<TypeLiteral<?>> subclassOfMatcher;
-
-        private KeyTypeSubclassOf(final Class<?> keyTypeSuperClass) {
-            this.subclassOfMatcher = TypeLiteralMatchers.subclassesOf(keyTypeSuperClass);
-        }
-
-        @Override
-        public boolean matches(final Binding<?> binding) {
-            return subclassOfMatcher.matches(binding.getKey().getTypeLiteral());
+            return typeMatcher.matches(binding.getKey().getTypeLiteral());
         }
     }
 }

@@ -13,6 +13,9 @@ import org.reflections.Reflections;
 import java.util.Arrays;
 import java.util.Set;
 
+import static net.spals.appbuilder.config.matcher.BindingMatchers.keyTypeThat;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.inPackage;
+
 /**
  * Bean for holding configuration for a service scan.
  *
@@ -29,14 +32,12 @@ import java.util.Set;
 public interface ServiceScan {
 
     default Matcher<Binding<?>> asBindingMatcher() {
-        return getServicePackages().stream()
-            .map(servicePackage -> BindingMatchers.keyTypeInPackage(servicePackage))
-            .reduce(BindingMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
+        return keyTypeThat(asTypeLiteralMatcher());
     }
 
     default Matcher<TypeLiteral<?>> asTypeLiteralMatcher() {
         return getServicePackages().stream()
-            .map(servicePackage -> TypeLiteralMatchers.inPackage(servicePackage))
+            .map(servicePackage -> inPackage(servicePackage))
             .reduce(TypeLiteralMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
     }
 

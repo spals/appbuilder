@@ -105,15 +105,15 @@ public class TypeLiteralMatchers {
         }
     }
 
-    public static Matcher<TypeLiteral<?>> subclassesOf(final Class<?> superclass) {
-        return new SubclassesOf(superclass);
+    public static Matcher<TypeLiteral<?>> subclassOf(final Class<?> superclass) {
+        return new SubclassOf(superclass);
     }
 
-    private static class SubclassesOf extends AbstractMatcher<TypeLiteral<?>>
+    private static class SubclassOf extends AbstractMatcher<TypeLiteral<?>>
         implements Serializable {
         private final Class<?> superclass;
 
-        public SubclassesOf(final Class<?> superclass) {
+        public SubclassOf(final Class<?> superclass) {
             this.superclass = Preconditions.checkNotNull(superclass, "superclass");
         }
 
