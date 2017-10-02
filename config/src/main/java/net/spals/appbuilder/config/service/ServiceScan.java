@@ -2,6 +2,11 @@ package net.spals.appbuilder.config.service;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+import com.google.inject.Binding;
+import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matcher;
+import net.spals.appbuilder.config.matcher.BindingMatchers;
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 
@@ -22,6 +27,18 @@ import java.util.Set;
  */
 @FreeBuilder
 public interface ServiceScan {
+
+    default Matcher<Binding<?>> asBindingMatcher() {
+        return getServicePackages().stream()
+            .map(servicePackage -> BindingMatchers.keyTypeInPackage(servicePackage))
+            .reduce(BindingMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
+    }
+
+    default Matcher<TypeLiteral<?>> asTypeLiteralMatcher() {
+        return getServicePackages().stream()
+            .map(servicePackage -> TypeLiteralMatchers.inPackage(servicePackage))
+            .reduce(TypeLiteralMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
+    }
 
     Set<String> getServicePackages();
 

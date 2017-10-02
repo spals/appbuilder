@@ -4,12 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.ProvisionListener;
-import com.google.inject.spi.ProvisionListener.ProvisionInvocation;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jaxrs2.server.ServerSpanDecorator;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
-import net.spals.appbuilder.app.core.matcher.BindingMatchers;
 import net.spals.appbuilder.app.core.monitor.ParamSpanDecorator;
+import net.spals.appbuilder.config.matcher.BindingMatchers;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,7 @@ public abstract class JaxRsMonitorModule extends AbstractModule
 
     @Override
     protected void configure() {
-        final Matcher bindingMatcher = BindingMatchers.withKeyTypeSubclassOf(Tracer.class);
+        final Matcher bindingMatcher = BindingMatchers.keyTypeSubclassOf(Tracer.class);
         bindListener(bindingMatcher, this);
     }
 

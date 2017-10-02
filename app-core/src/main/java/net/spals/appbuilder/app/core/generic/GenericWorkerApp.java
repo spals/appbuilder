@@ -1,7 +1,6 @@
 package net.spals.appbuilder.app.core.generic;
 
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
@@ -125,6 +124,8 @@ public abstract class GenericWorkerApp implements App {
             // 3. Use the serviceScan to find auto bound services
             servicesModuleBuilder.setServiceScan(serviceScan);
             servicesModuleIndex.set(orderedModules.size());
+            // 4. Use the serviceScan in building the services graph
+            serviceGraphModuleBuilder.setServiceScan(serviceScan);
 
             return this;
         }
@@ -147,7 +148,10 @@ public abstract class GenericWorkerApp implements App {
             // Add all modules to the lifecycle injector builder in the order in which they arrived.
             lifecycleInjectorBuilder.withAdditionalModules(orderedModules);
 
-            setServiceInjector(buildServiceInjector(lifecycleInjectorBuilder));
+            final Injector serviceInjector = buildServiceInjector(lifecycleInjectorBuilder);
+            setServiceInjector(serviceInjector);
+            // Write the service graph
+            serviceInjector.getInstance(ServiceGraphWriter.class).writeServiceGraph(serviceGraph);
             return super.build();
         }
 
@@ -168,12 +172,7 @@ public abstract class GenericWorkerApp implements App {
                 lifecycleManager.close();
             }));
             // 3. Grab the Guice injector from which we can get service references
-            final Injector serviceInjecter = lifecycleInjector.createInjector();
-            // 4. Output the service graph
-            final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
-            serviceGraphWriter.writeServiceGraph();
-
-            return serviceInjecter;
+            return lifecycleInjector.createInjector();
         }
     }
 

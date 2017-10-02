@@ -91,7 +91,7 @@ trait FinatraWebApp extends HttpServer
   override protected def postInjectorStartup(): Unit = {
     super.postInjectorStartup()
     val serviceGraphWriter = injector.instance[ServiceGraphWriter]
-    serviceGraphWriter.writeServiceGraph()
+    serviceGraphWriter.writeServiceGraph(serviceGraph)
   }
 
   // ========== Spals App ==========
@@ -171,6 +171,7 @@ trait FinatraWebApp extends HttpServer
     configModuleBuilder.setServiceScan(serviceScan)
     servicesModuleBuilder.setServiceScan(serviceScan)
     servicesModuleIndex.set(customModules.size)
+    serviceGraphModuleBuilder.setServiceScan(serviceScan)
     this
   }
 

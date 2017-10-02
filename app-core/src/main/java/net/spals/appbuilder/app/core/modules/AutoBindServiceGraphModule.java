@@ -4,22 +4,19 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.matcher.Matcher;
-import com.google.inject.multibindings.MapBinderBinding;
-import com.google.inject.multibindings.MultibinderBinding;
-import com.google.inject.multibindings.MultibindingsTargetVisitor;
-import com.google.inject.multibindings.OptionalBinderBinding;
-import com.google.inject.spi.*;
-import net.spals.appbuilder.app.core.matcher.BindingMatchers;
+import com.google.inject.spi.ConstructorBinding;
+import com.google.inject.spi.DefaultBindingTargetVisitor;
+import com.google.inject.spi.ProvisionListener;
+import net.spals.appbuilder.config.matcher.BindingMatchers;
+import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
-import net.spals.appbuilder.graph.writer.ServiceGraphWriterProvider;
 import org.inferred.freebuilder.FreeBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author tkral
@@ -29,142 +26,65 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
     public abstract ServiceGraphFormat getGraphFormat();
     public abstract ServiceGraph getServiceGraph();
+    public abstract ServiceScan getServiceScan();
 
     public static class Builder extends AutoBindServiceGraphModule_Builder {
         public Builder(final ServiceGraph serviceGraph) {
             setServiceGraph(serviceGraph);
             setGraphFormat(ServiceGraphFormat.NONE);
+            setServiceScan(ServiceScan.empty());
         }
     }
 
     @Override
     public void configure() {
         // 1. Add a listener for all service provisioning
-        final ServiceGraphBindingTargetVisitor serviceGraphTargetVisitor =
-                new ServiceGraphBindingTargetVisitor(getServiceGraph());
-        final ServiceGraphProvisionListener serviceGraphProvisionListener =
-                new ServiceGraphProvisionListener(serviceGraphTargetVisitor);
-        binder().bindListener(BindingMatchers.any(), serviceGraphProvisionListener);
+        final ServiceGraphListener serviceGraphListener =
+            new ServiceGraphListener(getServiceGraph(), getServiceScan());
+        binder().bindListener(BindingMatchers.any(), serviceGraphListener);
 
         // 2. Bind the serviceGraphWriter instance
-        final ServiceGraphWriterProvider serviceGraphWriterProvider =
-                new ServiceGraphWriterProvider(getServiceGraph(), getGraphFormat());
-        binder().bind(ServiceGraphWriter.class).toProvider(serviceGraphWriterProvider).asEagerSingleton();
+        final ServiceGraphWriter serviceGraphWriter = new ServiceGraphWriter(getGraphFormat(), getServiceScan());
+        binder().bind(ServiceGraphWriter.class).toInstance(serviceGraphWriter);
     }
 
     @VisibleForTesting
-    static class ServiceGraphProvisionListener implements ProvisionListener {
+    static class ServiceGraphListener extends DefaultBindingTargetVisitor<Object, Void>
+            implements ProvisionListener {
 
-        private final ServiceGraphBindingTargetVisitor targetVisitor;
+        private final ServiceGraph serviceGraph;
+        private final Matcher<Binding<?>> serviceScanMatcher;
 
-        ServiceGraphProvisionListener(final ServiceGraphBindingTargetVisitor targetVisitor) {
-            this.targetVisitor = targetVisitor;
+        ServiceGraphListener(final ServiceGraph serviceGraph,
+                             final ServiceScan serviceScan) {
+            this.serviceGraph = serviceGraph;
+            this.serviceScanMatcher = serviceScan.asBindingMatcher();
         }
 
         @Override
         public <T> void onProvision(final ProvisionInvocation<T> provision) {
-            provision.getBinding().acceptTargetVisitor(targetVisitor);
-        }
-    }
+            final T serviceInstance = provision.provision();
 
-    @VisibleForTesting
-    static class ServiceGraphBindingTargetVisitor extends DefaultBindingTargetVisitor<Object, Void>
-            implements MultibindingsTargetVisitor<Object, Void> {
-        private static final Logger LOGGER = LoggerFactory.getLogger(ServiceGraphBindingTargetVisitor.class);
+            final ServiceGraphVertex<T> vertex =
+                ServiceGraphVertex.newVertex(provision.getBinding().getKey(), serviceInstance);
+            serviceGraph.addVertex(vertex);
 
-        private static final Matcher<Binding<?>> APPBUILDER_MATCHER = BindingMatchers.withSourcePackage("net.spals.appbuilder");
-
-        private final ServiceGraph serviceGraph;
-
-        ServiceGraphBindingTargetVisitor(final ServiceGraph serviceGraph) {
-            this.serviceGraph = serviceGraph;
-        }
-
-        @VisibleForTesting
-        Optional<String> elementModuleSource(final Element element) {
-            return Optional.ofNullable(element.getSource()).map(Objects::toString);
-        }
-
-        @Override
-        public Void visit(final InstanceBinding<?> binding) {
-            Optional.of(binding).filter(b -> APPBUILDER_MATCHER.matches(b))
-                    .ifPresent(b -> serviceGraph.addVertex(b.getKey()));
-            return null;
-        }
-
-        @Override
-        public Void visit(final ProviderInstanceBinding<?> binding) {
-            LOGGER.trace("({}) PROVIDER INSTANCE BINDING: {}", elementModuleSource(binding), binding);
-            return null;
-        }
-
-        @Override
-        public Void visit(final ProviderKeyBinding<?> binding) {
-            LOGGER.trace("({}) PROVIDER KEY BINDING: {}", elementModuleSource(binding), binding);
-            return null;
-        }
-
-        @Override
-        public Void visit(final LinkedKeyBinding<?> binding) {
-            LOGGER.trace("({}) LINKED KEY BINDING: {}", elementModuleSource(binding), binding);
-            return null;
-        }
-
-        @Override
-        public Void visit(final ExposedBinding<?> binding) {
-            LOGGER.trace("({}) EXPOSED BINDING: {}", elementModuleSource(binding), binding);
-            return null;
-        }
-
-        @Override
-        public Void visit(final UntargettedBinding<?> binding) {
-            LOGGER.trace("({}) UNTARGETTED BINDING: {}", elementModuleSource(binding), binding);
-            return null;
+            if (serviceScanMatcher.matches(provision.getBinding())) {
+                provision.getBinding().acceptTargetVisitor(this);
+            }
         }
 
         @Override
         public Void visit(final ConstructorBinding<?> binding) {
-            Optional.of(binding).filter(b -> APPBUILDER_MATCHER.matches(b))
-                    .ifPresent(b -> {
-                        serviceGraph.addVertex(b.getKey());
-                        b.getConstructor().getDependencies().forEach(dependency ->
-                                serviceGraph.addVertex(dependency.getKey()).addEdge(dependency.getKey(), b.getKey()));
-                    });
-            return null;
-        }
+            final ServiceGraphVertex<?> bindingVertex = serviceGraph.findVertex(binding.getKey()).get();
+            final Set<ServiceGraphVertex<?>> dependencyVertices =
+                binding.getConstructor().getDependencies().stream()
+                    .map(dependency -> serviceGraph.findVertex(dependency.getKey()))
+                    .filter(vertexOpt -> vertexOpt.isPresent())
+                    .map(vertexOpt -> vertexOpt.get())
+                    .collect(Collectors.toSet());
 
-        @Override
-        public Void visit(final ConvertedConstantBinding<?> binding) {
-            LOGGER.trace("({}) CONVERTED CONSTANT BINDING: {}", elementModuleSource(binding), binding);
-            return null;
-        }
-
-        @Override
-        public Void visit(final ProviderBinding<?> binding) {
-            LOGGER.trace("({}) PROVIDER BINDING: {}", elementModuleSource(binding), binding);
-            return null;
-        }
-
-        @Override
-        public Void visit(final MultibinderBinding<?> multibinderBinding) {
-            LOGGER.trace("SET BINDING: {}", multibinderBinding.getSetKey());
-            multibinderBinding.getElements().forEach(setBinding -> {
-                LOGGER.trace("  SET ELEMENT: {}", setBinding);
-            });
-            return null;
-        }
-
-        @Override
-        public Void visit(final MapBinderBinding<?> mapBinderBinding) {
-            LOGGER.trace("MAP BINDING: {}", mapBinderBinding.getMapKey());
-            mapBinderBinding.getEntries().forEach(mapEntryBinding -> {
-                LOGGER.trace("  MAP ELEMENT: {}", mapEntryBinding);
-            });
-            return null;
-        }
-
-        @Override
-        public Void visit(final OptionalBinderBinding<?> optionalBinderBinding) {
+            dependencyVertices.forEach(dependencyVertex -> serviceGraph.addEdge(dependencyVertex, bindingVertex));
             return null;
         }
     }

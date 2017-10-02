@@ -17,16 +17,16 @@ import java.util.Set;
  *
  * @author tkral
  */
-public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> {
+public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, ServiceGraphEdge> {
 
-    private final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> delegate;
+    private final DirectedGraph<ServiceGraphVertex<?>, ServiceGraphEdge> delegate;
 
     public ServiceGraph() {
-        this(new DirectedAcyclicGraph<>(DefaultEdge.class));
+        this(new DirectedAcyclicGraph<>(ServiceGraphEdge.class));
     }
 
     @VisibleForTesting
-    ServiceGraph(DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> delegate) {
+    ServiceGraph(DirectedGraph<ServiceGraphVertex<?>, ServiceGraphEdge> delegate) {
         this.delegate = delegate;
     }
 
@@ -36,7 +36,7 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public Set<DefaultEdge> incomingEdgesOf(final ServiceGraphVertex<?> vertex) {
+    public Set<ServiceGraphEdge> incomingEdgesOf(final ServiceGraphVertex<?> vertex) {
         return delegate.incomingEdgesOf(vertex);
     }
 
@@ -46,38 +46,38 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public Set<DefaultEdge> outgoingEdgesOf(final ServiceGraphVertex<?> vertex) {
+    public Set<ServiceGraphEdge> outgoingEdgesOf(final ServiceGraphVertex<?> vertex) {
         return delegate.outgoingEdgesOf(vertex);
     }
 
     @Override
-    public Set<DefaultEdge> getAllEdges(final ServiceGraphVertex<?> sourceVertex,
-                                        final ServiceGraphVertex<?> targetVertex) {
+    public Set<ServiceGraphEdge> getAllEdges(final ServiceGraphVertex<?> sourceVertex,
+                                             final ServiceGraphVertex<?> targetVertex) {
         return delegate.getAllEdges(sourceVertex, targetVertex);
     }
 
     @Override
-    public DefaultEdge getEdge(final ServiceGraphVertex<?> sourceVertex,
-                               final ServiceGraphVertex<?> targetVertex) {
+    public ServiceGraphEdge getEdge(final ServiceGraphVertex<?> sourceVertex,
+                                    final ServiceGraphVertex<?> targetVertex) {
         return delegate.getEdge(sourceVertex, targetVertex);
     }
 
     @Override
-    public EdgeFactory<ServiceGraphVertex<?>, DefaultEdge> getEdgeFactory() {
+    public EdgeFactory<ServiceGraphVertex<?>, ServiceGraphEdge> getEdgeFactory() {
         return delegate.getEdgeFactory();
     }
 
     @Override
-    public DefaultEdge addEdge(final ServiceGraphVertex<?> sourceVertex,
-                               final ServiceGraphVertex<?> targetVertex) {
+    public ServiceGraphEdge addEdge(final ServiceGraphVertex<?> sourceVertex,
+                                    final ServiceGraphVertex<?> targetVertex) {
         return delegate.addEdge(sourceVertex, targetVertex);
     }
 
     @Override
     public boolean addEdge(final ServiceGraphVertex<?> sourceVertex,
                            final ServiceGraphVertex<?> targetVertex,
-                           final DefaultEdge defaultEdge) {
-        return delegate.addEdge(sourceVertex, targetVertex, defaultEdge);
+                           final ServiceGraphEdge edge) {
+        return delegate.addEdge(sourceVertex, targetVertex, edge);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public boolean containsEdge(final DefaultEdge edge) {
+    public boolean containsEdge(final ServiceGraphEdge edge) {
         return delegate.containsEdge(edge);
     }
 
@@ -102,12 +102,12 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public Set<DefaultEdge> edgeSet() {
+    public Set<ServiceGraphEdge> edgeSet() {
         return delegate.edgeSet();
     }
 
     @Override
-    public Set<DefaultEdge> edgesOf(final ServiceGraphVertex<?> vertex) {
+    public Set<ServiceGraphEdge> edgesOf(final ServiceGraphVertex<?> vertex) {
         return delegate.edgesOf(vertex);
     }
 
@@ -118,12 +118,12 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public boolean removeAllEdges(final Collection<? extends DefaultEdge> edges) {
+    public boolean removeAllEdges(final Collection<? extends ServiceGraphEdge> edges) {
         return delegate.removeAllEdges(edges);
     }
 
     @Override
-    public Set<DefaultEdge> removeAllEdges(final ServiceGraphVertex<?> sourceVertex,
+    public Set<ServiceGraphEdge> removeAllEdges(final ServiceGraphVertex<?> sourceVertex,
                                            final ServiceGraphVertex<?> targetVertex) {
         return delegate.removeAllEdges(sourceVertex, targetVertex);
     }
@@ -134,13 +134,13 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public DefaultEdge removeEdge(final ServiceGraphVertex<?> sourceVertex,
-                                  final ServiceGraphVertex<?> targetVertex) {
+    public ServiceGraphEdge removeEdge(final ServiceGraphVertex<?> sourceVertex,
+                                       final ServiceGraphVertex<?> targetVertex) {
         return delegate.removeEdge(sourceVertex, targetVertex);
     }
 
     @Override
-    public boolean removeEdge(final DefaultEdge edge) {
+    public boolean removeEdge(final ServiceGraphEdge edge) {
         return delegate.removeEdge(edge);
     }
 
@@ -155,17 +155,17 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
     }
 
     @Override
-    public ServiceGraphVertex<?> getEdgeSource(final DefaultEdge edge) {
+    public ServiceGraphVertex<?> getEdgeSource(final ServiceGraphEdge edge) {
         return delegate.getEdgeSource(edge);
     }
 
     @Override
-    public ServiceGraphVertex<?> getEdgeTarget(final DefaultEdge edge) {
+    public ServiceGraphVertex<?> getEdgeTarget(final ServiceGraphEdge edge) {
         return delegate.getEdgeTarget(edge);
     }
 
     @Override
-    public double getEdgeWeight(final DefaultEdge edge) {
+    public double getEdgeWeight(final ServiceGraphEdge edge) {
         return delegate.getEdgeWeight(edge);
     }
 }

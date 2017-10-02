@@ -7,7 +7,7 @@ import com.twitter.finatra.http.Controller
 import com.twitter.finatra.http.exceptions.ExceptionMapper
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
-import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers
 import net.spals.appbuilder.graph.model.ServiceGraph
 
 import scala.collection.mutable.ListBuffer

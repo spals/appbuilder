@@ -1,10 +1,9 @@
-package net.spals.appbuilder.app.core.matcher;
+package net.spals.appbuilder.config.matcher;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
-import com.google.inject.matcher.Matchers;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -24,12 +23,12 @@ public class TypeLiteralMatchers {
     private TypeLiteralMatchers() {  }
 
     public static Matcher<TypeLiteral<?>> annotatedWith(
-            final Class<? extends Annotation> annotationType) {
+        final Class<? extends Annotation> annotationType) {
         return new AnnotatedWithType(annotationType);
     }
 
     private static class AnnotatedWithType extends AbstractMatcher<TypeLiteral<?>>
-            implements Serializable {
+        implements Serializable {
         private final Class<? extends Annotation> annotationType;
 
         public AnnotatedWithType(final Class<? extends Annotation> annotationType) {
@@ -46,7 +45,7 @@ public class TypeLiteralMatchers {
         private static void checkForRuntimeRetention(final Class<? extends Annotation> annotationType) {
             final Retention retention = annotationType.getAnnotation(Retention.class);
             Preconditions.checkArgument(retention != null && retention.value() == RetentionPolicy.RUNTIME,
-                    "Annotation " + annotationType.getSimpleName() + " is missing RUNTIME retention");
+                "Annotation " + annotationType.getSimpleName() + " is missing RUNTIME retention");
         }
     }
 
@@ -57,12 +56,31 @@ public class TypeLiteralMatchers {
     private static final Matcher<TypeLiteral<?>> ANY = new Any();
 
     private static class Any extends AbstractMatcher<TypeLiteral<?>>
-            implements Serializable {
+        implements Serializable {
 
         @Override
         public boolean matches(final TypeLiteral<?> typeLiteral) {
             return true;
         }
+    }
+
+    public static Matcher<TypeLiteral<?>> inPackage(final String packagePrefix) {
+        return new InPackage(packagePrefix);
+    }
+
+    private static class InPackage extends AbstractMatcher<TypeLiteral<?>>
+        implements Serializable {
+        private final String packagePrefix;
+
+        public InPackage(final String packagePrefix) {
+            this.packagePrefix = packagePrefix;
+        }
+
+        @Override
+        public boolean matches(final TypeLiteral<?> typeLiteral) {
+            return typeLiteral.getRawType().getPackage().getName().startsWith(packagePrefix);
+        }
+
     }
 
     public static Matcher<TypeLiteral<?>> none() {
@@ -74,7 +92,7 @@ public class TypeLiteralMatchers {
     }
 
     private static class Not extends AbstractMatcher<TypeLiteral<?>>
-            implements Serializable {
+        implements Serializable {
         final Matcher<TypeLiteral<?>> delegate;
 
         private Not(Matcher<TypeLiteral<?>> delegate) {
@@ -87,31 +105,12 @@ public class TypeLiteralMatchers {
         }
     }
 
-    public static Matcher<TypeLiteral<?>> or(final Matcher<TypeLiteral<?>>... matchers) {
-        return new Or(matchers);
-    }
-
-    private static class Or extends AbstractMatcher<TypeLiteral<?>>
-            implements Serializable {
-        final Matcher<TypeLiteral<?>>[] delegates;
-
-        private Or(final Matcher<TypeLiteral<?>>... delegates) {
-            this.delegates = delegates;
-        }
-
-        @Override
-        public boolean matches(final TypeLiteral<?> typeLiteral) {
-            return Arrays.asList(delegates).stream()
-                    .anyMatch(delegate -> delegate.matches(typeLiteral));
-        }
-    }
-
     public static Matcher<TypeLiteral<?>> subclassesOf(final Class<?> superclass) {
         return new SubclassesOf(superclass);
     }
 
     private static class SubclassesOf extends AbstractMatcher<TypeLiteral<?>>
-            implements Serializable {
+        implements Serializable {
         private final Class<?> superclass;
 
         public SubclassesOf(final Class<?> superclass) {
@@ -124,3 +123,4 @@ public class TypeLiteralMatchers {
         }
     }
 }
+

@@ -1,13 +1,12 @@
 package net.spals.appbuilder.app.core.jaxrs;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import net.spals.appbuilder.app.core.matcher.TypeLiteralMatchers;
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
@@ -61,13 +60,14 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         if (isActive()) {
             // Add a dummy WEBSERVER vertex to the service grapher to show how WebServer components
             // relate to one another
-            final Key<WEBSERVER> wsKey = Key.get(WEBSERVER.class);
-            final Key<I> wsComponentKey = Key.get(typeLiteral);
-            getServiceGraph().addVertex(wsKey).addVertex(wsComponentKey).addEdge(wsComponentKey, wsKey);
+//            final Key<WEBSERVER> wsKey = Key.get(WEBSERVER.class);
+//            final Key<I> wsComponentKey = Key.get(typeLiteral);
+//            getServiceGraph().addVertex(wsKey).addVertex(wsComponentKey).addEdge(wsComponentKey, wsKey);
 
             typeEncounter.register(this);
         }
     }
 
+    private static WEBSERVER theWebServer = new WEBSERVER();
     private static class WEBSERVER { }
 }

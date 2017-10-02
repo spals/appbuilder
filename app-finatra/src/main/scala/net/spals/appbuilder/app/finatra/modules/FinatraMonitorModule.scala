@@ -6,8 +6,8 @@ import com.google.inject.spi.ProvisionListener
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
 import io.opentracing.Tracer
-import net.spals.appbuilder.app.core.matcher.BindingMatchers
 import net.spals.appbuilder.app.finatra.monitor.FinatraTracingFilter
+import net.spals.appbuilder.config.matcher.BindingMatchers
 
 /**
   * @author tkral
@@ -19,7 +19,7 @@ private[finatra] class FinatraMonitorModule
   private val tracerRef = new AtomicReference[Tracer]()
 
   override def configure(): Unit = {
-    val bindingMatcher = BindingMatchers.withKeyTypeSubclassOf(classOf[Tracer])
+    val bindingMatcher = BindingMatchers.keyTypeSubclassOf(classOf[Tracer])
     bindListener(bindingMatcher, this)
   }
 
