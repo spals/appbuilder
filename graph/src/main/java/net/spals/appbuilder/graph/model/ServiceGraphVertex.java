@@ -7,7 +7,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.inject.Key;
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 
 import java.lang.annotation.Annotation;
@@ -21,10 +20,22 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
+ * A definition of a vertex in the {@link ServiceGraph}.
+ *
+ * This is mostly used to convert information about
+ * a service into an easy-to-understand string.
+ *
+ * All pieces of information are delimited by a
+ * separator string. This class includes a default,
+ * but you can overwrite the separator using
+ * {@link PrintableServiceVertex}.
+ *
  * @author tkral
  */
 @AutoValue
 public abstract class ServiceGraphVertex<T> {
+
+    private final static String DEFAULT_SEPARATOR = " ";
 
     public static <T2> ServiceGraphVertex<T2> newVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
         return new AutoValue_ServiceGraphVertex(guiceKey, serviceInstance, Optional.empty());
@@ -58,12 +69,16 @@ public abstract class ServiceGraphVertex<T> {
 
     @Override
     public String toString() {
+        return toString(DEFAULT_SEPARATOR);
+    }
+
+    String toString(final String separator) {
         final Class<? extends Annotation> serviceAnnotationType = getGuiceKey().getAnnotationType();
 
         final StringBuilder sb = new StringBuilder();
         if (serviceAnnotationType != null) {
             sb.append(annotationTypeName(serviceAnnotationType, Optional.ofNullable(getGuiceKey().getAnnotation())))
-                .append(String.format("%n"));
+                .append(separator);
         }
 
         if (canPrintConstant(getServiceInstance())) {
@@ -73,7 +88,7 @@ public abstract class ServiceGraphVertex<T> {
         }
 
         if (getProviderSource().isPresent()) {
-            sb.append(String.format("%n")).append("[provider : ");
+            sb.append(separator).append("[Provider:");
             sb.append(typeLiteralName(getProviderSource().get().getGuiceKey().getTypeLiteral()));
             sb.append("]");
         }
