@@ -16,6 +16,6 @@ class SampleDropwizardBootstrapModule implements BootstrapModule {
     @Override
     public void configure(final BootstrapBinder bootstrapBinder) {
         bootstrapBinder.bind(String.class).annotatedWith(Names.named("BootstrapModule"))
-                .toInstance(this.getClass().getName());
+                .toInstance(this.getClass().getSimpleName());
     }
 }

@@ -73,9 +73,9 @@ public class SampleGenericWorkerAppFTest {
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "sample:net.spals.appbuilder.app.core.sample.SampleCoreAutoBoundModule"},
-                {"BootstrapModule", "net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule"},
-                {"GuiceModule", "net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule"},
+                {"AutoBoundModule", "sample:SampleCoreAutoBoundModule"},
+                {"BootstrapModule", "SampleCoreBootstrapModule"},
+                {"GuiceModule", "SampleCoreGuiceModule"},
         };
     }
 

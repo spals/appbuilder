@@ -11,6 +11,7 @@ import com.google.inject.name.Names
   */
 private[sample] class SampleFinatraGuiceModule extends AbstractModule {
   override def configure(): Unit = {
-    binder.bind(classOf[String]).annotatedWith(Names.named("GuiceModule")).toInstance(this.getClass.getName)
+    binder.bind(classOf[String]).annotatedWith(Names.named("GuiceModule"))
+      .toInstance(this.getClass.getSimpleName)
   }
 }
