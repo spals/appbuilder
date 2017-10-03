@@ -4,11 +4,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
-import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import org.inferred.freebuilder.FreeBuilder;
@@ -22,6 +20,7 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.util.Optional;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.annotatedWith;
@@ -101,6 +100,11 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         @Override
         public String getServiceInstance() {
             return "WEBSERVER";
+        }
+
+        @Override
+        public Optional<ServiceGraphVertex<?>> getProviderSource() {
+            return Optional.empty();
         }
 
         @Override

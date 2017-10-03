@@ -7,6 +7,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.inject.Key;
+import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 
 import java.lang.annotation.Annotation;
@@ -26,11 +27,18 @@ import java.util.stream.Collectors;
 public abstract class ServiceGraphVertex<T> {
 
     public static <T2> ServiceGraphVertex<T2> newVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
-        return new AutoValue_ServiceGraphVertex(guiceKey, serviceInstance);
+        return new AutoValue_ServiceGraphVertex(guiceKey, serviceInstance, Optional.empty());
+    }
+
+    public static <T2> ServiceGraphVertex<T2> vertexWithProvider(final ServiceGraphVertex<T2> vertex,
+                                                                 final ServiceGraphVertex<?> providerSource) {
+        return new AutoValue_ServiceGraphVertex(vertex.getGuiceKey(), vertex.getServiceInstance(),
+            Optional.ofNullable(providerSource));
     }
 
     public abstract Key<T> getGuiceKey();
     public abstract T getServiceInstance();
+    public abstract Optional<ServiceGraphVertex<?>> getProviderSource();
 
     @Override
     public boolean equals(final Object obj) {
@@ -38,12 +46,14 @@ public abstract class ServiceGraphVertex<T> {
             return false;
         }
         final ServiceGraphVertex that = (ServiceGraphVertex) obj;
-        return Objects.equal(getGuiceKey(), that.getGuiceKey()) && Objects.equal(getServiceInstance(), that.getServiceInstance());
+        return Objects.equal(getGuiceKey(), that.getGuiceKey()) &&
+            Objects.equal(getServiceInstance(), that.getServiceInstance()) &&
+            Objects.equal(getProviderSource(), that.getProviderSource());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getGuiceKey(), getServiceInstance());
+        return Objects.hashCode(getGuiceKey(), getServiceInstance(), getProviderSource());
     }
 
     @Override
@@ -60,6 +70,12 @@ public abstract class ServiceGraphVertex<T> {
             sb.append("\"" + String.valueOf(getServiceInstance()) + "\"");
         } else {
             sb.append(typeLiteralName(getGuiceKey().getTypeLiteral()));
+        }
+
+        if (getProviderSource().isPresent()) {
+            sb.append(String.format("%n")).append("[provider : ");
+            sb.append(typeLiteralName(getProviderSource().get().getGuiceKey().getTypeLiteral()));
+            sb.append("]");
         }
         return sb.toString();
     }
