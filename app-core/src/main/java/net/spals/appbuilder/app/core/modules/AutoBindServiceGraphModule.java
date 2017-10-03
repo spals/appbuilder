@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.matcher.Matcher;
-import com.google.inject.matcher.Matchers;
 import com.google.inject.multibindings.MapBinderBinding;
 import com.google.inject.multibindings.MultibinderBinding;
 import com.google.inject.multibindings.MultibindingsTargetVisitor;
@@ -13,7 +12,6 @@ import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.DefaultBindingTargetVisitor;
 import com.google.inject.spi.ProvisionListener;
 import net.spals.appbuilder.config.matcher.BindingMatchers;
-import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
@@ -25,10 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.google.inject.matcher.Matchers.only;
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
-import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.typeLiteralThat;
 
 /**
  * @author tkral
@@ -53,9 +49,12 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
     @Override
     public void configure() {
         // 1. Add a listener for all service provisioning
-        final ServiceGraphListener serviceGraphListener =
-            new ServiceGraphListener(getServiceGraph(), getServiceScan());
-        binder().bindListener(BindingMatchers.any(), serviceGraphListener);
+        //    (assuming that we actually want to show a graph).
+        if (getGraphFormat() != ServiceGraphFormat.NONE) {
+            final ServiceGraphListener serviceGraphListener =
+                new ServiceGraphListener(getServiceGraph(), getServiceScan());
+            binder().bindListener(BindingMatchers.any(), serviceGraphListener);
+        }
 
         // 2. Bind the serviceGraphWriter instance
         final ServiceGraphWriter serviceGraphWriter =

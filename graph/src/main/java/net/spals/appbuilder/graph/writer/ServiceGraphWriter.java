@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @author tkral
  */
 public class ServiceGraphWriter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoOpServiceGraphWriterPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceGraphWriter.class);
 
     private final String applicationName;
     private final Matcher<TypeLiteral<?>> serviceScanMatcher;
