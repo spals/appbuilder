@@ -62,7 +62,14 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     val provisionedThroughput = new ProvisionedThroughput().withReadCapacityUnits(1L).withWriteCapacityUnits(1L)
     createTableRequest.withProvisionedThroughput(provisionedThroughput)
 
-    TableUtils.createTableIfNotExists(dynamoDBClient, createTableRequest)
+    try {
+      TableUtils.createTableIfNotExists(dynamoDBClient, createTableRequest)
+      // If we fall through the create-if-not-exists without error
+      // then the table exists so we'll return true
+      true
+    } catch {
+      case _: RuntimeException => false
+    }
   }
 
   override def dropTable(tableName: String): Boolean = {

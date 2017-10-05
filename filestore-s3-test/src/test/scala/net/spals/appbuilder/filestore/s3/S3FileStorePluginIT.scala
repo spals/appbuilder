@@ -90,7 +90,9 @@ class S3FileStorePluginIT {
 
     assertThat(fileMetadata.getURI, hasToString[URI](s"${s3ClientProvider.endpoint}/s3filestorepluginit-filestore/S3FileStorePluginIT/testPutFile.txt"))
     assertThat(fileMetadata.getSecurityLevel, is(FileSecurityLevel.PUBLIC))
+    assertThat(fileMetadata.getSecurityLevel.isPublic, is(true))
     assertThat(fileMetadata.getStoreLocation, is(FileStoreLocation.REMOTE))
+    assertThat(fileMetadata.getStoreLocation.isRemote, is(true))
     assertThat(s3Tracer.finishedSpans(), contains[MockSpan](s3Span(s3Endpoint, "PUT")))
   }
 
