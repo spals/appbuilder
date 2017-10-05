@@ -56,7 +56,7 @@ public class BlockingQueueMessageIT {
 
     private ExecutorServiceFactory executorServiceFactory() {
         final ExecutorServiceFactory executorServiceFactory = mock(ExecutorServiceFactory.class);
-        when(executorServiceFactory.createFixedThreadPool(anyInt(), any()))
+        when(executorServiceFactory.createFixedThreadPool(anyInt(), any(Class.class)))
                 .thenReturn(Executors.newSingleThreadExecutor());
 
         return executorServiceFactory;

@@ -3,7 +3,7 @@ package net.spals.appbuilder.mapstore.cassandra
 import java.io.Closeable
 import java.util.{Date, Optional, UUID}
 import javax.annotation.PreDestroy
-import javax.validation.constraints.{Min, NotNull}
+import javax.validation.constraints.Min
 
 import com.datastax.driver.core._
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -73,7 +73,11 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
       .foreach(schemaBuilder.addClusteringColumn(_, loadDataType(tableKey.getRangeFieldType.get())))
     schemaBuilder.addColumn("payload", DataType.map(DataType.varchar(), DataType.varchar()))
 
-    session.execute(schemaBuilder.toString).wasApplied()
+    try {
+      session.execute(schemaBuilder.toString).wasApplied()
+    } catch {
+      case _: RuntimeException => false
+    }
   }
 
   override def dropTable(tableName: String): Boolean = {
