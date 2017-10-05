@@ -29,7 +29,11 @@ public interface MapStore {
     /**
      * Creates a table with the given key.
      *
-     * @return true iff the creation was successful
+     * Note that this operation is idempotent
+     * so a true response means that the table
+     * exists after execution.
+     *
+     * @return true iff the table exists after execution
      */
     boolean createTable(String tableName, MapStoreTableKey tableKey);
 

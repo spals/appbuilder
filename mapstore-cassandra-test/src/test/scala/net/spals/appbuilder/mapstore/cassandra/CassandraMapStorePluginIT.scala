@@ -66,6 +66,10 @@ class CassandraMapStorePluginIT {
     mapStorePlugin.close()
   }
 
+  @Test def testCreateTableIdempotent() {
+    assertThat(mapStorePlugin.createTable(hashTableName, hashTableKey), is(true))
+  }
+
   @DataProvider def emptyGetProvider(): Array[Array[AnyRef]] = {
     Array(
       // Case: Hash-only key
