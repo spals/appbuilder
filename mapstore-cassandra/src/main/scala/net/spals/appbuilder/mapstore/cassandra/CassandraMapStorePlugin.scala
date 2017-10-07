@@ -13,6 +13,7 @@ import com.netflix.governator.annotations
 import net.spals.appbuilder.annotations.config.ApplicationName
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.mapstore.core.MapStorePlugin
+import net.spals.appbuilder.mapstore.core.MapStorePlugin.stripKey
 import net.spals.appbuilder.mapstore.core.model.{MapQueryOptions, MapStoreKey, MapStoreTableKey}
 
 import scala.collection.JavaConverters._
