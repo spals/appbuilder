@@ -37,6 +37,18 @@ import static org.hamcrest.Matchers.*;
  */
 public class MapDBMapStorePluginTest {
 
+    @Test
+    public void testEmptyDeleteItem() {
+        final MapStoreTableKey tableKey = new MapStoreTableKey.Builder().setHash("myHashField", String.class).build();
+
+        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
+        storePlugin.createTable("myTable", tableKey);
+
+        final MapStoreKey key = new MapStoreKey.Builder()
+            .setHash("myHashField", "myHashValue").build();
+        storePlugin.deleteItem("myTable", key);
+    }
+
     @DataProvider
     Object[][] emptyGetProvider() {
         return new Object[][] {
@@ -67,6 +79,15 @@ public class MapDBMapStorePluginTest {
         storePlugin.createTable("myTable", tableKey);
 
         assertThat(storePlugin.getItems("myTable", storeKey, defaultOptions()), empty());
+    }
+
+    @Test(dataProvider = "emptyGetProvider")
+    public void testEmptyGetAllItems(final MapStoreTableKey tableKey,
+                                     final MapStoreKey storeKey) throws IOException {
+        final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
+        storePlugin.createTable("myTable", tableKey);
+
+        assertThat(storePlugin.getAllItems("myTable"), empty());
     }
 
     @DataProvider
