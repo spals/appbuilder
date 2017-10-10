@@ -11,12 +11,12 @@ import java.util.function.Predicate;
  */
 public interface MapStorePlugin extends MapStore {
 
-    default Predicate<Map.Entry> isNullOrEmptyEntry() {
+    static Predicate<Map.Entry> isNullOrEmptyEntry() {
         return entry -> Objects.isNull(entry.getValue())
                 || "".equals(String.valueOf(entry.getValue()));
     }
 
-    default void stripKey(final MapStoreKey key, final Map<String, Object> payload) {
+    static void stripKey(final MapStoreKey key, final Map<String, Object> payload) {
         // Strip out the key values from the payload (if they exist)
         payload.remove(key.getHashField());
         key.getRangeField().ifPresent(rangeField -> payload.remove(rangeField));

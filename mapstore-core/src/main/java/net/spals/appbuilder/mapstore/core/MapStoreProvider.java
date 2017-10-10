@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static net.spals.appbuilder.mapstore.core.MapStorePlugin.isNullOrEmptyEntry;
 
 /**
  * @author tkral
@@ -147,7 +148,7 @@ class MapStoreProvider implements Provider<MapStore> {
         void checkPutItem(final Map<String, Object> payload) {
             // Null or empty values have special semantics in updateItem so we'll disallow them here.
             final Set<String> nullValueKeys = payload.entrySet().stream()
-                    .filter(pluginDelegate.isNullOrEmptyEntry())
+                    .filter(isNullOrEmptyEntry())
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toSet());
             checkArgument(nullValueKeys.isEmpty(), "The following keys have null or empty values: %s", nullValueKeys);
