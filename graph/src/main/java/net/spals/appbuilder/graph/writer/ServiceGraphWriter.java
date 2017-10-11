@@ -162,7 +162,7 @@ public class ServiceGraphWriter {
         }
 
         @Override
-        public String toString() {
+        protected String toString(final String separator) {
             return "APP[" + applicationName + "]";
         }
     }

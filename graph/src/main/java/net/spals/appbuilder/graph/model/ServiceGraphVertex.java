@@ -72,7 +72,7 @@ public abstract class ServiceGraphVertex<T> {
         return toString(DEFAULT_SEPARATOR);
     }
 
-    String toString(final String separator) {
+    protected String toString(final String separator) {
         final Class<? extends Annotation> serviceAnnotationType = getGuiceKey().getAnnotationType();
 
         final StringBuilder sb = new StringBuilder();

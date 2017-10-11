@@ -108,7 +108,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         }
 
         @Override
-        public String toString() {
+        protected String toString(final String separator) {
             return getServiceInstance();
         }
     }
