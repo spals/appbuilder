@@ -25,6 +25,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.spals.appbuilder.mapstore.core.MapStorePlugin.isNullOrEmptyEntry;
+
 /**
  * @author tkral
  */

@@ -13,6 +13,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.inject.Inject
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.mapstore.core.MapStorePlugin
+import net.spals.appbuilder.mapstore.core.MapStorePlugin.stripKey
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.{Extended, Standard}
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHolder
 import net.spals.appbuilder.mapstore.core.model.{MapQueryOptions, MapStoreKey, MapStoreTableKey}

@@ -1,10 +1,12 @@
 package net.spals.appbuilder.mapstore.core;
 
+import com.google.common.collect.ImmutableMap;
 import net.spals.appbuilder.mapstore.core.MapStoreProvider.DelegatingMapStore;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
+import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -32,6 +34,30 @@ import static org.mockito.Mockito.*;
  * @author tkral
  */
 public class DelegatingMapStoreTest {
+
+    @Test
+    public void testCheckPutItem() {
+        final DelegatingMapStore delegatingMapStore = new DelegatingMapStore(mock(MapStorePlugin.class));
+
+        catchException(() -> delegatingMapStore.checkPutItem(Collections.singletonMap("key", "value")));
+        assertThat(caughtException(), is(nullValue()));
+    }
+
+    @DataProvider
+    Object[][] checkPutItemIllegalProvider() {
+        return new Object[][] {
+            // Case: Null value
+            {Collections.singletonMap("key", null)},
+            // Case: Empty string value
+            {Collections.singletonMap("key", "")},
+        };
+    }
+
+    @Test(dataProvider = "checkPutItemIllegalProvider")
+    public void testCheckPutItemIllegal(final Map<String, Object> payload) {
+        final DelegatingMapStore delegatingMapStore = new DelegatingMapStore(mock(MapStorePlugin.class));
+        verifyException(() -> delegatingMapStore.checkPutItem(payload), IllegalArgumentException.class);
+    }
 
     @DataProvider
     Object[][] checkSingleItemKeyProvider() {
@@ -80,6 +106,55 @@ public class DelegatingMapStoreTest {
     public void testCheckSingleItemKeyIllegal(final MapStoreKey key) {
         final DelegatingMapStore delegatingMapStore = new DelegatingMapStore(mock(MapStorePlugin.class));
         verifyException(() -> delegatingMapStore.checkSingleItemKey(key), IllegalArgumentException.class);
+    }
+
+    @DataProvider
+    Object[][] checkWriteItemProvider() {
+        return new Object[][] {
+            {new MapStoreKey.Builder()
+                .setHash("myHashField", "myHashValue").build(),
+                Collections.singletonMap("myHashField", "myHashValue")},
+            {new MapStoreKey.Builder()
+                .setHash("myHashField", "myHashValue")
+                .setRange("myRangeKey", equalTo("myRangeValue")).build(),
+                ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "myRangeValue")},
+        };
+    }
+
+    @Test(dataProvider = "checkWriteItemProvider")
+    public void testCheckWriteItem(final MapStoreKey key, final Map<String, Object> payload) {
+        final DelegatingMapStore delegatingMapStore = new DelegatingMapStore(mock(MapStorePlugin.class));
+
+        catchException(() -> delegatingMapStore.checkWriteItem(key, payload));
+        assertThat(caughtException(), is(nullValue()));
+    }
+
+    @DataProvider
+    Object[][] checkWriteItemIllegalProvider() {
+        return new Object[][] {
+            // Case: Empty payload
+            {new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build(),
+                Collections.emptyMap()},
+            // Case: Mismatched hash field in key
+            {new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build(),
+                Collections.singletonMap("myHashField", "value")},
+            // Case: Mismatched range field in key
+            {new MapStoreKey.Builder()
+                .setHash("myHashField", "myHashValue")
+                .setRange("myRangeField", equalTo("myRangeValue")).build(),
+                ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "value")},
+            // Case: Illegal map range key
+            {new MapStoreKey.Builder()
+                .setHash("myHashField", "myHashValue")
+                .setRange("myRangeField", greaterThan("myRangeValue")).build(),
+                ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "myRangeValue")},
+        };
+    }
+
+    @Test(dataProvider = "checkWriteItemIllegalProvider")
+    public void testCheckWriteItemIllegal(final MapStoreKey key, final Map<String, Object> payload) {
+        final DelegatingMapStore delegatingMapStore = new DelegatingMapStore(mock(MapStorePlugin.class));
+        verifyException(() -> delegatingMapStore.checkWriteItem(key, payload), IllegalArgumentException.class);
     }
 
     @Test
@@ -242,5 +317,53 @@ public class DelegatingMapStoreTest {
         verify(pluginDelegate).getItems(same(tableName), eq(expectedMaxItemKey), eq(expectedQueryOptions));
 
         assertThat(result, is(expectedResult));
+    }
+
+    @Test
+    public void testPutItem() {
+        final MapStorePlugin pluginDelegate = mock(MapStorePlugin.class);
+        final MapStore delegatingMapStore = new DelegatingMapStore(pluginDelegate);
+
+        final MapStoreKey key = new MapStoreKey.Builder()
+            .setHash("myHashField", "myHashValue")
+            .setRange("myRangeField", equalTo("myRangeValue"))
+            .build();
+        final Map<String, Object> payload = ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "myRangeValue");
+        delegatingMapStore.putItem("myTable", key, payload);
+
+        verify(pluginDelegate).putItem(eq("myTable"), same(key), same(payload));
+    }
+
+    @Test
+    public void testUpdateItemNoItemPresent() {
+        final MapStorePlugin pluginDelegate = mock(MapStorePlugin.class);
+        when(pluginDelegate.getItem(anyString(), any(MapStoreKey.class))).thenReturn(Optional.empty());
+        final MapStore delegatingMapStore = new DelegatingMapStore(pluginDelegate);
+
+        final MapStoreKey key = new MapStoreKey.Builder()
+            .setHash("myHashField", "myHashValue")
+            .setRange("myRangeField", equalTo("myRangeValue"))
+            .build();
+        final Map<String, Object> payload = ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "myRangeValue");
+        delegatingMapStore.updateItem("myTable", key, payload);
+        // When no item is present, then updateItem turns into putItem
+        verify(pluginDelegate).putItem(eq("myTable"), same(key), same(payload));
+    }
+
+    @Test
+    public void testUpdateItemItemPresent() {
+        final MapStorePlugin pluginDelegate = mock(MapStorePlugin.class);
+        when(pluginDelegate.getItem(anyString(), any(MapStoreKey.class)))
+            .thenReturn(Optional.of(Collections.singletonMap("key", "value")));
+        final MapStore delegatingMapStore = new DelegatingMapStore(pluginDelegate);
+
+        final MapStoreKey key = new MapStoreKey.Builder()
+            .setHash("myHashField", "myHashValue")
+            .setRange("myRangeField", equalTo("myRangeValue"))
+            .build();
+        final Map<String, Object> payload = ImmutableMap.of("myHashField", "myHashValue", "myRangeField", "myRangeValue");
+        delegatingMapStore.updateItem("myTable", key, payload);
+        // When item is present, then updateItem runs updateItem
+        verify(pluginDelegate).updateItem(eq("myTable"), same(key), same(payload));
     }
 }
