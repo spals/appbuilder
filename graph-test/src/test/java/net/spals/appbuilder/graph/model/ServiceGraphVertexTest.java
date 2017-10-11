@@ -4,14 +4,18 @@ import com.google.common.base.CharMatcher;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import net.spals.appbuilder.annotations.config.ApplicationName;
 import org.hamcrest.Matcher;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.lang.reflect.Type;
+import java.nio.file.Paths;
 import java.util.*;
 
+import static net.spals.appbuilder.graph.model.ServiceGraphVertex.newVertex;
+import static net.spals.appbuilder.graph.model.ServiceGraphVertex.vertexWithProvider;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -23,26 +27,48 @@ import static org.hamcrest.Matchers.*;
 public class ServiceGraphVertexTest {
 
     @DataProvider
+    Object[][] canPrintConstantProvider() {
+        return new Object[][] {
+            // Case: Small string
+            {"1", true},
+            // Case: String at limit
+            {String.join("", Collections.nCopies(63, "1")), true},
+            // Case: String is too long
+            {String.join("", Collections.nCopies(64, "1")), false},
+            // Case: Non-constant
+            {new ServiceGraphVertexTest(), false},
+        };
+    }
+
+    @Test(dataProvider = "canPrintConstantProvider")
+    public <T> void testCanPrintConstant(final T serviceInstance, final boolean expectedResult) {
+        final Key<T> key = Key.get((Class<T>) serviceInstance.getClass());
+        final ServiceGraphVertex vertex = newVertex(key, serviceInstance);
+
+        assertThat(vertex.canPrintConstant(serviceInstance), is(expectedResult));
+    }
+
+    @DataProvider
     Object[][] equalsProvider() {
         return new Object[][] {
             // Case: Non-Vertex objects
-            {ServiceGraphVertex.newVertex(Key.get(String.class), ""), null, false},
-            {ServiceGraphVertex.newVertex(Key.get(String.class), ""), new Object(), false},
+            {newVertex(Key.get(String.class), ""), null, false},
+            {newVertex(Key.get(String.class), ""), new Object(), false},
             // Case: Same key types, same instances
-            {ServiceGraphVertex.newVertex(Key.get(String.class), ""),
-                ServiceGraphVertex.newVertex(Key.get(String.class), ""), true},
+            {newVertex(Key.get(String.class), ""),
+                newVertex(Key.get(String.class), ""), true},
             // Case: Different instances
-            {ServiceGraphVertex.newVertex(Key.get(String.class), ""),
-                ServiceGraphVertex.newVertex(Key.get(String.class), "0"), false},
+            {newVertex(Key.get(String.class), ""),
+                newVertex(Key.get(String.class), "0"), false},
             // Case: Different key types
-            {ServiceGraphVertex.newVertex(Key.get(String.class), ""),
-                ServiceGraphVertex.newVertex(Key.get(Integer.class), 0), false},
+            {newVertex(Key.get(String.class), ""),
+                newVertex(Key.get(Integer.class), 0), false},
             // Case: Mismatched annotations
-            {ServiceGraphVertex.newVertex(Key.get(String.class, ApplicationName.class), ""),
-                ServiceGraphVertex.newVertex(Key.get(String.class), ""), false},
+            {newVertex(Key.get(String.class, ApplicationName.class), ""),
+                newVertex(Key.get(String.class), ""), false},
             // Case: Same key types, same annotations, same instances
-            {ServiceGraphVertex.newVertex(Key.get(String.class, ApplicationName.class), ""),
-                ServiceGraphVertex.newVertex(Key.get(String.class, ApplicationName.class), ""), true},
+            {newVertex(Key.get(String.class, ApplicationName.class), ""),
+                newVertex(Key.get(String.class, ApplicationName.class), ""), true},
         };
     }
 
@@ -62,31 +88,37 @@ public class ServiceGraphVertexTest {
     @Test
     public void testInHashSet() {
         final HashSet<ServiceGraphVertex> vertexSet = new HashSet<>();
-        vertexSet.add(ServiceGraphVertex.newVertex(Key.get(String.class), ""));
-        vertexSet.add(ServiceGraphVertex.newVertex(Key.get(String.class), ""));
+        vertexSet.add(newVertex(Key.get(String.class), ""));
+        vertexSet.add(newVertex(Key.get(String.class), ""));
 
         assertThat(vertexSet, hasSize(1));
     }
 
     @DataProvider
-    Object[][] simpleTypeNameProvider() {
+    Object[][] isConstantProvider() {
         return new Object[][] {
-            {String.class, "", "String"},
-            {String[].class, new String[0], "String[]"},
-            {ServiceGraphVertexTest.class, new ServiceGraphVertexTest(), "ServiceGraphVertexTest"},
-            {ServiceGraphVertexTest[].class, new ServiceGraphVertexTest[0], "ServiceGraphVertexTest[]"},
-            {CharMatcher.class, CharMatcher.any(), "com.google.common.base.CharMatcher"},
+            // Case: Strings are constants
+            {"123", true},
+            //Case: Paths are constants
+            {Paths.get("path"), true},
+            // Case: Booleans are constants
+            {Boolean.valueOf(false), true},
+            // Case: Numbers are constants
+            {Double.valueOf(0.0d), true},
+            {Integer.valueOf(0), true},
+            {Float.valueOf(0.0f), true},
+            {Long.valueOf(0L), true},
+            // Case: Objects are not constants
+            {new ServiceGraphVertexTest(), false},
         };
     }
 
-    @Test(dataProvider = "simpleTypeNameProvider")
-    public void testSimpleTypeName(final Class<? extends Object> simpleType,
-                                   final Object serviceInstance,
-                                   final String expectedName) {
-        final TypeLiteral<? extends Object> typeLiteral = TypeLiteral.get(simpleType);
-        final Key<Object> key = (Key<Object>) Key.get(typeLiteral);
-        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(key, serviceInstance);
-        assertThat(vertex.simpleTypeName(simpleType), is(expectedName));
+    @Test(dataProvider = "isConstantProvider")
+    public <T> void testIsConstant(final T serviceInstance, final boolean expectedResult) {
+        final Key<T> key = Key.get((Class<T>) serviceInstance.getClass());
+        final ServiceGraphVertex vertex = newVertex(key, serviceInstance);
+
+        assertThat(vertex.isConstant(serviceInstance), is(expectedResult));
     }
 
     @DataProvider
@@ -122,8 +154,62 @@ public class ServiceGraphVertexTest {
     public void testGenericTypeName(final TypeLiteral<Object> typeLiteral,
                                     final Object serviceInstance,
                                     final String expectedName) {
-        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(typeLiteral), serviceInstance);
+        final ServiceGraphVertex vertex = newVertex(Key.get(typeLiteral), serviceInstance);
         assertThat(vertex.genericTypeName(typeLiteral), is(expectedName));
+    }
+
+    @DataProvider
+    Object[][] simpleTypeNameProvider() {
+        return new Object[][] {
+            {String.class, "", "String"},
+            {String[].class, new String[0], "String[]"},
+            {ServiceGraphVertexTest.class, new ServiceGraphVertexTest(), "ServiceGraphVertexTest"},
+            {ServiceGraphVertexTest[].class, new ServiceGraphVertexTest[0], "ServiceGraphVertexTest[]"},
+            {CharMatcher.class, CharMatcher.any(), "com.google.common.base.CharMatcher"},
+        };
+    }
+
+    @Test(dataProvider = "simpleTypeNameProvider")
+    public void testSimpleTypeName(final Class<? extends Object> simpleType,
+                                   final Object serviceInstance,
+                                   final String expectedName) {
+        final TypeLiteral<? extends Object> typeLiteral = TypeLiteral.get(simpleType);
+        final Key<Object> key = (Key<Object>) Key.get(typeLiteral);
+        final ServiceGraphVertex vertex = newVertex(key, serviceInstance);
+        assertThat(vertex.simpleTypeName(simpleType), is(expectedName));
+    }
+
+    @DataProvider
+    Object[][] toStringProvider() {
+        return new Object[][] {
+            // Case: Constant
+            {newVertex(Key.get(String.class), "1"),
+                "\"1\""},
+            // Case: Constant with annotation
+            {newVertex(Key.get(String.class, Names.named("constant")), "1"),
+                "@Named(constant) \"1\""},
+            // Case: Service
+            {newVertex(Key.get(ServiceGraphVertexTest.class), new ServiceGraphVertexTest()),
+                "ServiceGraphVertexTest"},
+            // Case: Service with annotation
+            {newVertex(Key.get(ServiceGraphVertexTest.class, Names.named("service")),
+                new ServiceGraphVertexTest()),
+                "@Named(service) ServiceGraphVertexTest"},
+            // Case: Service with provider
+            {vertexWithProvider(newVertex(Key.get(ServiceGraphVertexTest.class), new ServiceGraphVertexTest()),
+                newVertex(Key.get(Provider.class), new Provider<ServiceGraphVertexTest>() {
+                    @Override
+                    public ServiceGraphVertexTest get() {
+                        return new ServiceGraphVertexTest();
+                    }
+                })),
+                "ServiceGraphVertexTest [Provider:Provider]"},
+        };
+    }
+
+    @Test(dataProvider = "toStringProvider")
+    public void testToString(final ServiceGraphVertex<?> vertex, final String expectedResult) {
+        assertThat(vertex.toString(), is(expectedResult));
     }
 
     @DataProvider
@@ -140,7 +226,7 @@ public class ServiceGraphVertexTest {
     public void testTypeLiteralName(final TypeLiteral<Object> typeLiteral,
                                     final Object serviceInstance,
                                     final String expectedName) {
-        final ServiceGraphVertex vertex = ServiceGraphVertex.newVertex(Key.get(typeLiteral), serviceInstance);
+        final ServiceGraphVertex vertex = newVertex(Key.get(typeLiteral), serviceInstance);
         assertThat(vertex.typeLiteralName(typeLiteral), is(expectedName));
     }
 }

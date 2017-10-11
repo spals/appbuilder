@@ -146,6 +146,8 @@ public abstract class ServiceGraphVertex<T> {
     @VisibleForTesting
     boolean isConstant(final T serviceInstance) {
         return String.class.isAssignableFrom(serviceInstance.getClass())
+            || Number.class.isAssignableFrom(serviceInstance.getClass())
+            || Boolean.class.isAssignableFrom(serviceInstance.getClass())
             || Path.class.isAssignableFrom(serviceInstance.getClass());
     }
 
