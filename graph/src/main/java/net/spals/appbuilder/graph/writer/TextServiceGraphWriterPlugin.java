@@ -1,7 +1,7 @@
 package net.spals.appbuilder.graph.writer;
 
-import net.spals.appbuilder.graph.model.ServiceGraph;
-import net.spals.appbuilder.graph.model.ServiceGraphVertex;
+import net.spals.appbuilder.graph.model.ServiceDAG;
+import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceTree;
 import net.spals.appbuilder.graph.model.ServiceTreeVertex;
 import org.jgrapht.event.TraversalListenerAdapter;
@@ -21,10 +21,10 @@ import static net.spals.appbuilder.graph.writer.ServiceGraphWriter.ApplicationVe
 class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
 
     @Override
-    public String writeServiceGraph(final ServiceGraph serviceGraph) {
+    public String writeServiceGraph(final ServiceDAG serviceDAG) {
         // Always start at the ApplicationVertex
-        final ServiceGraphVertex<?> applicationVertex = serviceGraph.findVertex(APPLICATION_VERTEX_KEY).get();
-        final ServiceTree serviceTree = serviceGraph.toTree(applicationVertex);
+        final ServiceDAGVertex<?> applicationVertex = serviceDAG.findVertex(APPLICATION_VERTEX_KEY).get();
+        final ServiceTree serviceTree = serviceDAG.toTree(applicationVertex);
 
         final StringBuilder textGraph = new StringBuilder().append(String.format("%n"));
         final DepthFirstIterator<ServiceTreeVertex<?>, DefaultEdge> dfs =

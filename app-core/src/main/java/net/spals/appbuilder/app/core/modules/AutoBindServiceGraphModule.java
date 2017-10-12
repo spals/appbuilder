@@ -13,9 +13,9 @@ import com.google.inject.spi.DefaultBindingTargetVisitor;
 import com.google.inject.spi.ProvisionListener;
 import net.spals.appbuilder.config.matcher.BindingMatchers;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.graph.model.ServiceGraph;
+import net.spals.appbuilder.graph.model.ServiceDAG;
+import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
-import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 
@@ -34,13 +34,13 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
     public abstract String getApplicationName();
     public abstract ServiceGraphFormat getGraphFormat();
-    public abstract ServiceGraph getServiceGraph();
+    public abstract ServiceDAG getServiceDAG();
     public abstract ServiceScan getServiceScan();
 
     public static class Builder extends AutoBindServiceGraphModule_Builder {
-        public Builder(final String applicationName, final ServiceGraph serviceGraph) {
+        public Builder(final String applicationName, final ServiceDAG serviceDAG) {
             setApplicationName(applicationName);
-            setServiceGraph(serviceGraph);
+            setServiceDAG(serviceDAG);
             setGraphFormat(ServiceGraphFormat.NONE);
             setServiceScan(ServiceScan.empty());
         }
@@ -51,8 +51,8 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         // 1. Add a listener for all service provisioning
         //    (assuming that we actually want to show a graph).
         if (getGraphFormat() != ServiceGraphFormat.NONE) {
-            final ServiceGraphListener serviceGraphListener =
-                new ServiceGraphListener(getServiceGraph(), getServiceScan());
+            final ServiceDAGListener serviceGraphListener =
+                new ServiceDAGListener(getServiceDAG(), getServiceScan());
             binder().bindListener(BindingMatchers.any(), serviceGraphListener);
         }
 
@@ -63,15 +63,15 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
     }
 
     @VisibleForTesting
-    static class ServiceGraphListener extends DefaultBindingTargetVisitor<Object, Void>
+    static class ServiceDAGListener extends DefaultBindingTargetVisitor<Object, Void>
             implements MultibindingsTargetVisitor<Object, Void>, ProvisionListener {
 
-        private final ServiceGraph serviceGraph;
+        private final ServiceDAG serviceDAG;
         private final Matcher<Binding<?>> serviceScanMatcher;
 
-        ServiceGraphListener(final ServiceGraph serviceGraph,
-                             final ServiceScan serviceScan) {
-            this.serviceGraph = serviceGraph;
+        ServiceDAGListener(final ServiceDAG serviceDAG,
+                           final ServiceScan serviceScan) {
+            this.serviceDAG = serviceDAG;
             this.serviceScanMatcher = serviceScan.asBindingMatcher();
         }
 
@@ -79,9 +79,9 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         public <T> void onProvision(final ProvisionInvocation<T> provision) {
             final T serviceInstance = provision.provision();
 
-            final ServiceGraphVertex<T> vertex =
-                ServiceGraphVertex.newVertex(provision.getBinding().getKey(), serviceInstance);
-            serviceGraph.addVertex(vertex);
+            final ServiceDAGVertex<T> vertex =
+                ServiceDAGVertex.newVertex(provision.getBinding().getKey(), serviceInstance);
+            serviceDAG.addVertex(vertex);
 
             if (serviceScanMatcher.matches(provision.getBinding())) {
                 provision.getBinding().acceptTargetVisitor(this);
@@ -90,29 +90,29 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
         @Override
         public Void visit(final ConstructorBinding<?> binding) {
-            final ServiceGraphVertex<?> bindingVertex = serviceGraph.findVertex(binding.getKey()).get();
-            final Set<ServiceGraphVertex<?>> dependencyVertices =
+            final ServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(binding.getKey()).get();
+            final Set<ServiceDAGVertex<?>> dependencyVertices =
                 binding.getConstructor().getDependencies().stream()
-                    .map(dependency -> serviceGraph.findVertex(dependency.getKey()))
+                    .map(dependency -> serviceDAG.findVertex(dependency.getKey()))
                     .filter(vertexOpt -> vertexOpt.isPresent())
                     .map(vertexOpt -> vertexOpt.get())
                     .collect(Collectors.toSet());
 
-            dependencyVertices.forEach(dependencyVertex -> serviceGraph.addEdge(dependencyVertex, bindingVertex));
+            dependencyVertices.forEach(dependencyVertex -> serviceDAG.addEdge(dependencyVertex, bindingVertex));
             return null;
         }
 
         @Override
         public Void visit(final MultibinderBinding<?> multibinding) {
             if (!multibinding.getElements().isEmpty()) {
-                final ServiceGraphVertex<?> bindingVertex = serviceGraph.findVertex(multibinding.getSetKey()).get();
+                final ServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(multibinding.getSetKey()).get();
                 final Binding<?> bindingElement = multibinding.getElements().get(0);
 
-                final Set<ServiceGraphVertex<?>> dependencyVertices = serviceGraph.findAllVertices(
+                final Set<ServiceDAGVertex<?>> dependencyVertices = serviceDAG.findAllVertices(
                     rawTypeThat(subclassesOf(bindingElement.getKey().getTypeLiteral().getRawType()))
                 );
 
-                dependencyVertices.forEach(dependencyVertex -> serviceGraph.addEdge(dependencyVertex, bindingVertex));
+                dependencyVertices.forEach(dependencyVertex -> serviceDAG.addEdge(dependencyVertex, bindingVertex));
             }
 
             return null;
@@ -121,14 +121,14 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         @Override
         public Void visit(final MapBinderBinding<?> mapbinding) {
             if (!mapbinding.getEntries().isEmpty()) {
-                final ServiceGraphVertex<?> bindingVertex = serviceGraph.findVertex(mapbinding.getMapKey()).get();
+                final ServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(mapbinding.getMapKey()).get();
                 final Map.Entry<?, Binding<?>> bindingEntry = mapbinding.getEntries().get(0);
 
-                final Set<ServiceGraphVertex<?>> dependencyVertices = serviceGraph.findAllVertices(
+                final Set<ServiceDAGVertex<?>> dependencyVertices = serviceDAG.findAllVertices(
                     rawTypeThat(subclassesOf(bindingEntry.getValue().getKey().getTypeLiteral().getRawType()))
                 );
 
-                dependencyVertices.forEach(dependencyVertex -> serviceGraph.addEdge(dependencyVertex, bindingVertex));
+                dependencyVertices.forEach(dependencyVertex -> serviceDAG.addEdge(dependencyVertex, bindingVertex));
             }
 
             return null;

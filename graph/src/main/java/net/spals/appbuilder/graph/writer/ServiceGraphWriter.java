@@ -8,9 +8,9 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.name.Names;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.graph.model.ServiceGraph;
+import net.spals.appbuilder.graph.model.ServiceDAG;
+import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
-import net.spals.appbuilder.graph.model.ServiceGraphVertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,42 +51,42 @@ public class ServiceGraphWriter {
         }
     }
 
-    public void writeServiceGraph(final ServiceGraph serviceGraph) {
-        removeExternalVertices(serviceGraph, serviceScanMatcher);
-        mergeProviderSourceVertices(serviceGraph);
-        addApplicationVertex(serviceGraph);
+    public void writeServiceGraph(final ServiceDAG serviceDAG) {
+        removeExternalVertices(serviceDAG, serviceScanMatcher);
+        mergeProviderSourceVertices(serviceDAG);
+        addApplicationVertex(serviceDAG);
 
-        LOGGER.info(writerPlugin.writeServiceGraph(serviceGraph));
+        LOGGER.info(writerPlugin.writeServiceGraph(serviceDAG));
     }
 
     @VisibleForTesting
-    void addApplicationVertex(final ServiceGraph serviceGraph) {
+    void addApplicationVertex(final ServiceDAG serviceDAG) {
         final ApplicationVertex applicationVertex = new ApplicationVertex(applicationName);
-        serviceGraph.addVertex(applicationVertex);
+        serviceDAG.addVertex(applicationVertex);
 
         // Group all micro-services in the graph under the application vertex
-        serviceGraph.vertexSet().stream()
+        serviceDAG.vertexSet().stream()
             .filter(vertex -> !vertex.equals(applicationVertex))
             // Only group together "top-level" services
-            .filter(vertex -> serviceGraph.outDegreeOf(vertex) == 0)
-            .forEach(vertex -> serviceGraph.addEdge(vertex, applicationVertex));
+            .filter(vertex -> serviceDAG.outDegreeOf(vertex) == 0)
+            .forEach(vertex -> serviceDAG.addEdge(vertex, applicationVertex));
     }
 
     @VisibleForTesting
-    void mergeProviderSourceVertices(final ServiceGraph serviceGraph) {
+    void mergeProviderSourceVertices(final ServiceDAG serviceDAG) {
         // 1. Find all vertices within the service graph which are providers.
-        final Set<ServiceGraphVertex<?>> providerSourceVertices =
-            serviceGraph.findAllVertices(rawTypeThat(subclassesOf(Provider.class)));
+        final Set<ServiceDAGVertex<?>> providerSourceVertices =
+            serviceDAG.findAllVertices(rawTypeThat(subclassesOf(Provider.class)));
 
         // 2. Search the service graph for the vertices which are provided by the provider vertices
-        final Map<ServiceGraphVertex<?>, Optional<ServiceGraphVertex<?>>> providerSourceMap =
+        final Map<ServiceDAGVertex<?>, Optional<ServiceDAGVertex<?>>> providerSourceMap =
             providerSourceVertices.stream().collect(Collectors.toMap(Function.identity(),
                 providerSourceVertex -> {
                     final TypeLiteral<?> providerSourceLiteral = providerSourceVertex.getGuiceKey().getTypeLiteral();
                     try {
                         final Method getMethod = providerSourceLiteral.getRawType().getDeclaredMethod("get");
                         final TypeLiteral<?> providedLiteral = providerSourceLiteral.getReturnType(getMethod);
-                        return serviceGraph.findVertex(Key.get(providedLiteral));
+                        return serviceDAG.findVertex(Key.get(providedLiteral));
                     } catch (Throwable t) {
                         return Optional.empty();
                     }
@@ -95,44 +95,44 @@ public class ServiceGraphWriter {
         // 3. For each provider, provided pair, merge them together within the service graph
         providerSourceMap.entrySet().stream()
             .filter(entry -> entry.getValue().isPresent())
-            .forEach(entry -> mergeProviderSourceVertex(serviceGraph, entry.getKey(), entry.getValue().get()));
+            .forEach(entry -> mergeProviderSourceVertex(serviceDAG, entry.getKey(), entry.getValue().get()));
     }
 
     @VisibleForTesting
-    void mergeProviderSourceVertex(final ServiceGraph serviceGraph,
-                                   final ServiceGraphVertex<?> providerSourceVertex,
-                                   final ServiceGraphVertex<?> providedVertex) {
-        final ServiceGraphVertex<?> mergedVertex = ServiceGraphVertex.vertexWithProvider(providedVertex,
+    void mergeProviderSourceVertex(final ServiceDAG serviceDAG,
+                                   final ServiceDAGVertex<?> providerSourceVertex,
+                                   final ServiceDAGVertex<?> providedVertex) {
+        final ServiceDAGVertex<?> mergedVertex = ServiceDAGVertex.vertexWithProvider(providedVertex,
             providerSourceVertex);
 
-        serviceGraph.addVertex(mergedVertex);
-        serviceGraph.incomingEdgesOf(providerSourceVertex)
-            .forEach(edge -> serviceGraph.addEdge(serviceGraph.getEdgeSource(edge), mergedVertex));
-        serviceGraph.incomingEdgesOf(providedVertex)
-            .forEach(edge -> serviceGraph.addEdge(serviceGraph.getEdgeSource(edge), mergedVertex));
-        serviceGraph.outgoingEdgesOf(providerSourceVertex)
-            .forEach(edge -> serviceGraph.addEdge(mergedVertex, serviceGraph.getEdgeTarget(edge)));
-        serviceGraph.outgoingEdgesOf(providedVertex)
-            .forEach(edge -> serviceGraph.addEdge(mergedVertex, serviceGraph.getEdgeTarget(edge)));
+        serviceDAG.addVertex(mergedVertex);
+        serviceDAG.incomingEdgesOf(providerSourceVertex)
+            .forEach(edge -> serviceDAG.addEdge(serviceDAG.getEdgeSource(edge), mergedVertex));
+        serviceDAG.incomingEdgesOf(providedVertex)
+            .forEach(edge -> serviceDAG.addEdge(serviceDAG.getEdgeSource(edge), mergedVertex));
+        serviceDAG.outgoingEdgesOf(providerSourceVertex)
+            .forEach(edge -> serviceDAG.addEdge(mergedVertex, serviceDAG.getEdgeTarget(edge)));
+        serviceDAG.outgoingEdgesOf(providedVertex)
+            .forEach(edge -> serviceDAG.addEdge(mergedVertex, serviceDAG.getEdgeTarget(edge)));
 
-        serviceGraph.removeAllVertices(ImmutableSet.of(providerSourceVertex, providedVertex));
+        serviceDAG.removeAllVertices(ImmutableSet.of(providerSourceVertex, providedVertex));
     }
 
     @VisibleForTesting
-    void removeExternalVertices(final ServiceGraph serviceGraph,
+    void removeExternalVertices(final ServiceDAG serviceDAG,
                                 final Matcher<TypeLiteral<?>> serviceScanMatcher) {
         // Find and remove external vertices. External vertices are defined
         // as services which were not explicitly included in the service scan
         // which are not connected to the rest of the graph.
-        final Set<ServiceGraphVertex<?>> externalVertices = serviceGraph.vertexSet().stream()
+        final Set<ServiceDAGVertex<?>> externalVertices = serviceDAG.vertexSet().stream()
             .filter(vertex -> !serviceScanMatcher.matches(vertex.getGuiceKey().getTypeLiteral()))
-            .filter(vertex -> serviceGraph.outDegreeOf(vertex) == 0 && serviceGraph.inDegreeOf(vertex) == 0)
+            .filter(vertex -> serviceDAG.outDegreeOf(vertex) == 0 && serviceDAG.inDegreeOf(vertex) == 0)
             .collect(Collectors.toSet());
-        serviceGraph.removeAllVertices(externalVertices);
+        serviceDAG.removeAllVertices(externalVertices);
     }
 
     /**
-     * Special {@link ServiceGraphVertex} instance which
+     * Special {@link ServiceDAGVertex} instance which
      * represents the application itself.
      *
      * All top-level micro-services will have an outgoing
@@ -140,7 +140,7 @@ public class ServiceGraphWriter {
      *
      * @author tkral
      */
-    static class ApplicationVertex extends ServiceGraphVertex<String> {
+    static class ApplicationVertex extends ServiceDAGVertex<String> {
 
         static Key<String> APPLICATION_VERTEX_KEY =
             Key.get(String.class, Names.named(ApplicationVertex.class.getName()));
@@ -162,7 +162,7 @@ public class ServiceGraphWriter {
         }
 
         @Override
-        public Optional<ServiceGraphVertex<?>> getProviderSource() {
+        public Optional<ServiceDAGVertex<?>> getProviderSource() {
             return Optional.empty();
         }
 

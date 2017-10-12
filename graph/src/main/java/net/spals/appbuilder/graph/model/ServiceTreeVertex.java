@@ -9,27 +9,27 @@ import java.util.Optional;
 /**
  * @author tkral
  */
-public class ServiceTreeVertex<T> extends ServiceGraphVertex<T> {
+public class ServiceTreeVertex<T> extends ServiceDAGVertex<T> {
 
-    private final ServiceGraphVertex<T> delegate;
+    private final ServiceDAGVertex<T> delegate;
     private final Optional<ServiceTreeVertex<?>> parent;
 
-    public static <T2> ServiceTreeVertex<T2> newChild(final ServiceGraphVertex<T2> delegate,
+    public static <T2> ServiceTreeVertex<T2> newChild(final ServiceDAGVertex<T2> delegate,
                                                       final ServiceTreeVertex<?> parent) {
         return new ServiceTreeVertex<T2>(delegate, Optional.of(Preconditions.checkNotNull(parent)));
     }
 
-    public static <T2> ServiceTreeVertex<T2> newRoot(final ServiceGraphVertex<T2> delegate) {
+    public static <T2> ServiceTreeVertex<T2> newRoot(final ServiceDAGVertex<T2> delegate) {
         return new ServiceTreeVertex<T2>(delegate, Optional.empty());
     }
 
-    private ServiceTreeVertex(final ServiceGraphVertex<T> delegate,
+    private ServiceTreeVertex(final ServiceDAGVertex<T> delegate,
                               final Optional<ServiceTreeVertex<?>> parent) {
         this.delegate = delegate;
         this.parent = parent;
     }
 
-    public ServiceGraphVertex<?> getDelegate() {
+    public ServiceDAGVertex<?> getDelegate() {
         return delegate;
     }
 
@@ -48,7 +48,7 @@ public class ServiceTreeVertex<T> extends ServiceGraphVertex<T> {
     }
 
     @Override
-    public Optional<ServiceGraphVertex<?>> getProviderSource() {
+    public Optional<ServiceDAGVertex<?>> getProviderSource() {
         return delegate.getProviderSource();
     }
 

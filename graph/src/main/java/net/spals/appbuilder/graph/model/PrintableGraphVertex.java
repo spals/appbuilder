@@ -5,18 +5,18 @@ import com.google.inject.Key;
 import java.util.Optional;
 
 /**
- * A {@link ServiceGraphVertex} wrapper which
+ * A {@link ServiceDAGVertex} wrapper which
  * allows a caller to customize the separator
  * string used in serializing the vertex.
  *
  * @author tkral
  */
-public class PrintableServiceVertex<T> extends ServiceGraphVertex<T> {
+public class PrintableGraphVertex<T> extends ServiceDAGVertex<T> {
 
-    private final ServiceGraphVertex<T> delegate;
+    private final ServiceDAGVertex<T> delegate;
     private final String separator;
 
-    public PrintableServiceVertex(final ServiceGraphVertex<T> delegate, final String separator) {
+    public PrintableGraphVertex(final ServiceDAGVertex<T> delegate, final String separator) {
         this.delegate = delegate;
         this.separator = separator;
     }
@@ -32,7 +32,7 @@ public class PrintableServiceVertex<T> extends ServiceGraphVertex<T> {
     }
 
     @Override
-    public Optional<ServiceGraphVertex<?>> getProviderSource() {
+    public Optional<ServiceDAGVertex<?>> getProviderSource() {
         return delegate.getProviderSource();
     }
 

@@ -23,7 +23,7 @@ public class ServiceTree
 
     private final ServiceTreeVertex<?> root;
 
-    ServiceTree(final ServiceGraphVertex<?> root) {
+    ServiceTree(final ServiceDAGVertex<?> root) {
         this(ServiceTreeVertex.newRoot(root));
     }
 
@@ -35,7 +35,7 @@ public class ServiceTree
         addVertex(root);
     }
 
-    Optional<ServiceTreeVertex<?>> findVertex(final ServiceGraphVertex<?> delegate,
+    Optional<ServiceTreeVertex<?>> findVertex(final ServiceDAGVertex<?> delegate,
                                               final ServiceTreeVertex<?> parent) {
         final ServiceTreeVertex<?> vertex = ServiceTreeVertex.newChild(delegate, parent);
         return vertexSet().stream()

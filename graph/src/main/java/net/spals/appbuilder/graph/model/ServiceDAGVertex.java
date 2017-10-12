@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * A definition of a vertex in the {@link ServiceGraph}.
+ * A definition of a vertex in the {@link ServiceDAG}.
  *
  * This is mostly used to convert information about
  * a service into an easy-to-understand string.
@@ -28,35 +28,35 @@ import java.util.stream.Collectors;
  * All pieces of information are delimited by a
  * separator string. This class includes a default,
  * but you can overwrite the separator using
- * {@link PrintableServiceVertex}.
+ * {@link PrintableGraphVertex}.
  *
  * @author tkral
  */
 @AutoValue
-public abstract class ServiceGraphVertex<T> {
+public abstract class ServiceDAGVertex<T> {
 
     private final static String DEFAULT_SEPARATOR = " ";
 
-    public static <T2> ServiceGraphVertex<T2> newVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
-        return new AutoValue_ServiceGraphVertex(guiceKey, serviceInstance, Optional.empty());
+    public static <T2> ServiceDAGVertex<T2> newVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
+        return new AutoValue_ServiceDAGVertex(guiceKey, serviceInstance, Optional.empty());
     }
 
-    public static <T2> ServiceGraphVertex<T2> vertexWithProvider(final ServiceGraphVertex<T2> vertex,
-                                                                 final ServiceGraphVertex<?> providerSource) {
-        return new AutoValue_ServiceGraphVertex(vertex.getGuiceKey(), vertex.getServiceInstance(),
+    public static <T2> ServiceDAGVertex<T2> vertexWithProvider(final ServiceDAGVertex<T2> vertex,
+                                                               final ServiceDAGVertex<?> providerSource) {
+        return new AutoValue_ServiceDAGVertex(vertex.getGuiceKey(), vertex.getServiceInstance(),
             Optional.ofNullable(providerSource));
     }
 
     public abstract Key<T> getGuiceKey();
     public abstract T getServiceInstance();
-    public abstract Optional<ServiceGraphVertex<?>> getProviderSource();
+    public abstract Optional<ServiceDAGVertex<?>> getProviderSource();
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj == null || !(ServiceGraphVertex.class.isAssignableFrom(obj.getClass()))) {
+        if (obj == null || !(ServiceDAGVertex.class.isAssignableFrom(obj.getClass()))) {
             return false;
         }
-        final ServiceGraphVertex that = (ServiceGraphVertex) obj;
+        final ServiceDAGVertex that = (ServiceDAGVertex) obj;
         return Objects.equal(getGuiceKey(), that.getGuiceKey()) &&
             Objects.equal(getServiceInstance(), that.getServiceInstance()) &&
             Objects.equal(getProviderSource(), that.getProviderSource());

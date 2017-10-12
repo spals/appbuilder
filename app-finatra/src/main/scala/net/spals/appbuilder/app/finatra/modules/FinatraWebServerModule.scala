@@ -9,7 +9,7 @@ import com.twitter.finatra.http.exceptions.ExceptionMapper
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
 import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat
-import net.spals.appbuilder.graph.model.ServiceGraph
+import net.spals.appbuilder.graph.model.ServiceDAG
 
 import scala.collection.mutable.ListBuffer
 
@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
   * @author tkral
   */
 private[finatra] case class FinatraWebServerModule(
-    serviceGraph: ServiceGraph,
+    serviceDAG: ServiceDAG,
     runWebServerAutoBinding: Boolean = true
   ) extends TwitterModule
   with InjectionListener[AnyRef]

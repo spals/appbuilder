@@ -1,11 +1,11 @@
 package net.spals.appbuilder.graph.writer;
 
-import net.spals.appbuilder.graph.model.ServiceGraph;
+import net.spals.appbuilder.graph.model.ServiceDAG;
 
 /**
  * @author tkral
  */
 interface ServiceGraphWriterPlugin {
 
-    String writeServiceGraph(ServiceGraph serviceGraph);
+    String writeServiceGraph(ServiceDAG serviceDAG);
 }

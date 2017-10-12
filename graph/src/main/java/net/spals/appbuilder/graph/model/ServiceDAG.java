@@ -20,40 +20,40 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * An implementation of a {@link org.jgrapht.DirectedGraph}
+ * An implementation of a Directed Acyclic Graph
  * which stores relationships between micro-services.
  *
  * @author tkral
  */
-public class ServiceGraph
-    extends GraphDelegator<ServiceGraphVertex<?>, DefaultEdge>
-    implements DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> {
+public class ServiceDAG
+    extends GraphDelegator<ServiceDAGVertex<?>, DefaultEdge>
+    implements DirectedGraph<ServiceDAGVertex<?>, DefaultEdge> {
 
-    public ServiceGraph() {
+    public ServiceDAG() {
         super(new DirectedAcyclicGraph<>(DefaultEdge.class));
     }
 
-    public Optional<ServiceGraphVertex<?>> findVertex(final Key<?> guiceKey) {
+    public Optional<ServiceDAGVertex<?>> findVertex(final Key<?> guiceKey) {
         return vertexSet().stream()
             .filter(vertex -> guiceKey.equals(vertex.getGuiceKey()))
             .findAny();
     }
 
-    public Set<ServiceGraphVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
+    public Set<ServiceDAGVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
         return vertexSet().stream()
             .filter(vertex -> typeMatcher.matches(vertex.getGuiceKey().getTypeLiteral()))
             .collect(Collectors.toSet());
     }
 
-    public ServiceTree toTree(final ServiceGraphVertex<?> root) {
+    public ServiceTree toTree(final ServiceDAGVertex<?> root) {
         final ServiceTree serviceTree = new ServiceTree(root);
 
         // Reverse the edges of the service graph before we perform our walk.
         // We do this because the service graph is built with the root vertex
         // at the bottom. And this moves it to the top.
-        final DirectedGraph<ServiceGraphVertex<?>,DefaultEdge> reversedGraph =
+        final DirectedGraph<ServiceDAGVertex<?>,DefaultEdge> reversedGraph =
             new EdgeReversedGraph<>(this);
-        final BreadthFirstIterator<ServiceGraphVertex<?>, DefaultEdge> bfs =
+        final BreadthFirstIterator<ServiceDAGVertex<?>, DefaultEdge> bfs =
             new BreadthFirstIterator<>(reversedGraph, root);
 
         // Walk the graph breadth-first and use the tree conversion listener
@@ -76,15 +76,15 @@ public class ServiceGraph
      * @author tkral
      */
     @VisibleForTesting
-    static class ServiceTreeConversionListener extends TraversalListenerAdapter<ServiceGraphVertex<?>, DefaultEdge> {
+    static class ServiceTreeConversionListener extends TraversalListenerAdapter<ServiceDAGVertex<?>, DefaultEdge> {
 
         private final ServiceTree serviceTree;
-        private final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> traversedGraph;
+        private final DirectedGraph<ServiceDAGVertex<?>, DefaultEdge> traversedGraph;
 
         private final Deque<ServiceTreeVertex<?>> visitedVertices = new LinkedList<>();
 
         ServiceTreeConversionListener(final ServiceTree serviceTree,
-                                      final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> traversedGraph) {
+                                      final DirectedGraph<ServiceDAGVertex<?>, DefaultEdge> traversedGraph) {
             this.serviceTree = serviceTree;
             this.traversedGraph = traversedGraph;
 
@@ -93,8 +93,8 @@ public class ServiceGraph
 
         @Override
         public void edgeTraversed(final EdgeTraversalEvent<DefaultEdge> e) {
-            final ServiceGraphVertex<?> edgeSource = traversedGraph.getEdgeSource(e.getEdge());
-            final ServiceGraphVertex<?> edgeTarget = traversedGraph.getEdgeTarget(e.getEdge());
+            final ServiceDAGVertex<?> edgeSource = traversedGraph.getEdgeSource(e.getEdge());
+            final ServiceDAGVertex<?> edgeTarget = traversedGraph.getEdgeTarget(e.getEdge());
 
             while (!visitedVertices.peekFirst().getDelegate().equals(edgeSource)) {
                 visitedVertices.removeFirst();

@@ -9,7 +9,6 @@ import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.filestore.core.FileStore;
-import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.message.core.MessageConsumer;
 import net.spals.appbuilder.message.core.MessageProducer;
@@ -44,7 +43,6 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
     @Override
     public void initialize(final Bootstrap<Configuration> bootstrap) {
         this.webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
-            .enableServiceGraph(ServiceGraphFormat.TEXT)
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.plugins")

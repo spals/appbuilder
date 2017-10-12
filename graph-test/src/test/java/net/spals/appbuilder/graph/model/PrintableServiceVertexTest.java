@@ -7,14 +7,14 @@ import org.mockito.Mockito;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import static net.spals.appbuilder.graph.model.ServiceGraphVertex.newVertex;
-import static net.spals.appbuilder.graph.model.ServiceGraphVertex.vertexWithProvider;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.newVertex;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.vertexWithProvider;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 
 /**
- * Unit tests for {@link PrintableServiceVertex}.
+ * Unit tests for {@link PrintableGraphVertex}.
  *
  * @author tkral
  */
@@ -22,8 +22,8 @@ public class PrintableServiceVertexTest {
 
     @Test
     public void tetGetGuiceKey() {
-        final ServiceGraphVertex vertex = Mockito.mock(ServiceGraphVertex.class);
-        final PrintableServiceVertex printableVertex = new PrintableServiceVertex(vertex, " ");
+        final ServiceDAGVertex vertex = Mockito.mock(ServiceDAGVertex.class);
+        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, " ");
 
         printableVertex.getGuiceKey();
         verify(vertex).getGuiceKey();
@@ -31,8 +31,8 @@ public class PrintableServiceVertexTest {
 
     @Test
     public void tetGetServiceInstance() {
-        final ServiceGraphVertex vertex = Mockito.mock(ServiceGraphVertex.class);
-        final PrintableServiceVertex printableVertex = new PrintableServiceVertex(vertex, " ");
+        final ServiceDAGVertex vertex = Mockito.mock(ServiceDAGVertex.class);
+        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, " ");
 
         printableVertex.getServiceInstance();
         verify(vertex).getServiceInstance();
@@ -40,8 +40,8 @@ public class PrintableServiceVertexTest {
 
     @Test
     public void tetGetProviderSource() {
-        final ServiceGraphVertex vertex = Mockito.mock(ServiceGraphVertex.class);
-        final PrintableServiceVertex printableVertex = new PrintableServiceVertex(vertex, " ");
+        final ServiceDAGVertex vertex = Mockito.mock(ServiceDAGVertex.class);
+        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, " ");
 
         printableVertex.getProviderSource();
         verify(vertex).getProviderSource();
@@ -66,10 +66,10 @@ public class PrintableServiceVertexTest {
     }
 
     @Test(dataProvider = "toStringProvider")
-    public void testToString(final ServiceGraphVertex<?> vertex,
+    public void testToString(final ServiceDAGVertex<?> vertex,
                              final String separator,
                              final String expectedResult) {
-        final PrintableServiceVertex printableVertex = new PrintableServiceVertex(vertex, separator);
+        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, separator);
         assertThat(printableVertex.toString(), is(expectedResult));
     }
 }
