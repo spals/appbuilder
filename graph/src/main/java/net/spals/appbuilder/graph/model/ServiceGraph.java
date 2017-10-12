@@ -5,11 +5,16 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import org.jgrapht.DirectedGraph;
-import org.jgrapht.EdgeFactory;
+import org.jgrapht.event.EdgeTraversalEvent;
+import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.EdgeReversedGraph;
+import org.jgrapht.graph.GraphDelegator;
+import org.jgrapht.traverse.BreadthFirstIterator;
 
-import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,98 +25,12 @@ import java.util.stream.Collectors;
  *
  * @author tkral
  */
-public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> {
-
-    private final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> delegate;
+public class ServiceGraph
+    extends GraphDelegator<ServiceGraphVertex<?>, DefaultEdge>
+    implements DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> {
 
     public ServiceGraph() {
-        this(new DirectedAcyclicGraph<>(DefaultEdge.class));
-    }
-
-    @VisibleForTesting
-    ServiceGraph(DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> delegate) {
-        this.delegate = delegate;
-    }
-
-    @Override
-    public int inDegreeOf(final ServiceGraphVertex<?> vertex) {
-        return delegate.inDegreeOf(vertex);
-    }
-
-    @Override
-    public Set<DefaultEdge> incomingEdgesOf(final ServiceGraphVertex<?> vertex) {
-        return delegate.incomingEdgesOf(vertex);
-    }
-
-    @Override
-    public int outDegreeOf(final ServiceGraphVertex<?> vertex) {
-        return delegate.outDegreeOf(vertex);
-    }
-
-    @Override
-    public Set<DefaultEdge> outgoingEdgesOf(final ServiceGraphVertex<?> vertex) {
-        return delegate.outgoingEdgesOf(vertex);
-    }
-
-    @Override
-    public Set<DefaultEdge> getAllEdges(final ServiceGraphVertex<?> sourceVertex,
-                                        final ServiceGraphVertex<?> targetVertex) {
-        return delegate.getAllEdges(sourceVertex, targetVertex);
-    }
-
-    @Override
-    public DefaultEdge getEdge(final ServiceGraphVertex<?> sourceVertex,
-                               final ServiceGraphVertex<?> targetVertex) {
-        return delegate.getEdge(sourceVertex, targetVertex);
-    }
-
-    @Override
-    public EdgeFactory<ServiceGraphVertex<?>, DefaultEdge> getEdgeFactory() {
-        return delegate.getEdgeFactory();
-    }
-
-    @Override
-    public DefaultEdge addEdge(final ServiceGraphVertex<?> sourceVertex,
-                               final ServiceGraphVertex<?> targetVertex) {
-        return delegate.addEdge(sourceVertex, targetVertex);
-    }
-
-    @Override
-    public boolean addEdge(final ServiceGraphVertex<?> sourceVertex,
-                           final ServiceGraphVertex<?> targetVertex,
-                           final DefaultEdge edge) {
-        return delegate.addEdge(sourceVertex, targetVertex, edge);
-    }
-
-    @Override
-    public boolean addVertex(final ServiceGraphVertex<?> vertex) {
-        return delegate.addVertex(vertex);
-    }
-
-    @Override
-    public boolean containsEdge(final ServiceGraphVertex<?> sourceVertex,
-                                final ServiceGraphVertex<?> targetVertex) {
-        return delegate.containsEdge(sourceVertex, targetVertex);
-    }
-
-    @Override
-    public boolean containsEdge(final DefaultEdge edge) {
-        return delegate.containsEdge(edge);
-    }
-
-    @Override
-    public boolean containsVertex(final ServiceGraphVertex<?> vertex) {
-        return delegate.containsVertex(vertex);
-    }
-
-    @Override
-    public Set<DefaultEdge> edgeSet() {
-        return delegate.edgeSet();
-    }
-
-    @Override
-    public Set<DefaultEdge> edgesOf(final ServiceGraphVertex<?> vertex) {
-        return delegate.edgesOf(vertex);
+        super(new DirectedAcyclicGraph<>(DefaultEdge.class));
     }
 
     public Optional<ServiceGraphVertex<?>> findVertex(final Key<?> guiceKey) {
@@ -126,55 +45,67 @@ public class ServiceGraph implements DirectedGraph<ServiceGraphVertex<?>, Defaul
             .collect(Collectors.toSet());
     }
 
-    @Override
-    public boolean removeAllEdges(final Collection<? extends DefaultEdge> edges) {
-        return delegate.removeAllEdges(edges);
+    public ServiceTree toTree(final ServiceGraphVertex<?> root) {
+        final ServiceTree serviceTree = new ServiceTree(root);
+
+        // Reverse the edges of the service graph before we perform our walk.
+        // We do this because the service graph is built with the root vertex
+        // at the bottom. And this moves it to the top.
+        final DirectedGraph<ServiceGraphVertex<?>,DefaultEdge> reversedGraph =
+            new EdgeReversedGraph<>(this);
+        final BreadthFirstIterator<ServiceGraphVertex<?>, DefaultEdge> bfs =
+            new BreadthFirstIterator<>(reversedGraph, root);
+
+        // Walk the graph breadth-first and use the tree conversion listener
+        // to convert the DAG into a tree
+        final ServiceTreeConversionListener listener = new ServiceTreeConversionListener(serviceTree, reversedGraph);
+        bfs.addTraversalListener(listener);
+        while (bfs.hasNext()) {
+            bfs.next();
+        }
+
+        return serviceTree;
     }
 
-    @Override
-    public Set<DefaultEdge> removeAllEdges(final ServiceGraphVertex<?> sourceVertex,
-                                           final ServiceGraphVertex<?> targetVertex) {
-        return delegate.removeAllEdges(sourceVertex, targetVertex);
-    }
+    /**
+     * A {@link org.jgrapht.event.TraversalListener} which converts a DAG
+     * into a tree.
+     *
+     * Note that this assumes a BFS traversal.
+     *
+     * @author tkral
+     */
+    @VisibleForTesting
+    static class ServiceTreeConversionListener extends TraversalListenerAdapter<ServiceGraphVertex<?>, DefaultEdge> {
 
-    @Override
-    public boolean removeAllVertices(final Collection<? extends ServiceGraphVertex<?>> vertices) {
-        return delegate.removeAllVertices(vertices);
-    }
+        private final ServiceTree serviceTree;
+        private final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> traversedGraph;
 
-    @Override
-    public DefaultEdge removeEdge(final ServiceGraphVertex<?> sourceVertex,
-                                  final ServiceGraphVertex<?> targetVertex) {
-        return delegate.removeEdge(sourceVertex, targetVertex);
-    }
+        private final Deque<ServiceTreeVertex<?>> visitedVertices = new LinkedList<>();
 
-    @Override
-    public boolean removeEdge(final DefaultEdge edge) {
-        return delegate.removeEdge(edge);
-    }
+        ServiceTreeConversionListener(final ServiceTree serviceTree,
+                                      final DirectedGraph<ServiceGraphVertex<?>, DefaultEdge> traversedGraph) {
+            this.serviceTree = serviceTree;
+            this.traversedGraph = traversedGraph;
 
-    @Override
-    public boolean removeVertex(final ServiceGraphVertex<?> vertex) {
-        return delegate.removeVertex(vertex);
-    }
+            visitedVertices.addLast(serviceTree.getRoot());
+        }
 
-    @Override
-    public Set<ServiceGraphVertex<?>> vertexSet() {
-        return delegate.vertexSet();
-    }
+        @Override
+        public void edgeTraversed(final EdgeTraversalEvent<DefaultEdge> e) {
+            final ServiceGraphVertex<?> edgeSource = traversedGraph.getEdgeSource(e.getEdge());
+            final ServiceGraphVertex<?> edgeTarget = traversedGraph.getEdgeTarget(e.getEdge());
 
-    @Override
-    public ServiceGraphVertex<?> getEdgeSource(final DefaultEdge edge) {
-        return delegate.getEdgeSource(edge);
-    }
+            while (!visitedVertices.peekFirst().getDelegate().equals(edgeSource)) {
+                visitedVertices.removeFirst();
+            }
 
-    @Override
-    public ServiceGraphVertex<?> getEdgeTarget(final DefaultEdge edge) {
-        return delegate.getEdgeTarget(edge);
-    }
+            final ServiceTreeVertex<?> edgeParent = visitedVertices.peekFirst();
+            final ServiceTreeVertex<?> edgeChild = ServiceTreeVertex.newChild(edgeTarget, edgeParent);
+            visitedVertices.addLast(edgeChild);
 
-    @Override
-    public double getEdgeWeight(final DefaultEdge edge) {
-        return delegate.getEdgeWeight(edge);
+            serviceTree.addVertex(edgeChild);
+            serviceTree.addEdge(edgeParent, edgeChild);
+        }
     }
 }

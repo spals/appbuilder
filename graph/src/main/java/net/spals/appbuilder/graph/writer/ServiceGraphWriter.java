@@ -6,6 +6,7 @@ import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.name.Names;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
@@ -45,6 +46,7 @@ public class ServiceGraphWriter {
     ServiceGraphWriterPlugin loadWriterPlugin(final ServiceGraphFormat graphFormat) {
         switch (graphFormat) {
             case ASCII: return new AsciiServiceGraphWriterPlugin();
+            case TEXT: return new TextServiceGraphWriterPlugin();
             default: return new NoOpServiceGraphWriterPlugin();
         }
     }
@@ -140,6 +142,9 @@ public class ServiceGraphWriter {
      */
     static class ApplicationVertex extends ServiceGraphVertex<String> {
 
+        static Key<String> APPLICATION_VERTEX_KEY =
+            Key.get(String.class, Names.named(ApplicationVertex.class.getName()));
+
         private final String applicationName;
 
         public ApplicationVertex(final String applicationName) {
@@ -148,7 +153,7 @@ public class ServiceGraphWriter {
 
         @Override
         public Key<String> getGuiceKey() {
-            return Key.get(String.class);
+            return APPLICATION_VERTEX_KEY;
         }
 
         @Override
