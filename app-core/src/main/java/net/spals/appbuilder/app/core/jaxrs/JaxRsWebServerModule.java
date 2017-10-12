@@ -69,7 +69,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
     public <I> void hear(final TypeLiteral<I> typeLiteral,
                          final TypeEncounter<I> typeEncounter) {
         if (isActive()) {
-            // Add a dummy WEBSERVER vertex to the service grapher to show how WebServer components
+            // Add a dummy JAXRS WEBSERVER vertex to the service graph to show how WebServer components
             // relate to one another
             if (!getServiceDAG().containsVertex(theWebServerVertex)) {
                 getServiceDAG().addVertex(theWebServerVertex);
@@ -79,18 +79,18 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         }
     }
 
-    private static WebServerVertex theWebServerVertex = new WebServerVertex();
+    private static JaxRsWebServerVertex theWebServerVertex = new JaxRsWebServerVertex();
 
     /**
      * Special {@link ServiceDAGVertex} instance which
-     * represents the application's web server.
+     * represents a JaxRs web server.
      *
      * All auto-bound webserver components will have an outgoing
      * edge to this vertex in order to show a complete graph.
      *
      * @author tkral
      */
-    static class WebServerVertex extends ServiceDAGVertex<String> {
+    static class JaxRsWebServerVertex extends ServiceDAGVertex<String> {
 
         @Override
         public Key<String> getGuiceKey() {
@@ -99,7 +99,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
 
         @Override
         public String getServiceInstance() {
-            return "WEBSERVER";
+            return "JAX-RS WEBSERVER";
         }
 
         @Override
