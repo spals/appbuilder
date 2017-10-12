@@ -128,7 +128,7 @@ public class ServiceDAGVertexTest {
                 "Set<String>"},
             {new TypeLiteral<Set<ServiceDAGVertexTest>>(){},
                 Collections.<ServiceDAGVertexTest>emptySet(),
-                "Set<ServiceGraphVertexTest>"},
+                "Set<ServiceDAGVertexTest>"},
             {new TypeLiteral<Map<String, String>>(){},
                 Collections.<String, String>emptyMap(),
                 "Map<String, String>"},
@@ -162,8 +162,8 @@ public class ServiceDAGVertexTest {
         return new Object[][] {
             {String.class, "", "String"},
             {String[].class, new String[0], "String[]"},
-            {ServiceDAGVertexTest.class, new ServiceDAGVertexTest(), "ServiceGraphVertexTest"},
-            {ServiceDAGVertexTest[].class, new ServiceDAGVertexTest[0], "ServiceGraphVertexTest[]"},
+            {ServiceDAGVertexTest.class, new ServiceDAGVertexTest(), "ServiceDAGVertexTest"},
+            {ServiceDAGVertexTest[].class, new ServiceDAGVertexTest[0], "ServiceDAGVertexTest[]"},
             {CharMatcher.class, CharMatcher.any(), "com.google.common.base.CharMatcher"},
         };
     }
@@ -189,11 +189,11 @@ public class ServiceDAGVertexTest {
                 "@Named(constant) \"1\""},
             // Case: Service
             {newVertex(Key.get(ServiceDAGVertexTest.class), new ServiceDAGVertexTest()),
-                "ServiceGraphVertexTest"},
+                "ServiceDAGVertexTest"},
             // Case: Service with annotation
             {newVertex(Key.get(ServiceDAGVertexTest.class, Names.named("service")),
                 new ServiceDAGVertexTest()),
-                "@Named(service) ServiceGraphVertexTest"},
+                "@Named(service) ServiceDAGVertexTest"},
             // Case: Service with provider
             {vertexWithProvider(newVertex(Key.get(ServiceDAGVertexTest.class), new ServiceDAGVertexTest()),
                 newVertex(Key.get(Provider.class), new Provider<ServiceDAGVertexTest>() {
@@ -202,7 +202,7 @@ public class ServiceDAGVertexTest {
                         return new ServiceDAGVertexTest();
                     }
                 })),
-                "ServiceGraphVertexTest [Provider:Provider]"},
+                "ServiceDAGVertexTest [Provider:Provider]"},
         };
     }
 
