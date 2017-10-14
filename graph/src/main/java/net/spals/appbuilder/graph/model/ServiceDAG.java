@@ -11,9 +11,12 @@ import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.GraphDelegator;
-import org.jgrapht.traverse.BreadthFirstIterator;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -50,15 +53,15 @@ public class ServiceDAG
         // at the bottom. And this moves it to the top.
         final DirectedGraph<ServiceDAGVertex<?>,DefaultEdge> reversedGraph =
             new EdgeReversedGraph<>(this);
-        final BreadthFirstIterator<ServiceDAGVertex<?>, DefaultEdge> bfs =
-            new BreadthFirstIterator<>(reversedGraph, root);
+        final TopologicalOrderIterator<ServiceDAGVertex<?>, DefaultEdge> topoOrder =
+            new TopologicalOrderIterator<>(reversedGraph);
 
-        // Walk the graph breadth-first and use the tree conversion listener
+        // Walk the graph in topographical order and use the tree conversion listener
         // to convert the DAG into a tree
         final ServiceTreeConversionListener listener = new ServiceTreeConversionListener(serviceTree, reversedGraph);
-        bfs.addTraversalListener(listener);
-        while (bfs.hasNext()) {
-            bfs.next();
+        topoOrder.addTraversalListener(listener);
+        while (topoOrder.hasNext()) {
+            topoOrder.next();
         }
 
         return serviceTree;
@@ -68,7 +71,7 @@ public class ServiceDAG
      * A {@link org.jgrapht.event.TraversalListener} which converts a DAG
      * into a tree.
      *
-     * Note that this assumes a BFS traversal.
+     * Note that this assumes a topographical order traversal.
      *
      * @author tkral
      */

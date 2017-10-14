@@ -61,17 +61,13 @@ public class ServiceDAGTest {
     }
 
     @DataProvider
-    Object[][] toTreeProvider() {
+    Object[][] basicToTreeProvider() {
         final ServiceDAGVertex<?> a = createDAGVertex("a");
         final ServiceDAGVertex<?> b = createDAGVertex("b");
         final ServiceDAGVertex<?> c = createDAGVertex("c");
         final ServiceDAGVertex<?> d = createDAGVertex("d");
         final ServiceDAGVertex<?> e = createDAGVertex("e");
         final ServiceDAGVertex<?> f = createDAGVertex("f");
-        final ServiceDAGVertex<?> g = createDAGVertex("g");
-        final ServiceDAGVertex<?> h = createDAGVertex("h");
-        final ServiceDAGVertex<?> i = createDAGVertex("i");
-        final ServiceDAGVertex<?> j = createDAGVertex("j");
 
         final ServiceDAG basicDiamond = diamondGraph(a, b, c, d);
 
@@ -91,6 +87,37 @@ public class ServiceDAGTest {
         longY.addVertex(f);
         longY.addEdge(f, e);
 
+        return new Object[][] {
+            {basicDiamond, a, ImmutableList.of("a", "b", "c", "d", "d")},
+            {basicY, a, ImmutableList.of("a", "b", "c", "d", "d", "e", "e")},
+            {basicX, a, ImmutableList.of("a", "b", "c", "d", "d", "e", "f", "e", "f")},
+            {longY, a, ImmutableList.of("a", "b", "c", "d", "d", "e", "e", "f", "f")},
+        };
+    }
+
+    @Test(dataProvider = "basicToTreeProvider")
+    public void testBasicToTree(final ServiceDAG serviceDAG,
+                                final ServiceDAGVertex<?> root,
+                                final List<String> expectedBFSWalk) {
+        final ServiceTree serviceTree = serviceDAG.toTree(root);
+
+        assertThat(serviceTree.getRoot(), is(createRoot(root)));
+        assertThat(bfsWalk(serviceTree), is(expectedBFSWalk));
+    }
+
+    @DataProvider
+    Object[][] complexToTreeProvider() {
+        final ServiceDAGVertex<?> a = createDAGVertex("a");
+        final ServiceDAGVertex<?> b = createDAGVertex("b");
+        final ServiceDAGVertex<?> c = createDAGVertex("c");
+        final ServiceDAGVertex<?> d = createDAGVertex("d");
+        final ServiceDAGVertex<?> e = createDAGVertex("e");
+        final ServiceDAGVertex<?> f = createDAGVertex("f");
+        final ServiceDAGVertex<?> g = createDAGVertex("g");
+        final ServiceDAGVertex<?> h = createDAGVertex("h");
+        final ServiceDAGVertex<?> i = createDAGVertex("i");
+        final ServiceDAGVertex<?> j = createDAGVertex("j");
+
         final ServiceDAG multiDiamond = diamondGraph(a, c, d, f);
         multiDiamond.addVertex(b);
         multiDiamond.addEdge(b, a);
@@ -108,19 +135,31 @@ public class ServiceDAGTest {
         multiDiamond.addEdge(h, b);
         multiDiamond.addEdge(i, e);
 
+        final ServiceDAG largeDiamond = new ServiceDAG();
+        largeDiamond.addVertex(a);
+        largeDiamond.addVertex(b);
+        largeDiamond.addVertex(c);
+        largeDiamond.addEdge(c, b);
+        largeDiamond.addEdge(b, a);
+
+        largeDiamond.addVertex(d);
+        largeDiamond.addVertex(e);
+        largeDiamond.addVertex(f);
+        largeDiamond.addEdge(b, f);
+        largeDiamond.addEdge(f, e);
+        largeDiamond.addEdge(e, d);
+        largeDiamond.addEdge(d, a);
+
         return new Object[][] {
-            {basicDiamond, a, ImmutableList.of("a", "b", "c", "d", "d")},
-            {basicY, a, ImmutableList.of("a", "b", "c", "d", "d", "e", "e")},
-            {basicX, a, ImmutableList.of("a", "b", "c", "d", "d", "e", "f", "e", "f")},
-            {longY, a, ImmutableList.of("a", "b", "c", "d", "d", "e", "e", "f", "f")},
             {multiDiamond, a, ImmutableList.of("a", "c", "d", "b", "e", "f", "f", "g", "h", "j", "i", "h", "i", "h", "i")},
+            {largeDiamond, a, ImmutableList.of("a", "b", "d", "c", "e", "f", "b", "c")},
         };
     }
 
-    @Test(dataProvider = "toTreeProvider")
-    public void testToTree(final ServiceDAG serviceDAG,
-                           final ServiceDAGVertex<?> root,
-                           final List<String> expectedBFSWalk) {
+    @Test(dataProvider = "complexToTreeProvider")
+    public void testComplexToTree(final ServiceDAG serviceDAG,
+                                  final ServiceDAGVertex<?> root,
+                                  final List<String> expectedBFSWalk) {
         final ServiceTree serviceTree = serviceDAG.toTree(root);
 
         assertThat(serviceTree.getRoot(), is(createRoot(root)));
