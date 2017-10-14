@@ -80,7 +80,7 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
             final T serviceInstance = provision.provision();
 
             final ServiceDAGVertex<T> vertex =
-                ServiceDAGVertex.newVertex(provision.getBinding().getKey(), serviceInstance);
+                ServiceDAGVertex.createVertex(provision.getBinding().getKey(), serviceInstance);
             serviceDAG.addVertex(vertex);
 
             if (serviceScanMatcher.matches(provision.getBinding())) {

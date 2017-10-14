@@ -60,7 +60,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         getConfigurable().register(wsComponent);
 
         final Key<Object> wsKey = (Key<Object>) Key.get(TypeLiteral.get(wsComponent.getClass()));
-        final ServiceDAGVertex<?> wsVertex = ServiceDAGVertex.newVertex(wsKey, wsComponent);
+        final ServiceDAGVertex<?> wsVertex = ServiceDAGVertex.createVertex(wsKey, wsComponent);
         getServiceDAG().addVertex(wsVertex);
         getServiceDAG().addEdge(wsVertex, theWebServerVertex);
     }

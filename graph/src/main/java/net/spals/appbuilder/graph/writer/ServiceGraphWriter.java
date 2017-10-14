@@ -102,7 +102,7 @@ public class ServiceGraphWriter {
     void mergeProviderSourceVertex(final ServiceDAG serviceDAG,
                                    final ServiceDAGVertex<?> providerSourceVertex,
                                    final ServiceDAGVertex<?> providedVertex) {
-        final ServiceDAGVertex<?> mergedVertex = ServiceDAGVertex.vertexWithProvider(providedVertex,
+        final ServiceDAGVertex<?> mergedVertex = ServiceDAGVertex.createVertexWithProvider(providedVertex,
             providerSourceVertex);
 
         serviceDAG.addVertex(mergedVertex);

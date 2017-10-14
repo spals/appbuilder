@@ -24,7 +24,7 @@ public class ServiceTree
     private final ServiceTreeVertex<?> root;
 
     ServiceTree(final ServiceDAGVertex<?> root) {
-        this(ServiceTreeVertex.newRoot(root));
+        this(ServiceTreeVertex.createRoot(root));
     }
 
     ServiceTree(final ServiceTreeVertex<?> root) {
@@ -37,7 +37,7 @@ public class ServiceTree
 
     Optional<ServiceTreeVertex<?>> findVertex(final ServiceDAGVertex<?> delegate,
                                               final ServiceTreeVertex<?> parent) {
-        final ServiceTreeVertex<?> vertex = ServiceTreeVertex.newChild(delegate, parent);
+        final ServiceTreeVertex<?> vertex = ServiceTreeVertex.createChild(delegate, parent);
         return vertexSet().stream()
             .filter(v -> v.equals(vertex))
             .findAny();

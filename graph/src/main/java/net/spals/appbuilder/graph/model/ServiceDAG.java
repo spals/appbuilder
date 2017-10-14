@@ -13,10 +13,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.GraphDelegator;
 import org.jgrapht.traverse.BreadthFirstIterator;
 
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -93,19 +90,25 @@ public class ServiceDAG
 
         @Override
         public void edgeTraversed(final EdgeTraversalEvent<DefaultEdge> e) {
-            final ServiceDAGVertex<?> edgeSource = traversedGraph.getEdgeSource(e.getEdge());
-            final ServiceDAGVertex<?> edgeTarget = traversedGraph.getEdgeTarget(e.getEdge());
+            final ServiceDAGVertex<?> dagSource = traversedGraph.getEdgeSource(e.getEdge());
+            final ServiceDAGVertex<?> dagTarget = traversedGraph.getEdgeTarget(e.getEdge());
 
-            while (!visitedVertices.peekFirst().getDelegate().equals(edgeSource)) {
-                visitedVertices.removeFirst();
-            }
+            final Set<ServiceTreeVertex<?>> treeParents = findVisitedDAGVertices(dagSource);
+            treeParents.forEach(treeParent -> addTreeVertex(treeParent, dagTarget));
+        }
 
-            final ServiceTreeVertex<?> edgeParent = visitedVertices.peekFirst();
-            final ServiceTreeVertex<?> edgeChild = ServiceTreeVertex.newChild(edgeTarget, edgeParent);
-            visitedVertices.addLast(edgeChild);
+        private void addTreeVertex(final ServiceTreeVertex<?> treeParent, final ServiceDAGVertex<?> dagChild) {
+            final ServiceTreeVertex<?> treeChild = ServiceTreeVertex.createChild(dagChild, treeParent);
+            visitedVertices.addLast(treeChild);
 
-            serviceTree.addVertex(edgeChild);
-            serviceTree.addEdge(edgeParent, edgeChild);
+            serviceTree.addVertex(treeChild);
+            serviceTree.addEdge(treeParent, treeChild);
+        }
+
+        private Set<ServiceTreeVertex<?>> findVisitedDAGVertices(final ServiceDAGVertex<?> dagVertex) {
+            return visitedVertices.stream()
+                .filter(visitedVertex -> visitedVertex.getDelegate().equals(dagVertex))
+                .collect(Collectors.toSet());
         }
     }
 }

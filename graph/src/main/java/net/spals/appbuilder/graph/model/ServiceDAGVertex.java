@@ -37,12 +37,12 @@ public abstract class ServiceDAGVertex<T> {
 
     private final static String DEFAULT_SEPARATOR = " ";
 
-    public static <T2> ServiceDAGVertex<T2> newVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
+    public static <T2> ServiceDAGVertex<T2> createVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
         return new AutoValue_ServiceDAGVertex(guiceKey, serviceInstance, Optional.empty());
     }
 
-    public static <T2> ServiceDAGVertex<T2> vertexWithProvider(final ServiceDAGVertex<T2> vertex,
-                                                               final ServiceDAGVertex<?> providerSource) {
+    public static <T2> ServiceDAGVertex<T2> createVertexWithProvider(final ServiceDAGVertex<T2> vertex,
+                                                                     final ServiceDAGVertex<?> providerSource) {
         return new AutoValue_ServiceDAGVertex(vertex.getGuiceKey(), vertex.getServiceInstance(),
             Optional.ofNullable(providerSource));
     }

@@ -51,9 +51,9 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
      */
     static class TextServiceTreeListener extends TraversalListenerAdapter<ServiceTreeVertex<?>, DefaultEdge> {
 
-        private static final String VERTEX_INDENT = "+- ";//"\u251C\u2500 ";
-        private static final String LAST_VERTEX_INDENT = "\\- ";//"\u2514\u2500 ";
-        private static final String FILL_INDENT = "|  ";//"\u2502  ";
+        private static final String VERTEX_INDENT = "+- ";
+        private static final String LAST_VERTEX_INDENT = "\\- ";
+        private static final String FILL_INDENT = "|  ";
         private static final String LAST_FILL_INDENT = "   ";
 
         private final ServiceTree serviceTree;

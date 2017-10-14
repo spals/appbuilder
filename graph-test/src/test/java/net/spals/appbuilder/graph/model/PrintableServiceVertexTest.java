@@ -7,8 +7,8 @@ import org.mockito.Mockito;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import static net.spals.appbuilder.graph.model.ServiceDAGVertex.newVertex;
-import static net.spals.appbuilder.graph.model.ServiceDAGVertex.vertexWithProvider;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createVertex;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createVertexWithProvider;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
@@ -50,11 +50,11 @@ public class PrintableServiceVertexTest {
     @DataProvider
     Object[][] toStringProvider() {
         return new Object[][] {
-            {newVertex(Key.get(String.class), "1"), " ", "\"1\""},
-            {newVertex(Key.get(String.class, Names.named("constant")), "1"), "~",
+            {createVertex(Key.get(String.class), "1"), " ", "\"1\""},
+            {createVertex(Key.get(String.class, Names.named("constant")), "1"), "~",
                 "@Named(constant)~\"1\""},
-            {vertexWithProvider(newVertex(Key.get(PrintableServiceVertexTest.class), new PrintableServiceVertexTest()),
-                newVertex(Key.get(Provider.class), new Provider<PrintableServiceVertexTest>() {
+            {createVertexWithProvider(createVertex(Key.get(PrintableServiceVertexTest.class), new PrintableServiceVertexTest()),
+                createVertex(Key.get(Provider.class), new Provider<PrintableServiceVertexTest>() {
                     @Override
                     public PrintableServiceVertexTest get() {
                         return new PrintableServiceVertexTest();

@@ -46,7 +46,7 @@ private[finatra] case class FinatraWebServerModule(
 
   private[finatra] def addComponentVertex[T](wsComponent: T): Unit = {
     val wsKey: Key[T] = Key.get(TypeLiteral.get(wsComponent.getClass.asInstanceOf[Class[T]]))
-    val wsVertex = ServiceDAGVertex.newVertex(wsKey, wsComponent)
+    val wsVertex = ServiceDAGVertex.createVertex(wsKey, wsComponent)
     serviceDAG.addVertex(wsVertex)
     serviceDAG.addEdge(wsVertex, webServerVertex)
   }

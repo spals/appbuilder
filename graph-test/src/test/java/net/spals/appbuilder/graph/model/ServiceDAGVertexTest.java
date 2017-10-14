@@ -13,8 +13,8 @@ import org.testng.annotations.Test;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static net.spals.appbuilder.graph.model.ServiceDAGVertex.newVertex;
-import static net.spals.appbuilder.graph.model.ServiceDAGVertex.vertexWithProvider;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createVertex;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createVertexWithProvider;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -42,7 +42,7 @@ public class ServiceDAGVertexTest {
     @Test(dataProvider = "canPrintConstantProvider")
     public <T> void testCanPrintConstant(final T serviceInstance, final boolean expectedResult) {
         final Key<T> key = Key.get((Class<T>) serviceInstance.getClass());
-        final ServiceDAGVertex vertex = newVertex(key, serviceInstance);
+        final ServiceDAGVertex vertex = createVertex(key, serviceInstance);
 
         assertThat(vertex.canPrintConstant(serviceInstance), is(expectedResult));
     }
@@ -51,23 +51,23 @@ public class ServiceDAGVertexTest {
     Object[][] equalsProvider() {
         return new Object[][] {
             // Case: Non-Vertex objects
-            {newVertex(Key.get(String.class), ""), null, false},
-            {newVertex(Key.get(String.class), ""), new Object(), false},
+            {createVertex(Key.get(String.class), ""), null, false},
+            {createVertex(Key.get(String.class), ""), new Object(), false},
             // Case: Same key types, same instances
-            {newVertex(Key.get(String.class), ""),
-                newVertex(Key.get(String.class), ""), true},
+            {createVertex(Key.get(String.class), ""),
+                createVertex(Key.get(String.class), ""), true},
             // Case: Different instances
-            {newVertex(Key.get(String.class), ""),
-                newVertex(Key.get(String.class), "0"), false},
+            {createVertex(Key.get(String.class), ""),
+                createVertex(Key.get(String.class), "0"), false},
             // Case: Different key types
-            {newVertex(Key.get(String.class), ""),
-                newVertex(Key.get(Integer.class), 0), false},
+            {createVertex(Key.get(String.class), ""),
+                createVertex(Key.get(Integer.class), 0), false},
             // Case: Mismatched annotations
-            {newVertex(Key.get(String.class, ApplicationName.class), ""),
-                newVertex(Key.get(String.class), ""), false},
+            {createVertex(Key.get(String.class, ApplicationName.class), ""),
+                createVertex(Key.get(String.class), ""), false},
             // Case: Same key types, same annotations, same instances
-            {newVertex(Key.get(String.class, ApplicationName.class), ""),
-                newVertex(Key.get(String.class, ApplicationName.class), ""), true},
+            {createVertex(Key.get(String.class, ApplicationName.class), ""),
+                createVertex(Key.get(String.class, ApplicationName.class), ""), true},
         };
     }
 
@@ -87,8 +87,8 @@ public class ServiceDAGVertexTest {
     @Test
     public void testInHashSet() {
         final HashSet<ServiceDAGVertex> vertexSet = new HashSet<>();
-        vertexSet.add(newVertex(Key.get(String.class), ""));
-        vertexSet.add(newVertex(Key.get(String.class), ""));
+        vertexSet.add(createVertex(Key.get(String.class), ""));
+        vertexSet.add(createVertex(Key.get(String.class), ""));
 
         assertThat(vertexSet, hasSize(1));
     }
@@ -115,7 +115,7 @@ public class ServiceDAGVertexTest {
     @Test(dataProvider = "isConstantProvider")
     public <T> void testIsConstant(final T serviceInstance, final boolean expectedResult) {
         final Key<T> key = Key.get((Class<T>) serviceInstance.getClass());
-        final ServiceDAGVertex vertex = newVertex(key, serviceInstance);
+        final ServiceDAGVertex vertex = createVertex(key, serviceInstance);
 
         assertThat(vertex.isConstant(serviceInstance), is(expectedResult));
     }
@@ -153,7 +153,7 @@ public class ServiceDAGVertexTest {
     public void testGenericTypeName(final TypeLiteral<Object> typeLiteral,
                                     final Object serviceInstance,
                                     final String expectedName) {
-        final ServiceDAGVertex vertex = newVertex(Key.get(typeLiteral), serviceInstance);
+        final ServiceDAGVertex vertex = createVertex(Key.get(typeLiteral), serviceInstance);
         assertThat(vertex.genericTypeName(typeLiteral), is(expectedName));
     }
 
@@ -174,7 +174,7 @@ public class ServiceDAGVertexTest {
                                    final String expectedName) {
         final TypeLiteral<? extends Object> typeLiteral = TypeLiteral.get(simpleType);
         final Key<Object> key = (Key<Object>) Key.get(typeLiteral);
-        final ServiceDAGVertex vertex = newVertex(key, serviceInstance);
+        final ServiceDAGVertex vertex = createVertex(key, serviceInstance);
         assertThat(vertex.simpleTypeName(simpleType), is(expectedName));
     }
 
@@ -182,21 +182,21 @@ public class ServiceDAGVertexTest {
     Object[][] toStringProvider() {
         return new Object[][] {
             // Case: Constant
-            {newVertex(Key.get(String.class), "1"),
+            {createVertex(Key.get(String.class), "1"),
                 "\"1\""},
             // Case: Constant with annotation
-            {newVertex(Key.get(String.class, Names.named("constant")), "1"),
+            {createVertex(Key.get(String.class, Names.named("constant")), "1"),
                 "@Named(constant) \"1\""},
             // Case: Service
-            {newVertex(Key.get(ServiceDAGVertexTest.class), new ServiceDAGVertexTest()),
+            {createVertex(Key.get(ServiceDAGVertexTest.class), new ServiceDAGVertexTest()),
                 "ServiceDAGVertexTest"},
             // Case: Service with annotation
-            {newVertex(Key.get(ServiceDAGVertexTest.class, Names.named("service")),
+            {createVertex(Key.get(ServiceDAGVertexTest.class, Names.named("service")),
                 new ServiceDAGVertexTest()),
                 "@Named(service) ServiceDAGVertexTest"},
             // Case: Service with provider
-            {vertexWithProvider(newVertex(Key.get(ServiceDAGVertexTest.class), new ServiceDAGVertexTest()),
-                newVertex(Key.get(Provider.class), new Provider<ServiceDAGVertexTest>() {
+            {createVertexWithProvider(createVertex(Key.get(ServiceDAGVertexTest.class), new ServiceDAGVertexTest()),
+                createVertex(Key.get(Provider.class), new Provider<ServiceDAGVertexTest>() {
                     @Override
                     public ServiceDAGVertexTest get() {
                         return new ServiceDAGVertexTest();
@@ -225,7 +225,7 @@ public class ServiceDAGVertexTest {
     public void testTypeLiteralName(final TypeLiteral<Object> typeLiteral,
                                     final Object serviceInstance,
                                     final String expectedName) {
-        final ServiceDAGVertex vertex = newVertex(Key.get(typeLiteral), serviceInstance);
+        final ServiceDAGVertex vertex = createVertex(Key.get(typeLiteral), serviceInstance);
         assertThat(vertex.typeLiteralName(typeLiteral), is(expectedName));
     }
 }

@@ -14,12 +14,13 @@ public class ServiceTreeVertex<T> extends ServiceDAGVertex<T> {
     private final ServiceDAGVertex<T> delegate;
     private final Optional<ServiceTreeVertex<?>> parent;
 
-    public static <T2> ServiceTreeVertex<T2> newChild(final ServiceDAGVertex<T2> delegate,
-                                                      final ServiceTreeVertex<?> parent) {
-        return new ServiceTreeVertex<T2>(delegate, Optional.of(Preconditions.checkNotNull(parent)));
+    static <T2> ServiceTreeVertex<T2> createChild(final ServiceDAGVertex<T2> delegate,
+                                                  final ServiceTreeVertex<?> parent) {
+        Preconditions.checkNotNull(parent);
+        return new ServiceTreeVertex<T2>(delegate, Optional.of(parent));
     }
 
-    public static <T2> ServiceTreeVertex<T2> newRoot(final ServiceDAGVertex<T2> delegate) {
+    static <T2> ServiceTreeVertex<T2> createRoot(final ServiceDAGVertex<T2> delegate) {
         return new ServiceTreeVertex<T2>(delegate, Optional.empty());
     }
 
@@ -29,7 +30,7 @@ public class ServiceTreeVertex<T> extends ServiceDAGVertex<T> {
         this.parent = parent;
     }
 
-    public ServiceDAGVertex<?> getDelegate() {
+    ServiceDAGVertex<?> getDelegate() {
         return delegate;
     }
 
