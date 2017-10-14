@@ -8,6 +8,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
+import net.spals.appbuilder.config.TaggedConfig;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -116,8 +117,15 @@ public abstract class ServiceDAGVertex<T> {
 
     @VisibleForTesting
     boolean canPrintConstant(final T serviceInstance) {
-        return isConstant(serviceInstance) &&
-            String.valueOf(serviceInstance).length() < 64;
+        if (!isConstant(serviceInstance)) {
+            return false;
+        }
+
+        final String instanceStr = String.valueOf(serviceInstance);
+        return instanceStr.length() < 64 ||
+            // Give configurations a little more room to print
+            (TaggedConfig.class.isAssignableFrom(serviceInstance.getClass()) &&
+                instanceStr.length() < 128);
     }
 
     @VisibleForTesting
@@ -148,7 +156,8 @@ public abstract class ServiceDAGVertex<T> {
         return String.class.isAssignableFrom(serviceInstance.getClass())
             || Number.class.isAssignableFrom(serviceInstance.getClass())
             || Boolean.class.isAssignableFrom(serviceInstance.getClass())
-            || Path.class.isAssignableFrom(serviceInstance.getClass());
+            || Path.class.isAssignableFrom(serviceInstance.getClass())
+            || TaggedConfig.class.isAssignableFrom(serviceInstance.getClass());
     }
 
     @VisibleForTesting

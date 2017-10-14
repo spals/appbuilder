@@ -77,6 +77,7 @@ public interface ServiceScan {
         // be added as runtime-scoped dependencies in the app-core
         // module to guarantee that they are always available.
         private static Set<String> DEFAULT_SERVICE_PACKAGES = ImmutableSet.of(
+            "net.spals.appbuilder.config",
             "net.spals.appbuilder.executor.core",
             "net.spals.appbuilder.monitor.core"
         );

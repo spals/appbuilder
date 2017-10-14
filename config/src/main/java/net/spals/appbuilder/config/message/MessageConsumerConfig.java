@@ -15,36 +15,43 @@ import java.util.Optional;
  */
 @FreeBuilder
 @JsonDeserialize(builder = MessageConsumerConfig.Builder.class)
-public interface MessageConsumerConfig extends TaggedConfig {
+public abstract class MessageConsumerConfig implements TaggedConfig {
 
-    String CHANNEL_KEY = "channel";
-    String FORMAT_KEY = "format";
-    String GLOBAL_ID_KEY = "globalId";
-    String SOURCE_KEY = "source";
+    private static final String CHANNEL_KEY = "channel";
+    private static final String FORMAT_KEY = "format";
+    private static final String GLOBAL_ID_KEY = "globalId";
+    private static final String SOURCE_KEY = "source";
 
     @JsonProperty(TaggedConfig.ACTIVE_KEY)
-    Optional<Boolean> getActive();
+    public abstract Optional<Boolean> getActive();
 
     @Override
     @JsonIgnore
-    default boolean isActive() {
+    public final boolean isActive() {
         return getActive().orElse(true);
     }
 
-    @JsonProperty(MessageConsumerConfig.CHANNEL_KEY)
-    String getChannel();
+    @JsonProperty(CHANNEL_KEY)
+    public abstract String getChannel();
 
-    @JsonProperty(MessageConsumerConfig.FORMAT_KEY)
-    String getFormat();
+    @JsonProperty(FORMAT_KEY)
+    public abstract String getFormat();
 
-    @JsonProperty(MessageConsumerConfig.GLOBAL_ID_KEY)
-    String getGlobalId();
+    @JsonProperty(GLOBAL_ID_KEY)
+    public abstract String getGlobalId();
 
-    @JsonProperty(MessageConsumerConfig.SOURCE_KEY)
-    String getSource();
+    @JsonProperty(SOURCE_KEY)
+    public abstract String getSource();
 
     @Override
-    String getTag();
+    public abstract String getTag();
 
-    class Builder extends MessageConsumerConfig_Builder {  }
+    @Override
+    public final String toString() {
+        return String.format("%s(%s)[ch->%s,fmt->%s,gId->%s,src->%s]", getTag(),
+            isActive() ? "ACTIVE" : "INACTIVE",
+            getChannel(), getFormat(), getGlobalId(), getSource());
+    }
+
+    public static class Builder extends MessageConsumerConfig_Builder {  }
 }
