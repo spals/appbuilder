@@ -59,10 +59,10 @@ public abstract class ServiceDAGVertex<T> implements IServiceDAGVertex<T> {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj == null || !(ServiceDAGVertex.class.isAssignableFrom(obj.getClass()))) {
+        if (obj == null || !(IServiceDAGVertex.class.isAssignableFrom(obj.getClass()))) {
             return false;
         }
-        final ServiceDAGVertex that = (ServiceDAGVertex) obj;
+        final IServiceDAGVertex that = (IServiceDAGVertex) obj;
         return Objects.equal(getGuiceKey(), that.getGuiceKey()) &&
             Objects.equal(getServiceInstance(), that.getServiceInstance()) &&
             Objects.equal(getProviderSource(), that.getProviderSource());

@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static net.spals.appbuilder.graph.model.ServiceTreeVertex.createTreeChild;
+
 /**
  * An implementation of a Directed Acyclic Graph
  * which stores relationships between micro-services.
@@ -101,7 +103,7 @@ public class ServiceDAG
         }
 
         private void addTreeVertex(final IServiceTreeVertex<?> treeParent, final IServiceDAGVertex<?> dagChild) {
-            final IServiceTreeVertex<?> treeChild = ServiceTreeVertex.createChild(dagChild, treeParent);
+            final IServiceTreeVertex<?> treeChild = createTreeChild(dagChild, treeParent);
             visitedVertices.addLast(treeChild);
 
             serviceTree.addVertex(treeChild);

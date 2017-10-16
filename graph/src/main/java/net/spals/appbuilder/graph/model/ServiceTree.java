@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static net.spals.appbuilder.graph.model.ServiceTreeVertex.createTreeRoot;
+
 /**
  * An implementation of a {@link org.jgrapht.DirectedGraph}
  * which stores relationships between micro-services.
@@ -24,7 +26,7 @@ public class ServiceTree
     private final IServiceTreeVertex<?> root;
 
     ServiceTree(final IServiceDAGVertex<?> root) {
-        this(ServiceTreeVertex.createRoot(root));
+        this(createTreeRoot(root));
     }
 
     ServiceTree(final IServiceTreeVertex<?> root) {
@@ -33,14 +35,6 @@ public class ServiceTree
         Preconditions.checkArgument(root.isRoot());
         this.root = root;
         addVertex(root);
-    }
-
-    Optional<IServiceTreeVertex<?>> findVertex(final IServiceDAGVertex<?> delegate,
-                                              final IServiceTreeVertex<?> parent) {
-        final IServiceTreeVertex<?> vertex = ServiceTreeVertex.createChild(delegate, parent);
-        return vertexSet().stream()
-            .filter(v -> v.equals(vertex))
-            .findAny();
     }
 
     public IServiceTreeVertex<?> getRoot() {

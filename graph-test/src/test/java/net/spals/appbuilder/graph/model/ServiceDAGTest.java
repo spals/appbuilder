@@ -14,7 +14,7 @@ import java.util.Optional;
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
 import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createVertex;
-import static net.spals.appbuilder.graph.model.ServiceTreeVertex.createRoot;
+import static net.spals.appbuilder.graph.model.ServiceTreeVertex.createTreeRoot;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -101,7 +101,7 @@ public class ServiceDAGTest {
                                 final List<String> expectedBFSWalk) {
         final ServiceTree serviceTree = serviceDAG.toTree(root);
 
-        assertThat(serviceTree.getRoot(), is(createRoot(root)));
+        assertThat(serviceTree.getRoot(), is(createTreeRoot(root)));
         assertThat(bfsWalk(serviceTree), is(expectedBFSWalk));
     }
 
@@ -162,7 +162,7 @@ public class ServiceDAGTest {
                                   final List<String> expectedBFSWalk) {
         final ServiceTree serviceTree = serviceDAG.toTree(root);
 
-        assertThat(serviceTree.getRoot(), is(createRoot(root)));
+        assertThat(serviceTree.getRoot(), is(createTreeRoot(root)));
         assertThat(bfsWalk(serviceTree), is(expectedBFSWalk));
     }
 

@@ -1,5 +1,6 @@
 package net.spals.appbuilder.graph.model;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.inject.Key;
@@ -9,70 +10,59 @@ import java.util.Optional;
 /**
  * @author tkral
  */
-public class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
+@AutoValue
+public abstract class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
 
-    private final IServiceDAGVertex<T> delegate;
-    private final Optional<IServiceTreeVertex<?>> parent;
+    abstract IServiceDAGVertex<T> getDelegate();
+    public abstract Optional<IServiceTreeVertex<?>> getParent();
 
-    static <T2> ServiceTreeVertex<T2> createChild(final IServiceDAGVertex<T2> delegate,
-                                                  final IServiceTreeVertex<?> parent) {
+    static <T2> ServiceTreeVertex<T2> createTreeChild(final IServiceDAGVertex<T2> delegate,
+                                                      final IServiceTreeVertex<?> parent) {
         Preconditions.checkNotNull(parent);
-        return new ServiceTreeVertex<T2>(delegate, Optional.of(parent));
+        return new AutoValue_ServiceTreeVertex<>(delegate, Optional.of(parent));
     }
 
-    static <T2> ServiceTreeVertex<T2> createRoot(final IServiceDAGVertex<T2> delegate) {
-        return new ServiceTreeVertex<T2>(delegate, Optional.empty());
-    }
-
-    private ServiceTreeVertex(final IServiceDAGVertex<T> delegate,
-                              final Optional<IServiceTreeVertex<?>> parent) {
-        this.delegate = delegate;
-        this.parent = parent;
-    }
-
-    IServiceDAGVertex<T> getDelegate() {
-        return delegate;
+    static <T2> ServiceTreeVertex<T2> createTreeRoot(final IServiceDAGVertex<T2> delegate) {
+        return new AutoValue_ServiceTreeVertex<>(delegate, Optional.empty());
     }
 
     @Override
-    public Key<T> getGuiceKey() {
-        return delegate.getGuiceKey();
+    public final Key<T> getGuiceKey() {
+        return getDelegate().getGuiceKey();
     }
 
     @Override
-    public T getServiceInstance() {
-        return delegate.getServiceInstance();
+    public final T getServiceInstance() {
+        return getDelegate().getServiceInstance();
     }
 
     @Override
-    public Optional<IServiceTreeVertex<?>> getParent() {
-        return parent;
+    public final Optional<IServiceDAGVertex<?>> getProviderSource() {
+        return getDelegate().getProviderSource();
     }
 
     @Override
-    public Optional<IServiceDAGVertex<?>> getProviderSource() {
-        return delegate.getProviderSource();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == null || !(ServiceTreeVertex.class.isAssignableFrom(obj.getClass()))) {
+    public final boolean equals(final Object obj) {
+        if (!getDelegate().equals(obj) || !(IServiceTreeVertex.class.isAssignableFrom(obj.getClass()))) {
             return false;
         }
-        final ServiceTreeVertex that = (ServiceTreeVertex) obj;
-        return Objects.equal(getGuiceKey(), that.getGuiceKey()) &&
-            Objects.equal(getServiceInstance(), that.getServiceInstance()) &&
-            Objects.equal(getParent(), that.getParent()) &&
-            Objects.equal(getProviderSource(), that.getProviderSource());
+
+        final IServiceTreeVertex that = (IServiceTreeVertex) obj;
+        return Objects.equal(getParent(), that.getParent());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(getGuiceKey(), getServiceInstance(), getParent(), getProviderSource());
+    public final int hashCode() {
+        return Objects.hashCode(getDelegate().hashCode(), getParent());
     }
 
     @Override
-    public String toString(final String separator) {
-        return delegate.toString(separator);
+    public final String toString() {
+        return getDelegate().toString();
+    }
+
+    @Override
+    public final String toString(final String separator) {
+        return getDelegate().toString(separator);
     }
 }
