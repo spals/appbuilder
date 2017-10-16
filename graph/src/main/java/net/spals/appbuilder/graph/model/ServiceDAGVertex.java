@@ -29,12 +29,12 @@ import java.util.stream.Collectors;
  * All pieces of information are delimited by a
  * separator string. This class includes a default,
  * but you can overwrite the separator using
- * {@link PrintableGraphVertex}.
+ * {@link PrintableVertex}.
  *
  * @author tkral
  */
 @AutoValue
-public abstract class ServiceDAGVertex<T> {
+public abstract class ServiceDAGVertex<T> implements IServiceDAGVertex<T> {
 
     private final static String DEFAULT_SEPARATOR = " ";
 
@@ -42,15 +42,20 @@ public abstract class ServiceDAGVertex<T> {
         return new AutoValue_ServiceDAGVertex(guiceKey, serviceInstance, Optional.empty());
     }
 
-    public static <T2> ServiceDAGVertex<T2> createVertexWithProvider(final ServiceDAGVertex<T2> vertex,
-                                                                     final ServiceDAGVertex<?> providerSource) {
+    public static <T2> ServiceDAGVertex<T2> createVertexWithProvider(final IServiceDAGVertex<T2> vertex,
+                                                                     final IServiceDAGVertex<?> providerSource) {
         return new AutoValue_ServiceDAGVertex(vertex.getGuiceKey(), vertex.getServiceInstance(),
             Optional.ofNullable(providerSource));
     }
 
+    @Override
     public abstract Key<T> getGuiceKey();
+
+    @Override
     public abstract T getServiceInstance();
-    public abstract Optional<ServiceDAGVertex<?>> getProviderSource();
+
+    @Override
+    public abstract Optional<IServiceDAGVertex<?>> getProviderSource();
 
     @Override
     public boolean equals(final Object obj) {
@@ -73,7 +78,8 @@ public abstract class ServiceDAGVertex<T> {
         return toString(DEFAULT_SEPARATOR);
     }
 
-    protected String toString(final String separator) {
+    @Override
+    public String toString(final String separator) {
         final Class<? extends Annotation> serviceAnnotationType = getGuiceKey().getAnnotationType();
 
         final StringBuilder sb = new StringBuilder();

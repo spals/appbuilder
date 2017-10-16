@@ -13,10 +13,10 @@ import java.util.Optional;
  */
 public class PrintableVertex<T> extends ServiceDAGVertex<T> {
 
-    private final ServiceDAGVertex<T> delegate;
+    private final IServiceDAGVertex<T> delegate;
     private final String separator;
 
-    public PrintableVertex(final ServiceDAGVertex<T> delegate, final String separator) {
+    public PrintableVertex(final IServiceDAGVertex<T> delegate, final String separator) {
         this.delegate = delegate;
         this.separator = separator;
     }
@@ -32,7 +32,7 @@ public class PrintableVertex<T> extends ServiceDAGVertex<T> {
     }
 
     @Override
-    public Optional<ServiceDAGVertex<?>> getProviderSource() {
+    public Optional<IServiceDAGVertex<?>> getProviderSource() {
         return delegate.getProviderSource();
     }
 

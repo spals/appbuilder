@@ -8,6 +8,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.name.Names;
 import net.spals.appbuilder.config.service.ServiceScan;
+import net.spals.appbuilder.graph.model.IServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceDAG;
 import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
@@ -75,11 +76,11 @@ public class ServiceGraphWriter {
     @VisibleForTesting
     void mergeProviderSourceVertices(final ServiceDAG serviceDAG) {
         // 1. Find all vertices within the service graph which are providers.
-        final Set<ServiceDAGVertex<?>> providerSourceVertices =
+        final Set<IServiceDAGVertex<?>> providerSourceVertices =
             serviceDAG.findAllVertices(rawTypeThat(subclassesOf(Provider.class)));
 
         // 2. Search the service graph for the vertices which are provided by the provider vertices
-        final Map<ServiceDAGVertex<?>, Optional<ServiceDAGVertex<?>>> providerSourceMap =
+        final Map<IServiceDAGVertex<?>, Optional<IServiceDAGVertex<?>>> providerSourceMap =
             providerSourceVertices.stream().collect(Collectors.toMap(Function.identity(),
                 providerSourceVertex -> {
                     final TypeLiteral<?> providerSourceLiteral = providerSourceVertex.getGuiceKey().getTypeLiteral();
@@ -100,9 +101,9 @@ public class ServiceGraphWriter {
 
     @VisibleForTesting
     void mergeProviderSourceVertex(final ServiceDAG serviceDAG,
-                                   final ServiceDAGVertex<?> providerSourceVertex,
-                                   final ServiceDAGVertex<?> providedVertex) {
-        final ServiceDAGVertex<?> mergedVertex = ServiceDAGVertex.createVertexWithProvider(providedVertex,
+                                   final IServiceDAGVertex<?> providerSourceVertex,
+                                   final IServiceDAGVertex<?> providedVertex) {
+        final IServiceDAGVertex<?> mergedVertex = ServiceDAGVertex.createVertexWithProvider(providedVertex,
             providerSourceVertex);
 
         serviceDAG.addVertex(mergedVertex);
@@ -124,7 +125,7 @@ public class ServiceGraphWriter {
         // Find and remove external vertices. External vertices are defined
         // as services which were not explicitly included in the service scan
         // which are not connected to the rest of the graph.
-        final Set<ServiceDAGVertex<?>> externalVertices = serviceDAG.vertexSet().stream()
+        final Set<IServiceDAGVertex<?>> externalVertices = serviceDAG.vertexSet().stream()
             .filter(vertex -> !serviceScanMatcher.matches(vertex.getGuiceKey().getTypeLiteral()))
             .filter(vertex -> serviceDAG.outDegreeOf(vertex) == 0 && serviceDAG.inDegreeOf(vertex) == 0)
             .collect(Collectors.toSet());
@@ -140,7 +141,7 @@ public class ServiceGraphWriter {
      *
      * @author tkral
      */
-    static class ApplicationVertex extends ServiceDAGVertex<String> {
+    static class ApplicationVertex implements IServiceDAGVertex<String> {
 
         static Key<String> APPLICATION_VERTEX_KEY =
             Key.get(String.class, Names.named(ApplicationVertex.class.getName()));
@@ -162,12 +163,12 @@ public class ServiceGraphWriter {
         }
 
         @Override
-        public Optional<ServiceDAGVertex<?>> getProviderSource() {
+        public Optional<IServiceDAGVertex<?>> getProviderSource() {
             return Optional.empty();
         }
 
         @Override
-        protected String toString(final String separator) {
+        public String toString(final String separator) {
             return "APP[" + applicationName + "]";
         }
     }

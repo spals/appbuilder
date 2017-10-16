@@ -1,9 +1,6 @@
 package net.spals.appbuilder.graph.writer;
 
-import net.spals.appbuilder.graph.model.ServiceDAG;
-import net.spals.appbuilder.graph.model.ServiceDAGVertex;
-import net.spals.appbuilder.graph.model.ServiceTree;
-import net.spals.appbuilder.graph.model.ServiceTreeVertex;
+import net.spals.appbuilder.graph.model.*;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
@@ -23,11 +20,11 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
     @Override
     public String writeServiceGraph(final ServiceDAG serviceDAG) {
         // Always start at the ApplicationVertex
-        final ServiceDAGVertex<?> applicationVertex = serviceDAG.findVertex(APPLICATION_VERTEX_KEY).get();
+        final IServiceDAGVertex<?> applicationVertex = serviceDAG.findVertex(APPLICATION_VERTEX_KEY).get();
         final ServiceTree serviceTree = serviceDAG.toTree(applicationVertex);
 
         final StringBuilder textGraph = new StringBuilder().append(String.format("%n"));
-        final DepthFirstIterator<ServiceTreeVertex<?>, DefaultEdge> dfs =
+        final DepthFirstIterator<IServiceTreeVertex<?>, DefaultEdge> dfs =
             new DepthFirstIterator<>(serviceTree, serviceTree.getRoot());
 
         // Walk the graph depth-first and use the service tree listener
@@ -49,7 +46,7 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
      *
      * @author tkral
      */
-    static class TextServiceTreeListener extends TraversalListenerAdapter<ServiceTreeVertex<?>, DefaultEdge> {
+    static class TextServiceTreeListener extends TraversalListenerAdapter<IServiceTreeVertex<?>, DefaultEdge> {
 
         private static final String VERTEX_INDENT = "+- ";
         private static final String LAST_VERTEX_INDENT = "\\- ";
@@ -60,7 +57,7 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
         private final StringBuilder textGraph;
 
         private final AtomicInteger graphDepth = new AtomicInteger(0);
-        private final Set<ServiceTreeVertex<?>> visitedVertices = new HashSet<>();
+        private final Set<IServiceTreeVertex<?>> visitedVertices = new HashSet<>();
         TextServiceTreeListener(final ServiceTree serviceTree,
                                 final StringBuilder textGraph) {
             this.serviceTree = serviceTree;
@@ -68,7 +65,7 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
         }
 
         @Override
-        public void vertexTraversed(final VertexTraversalEvent<ServiceTreeVertex<?>> e) {
+        public void vertexTraversed(final VertexTraversalEvent<IServiceTreeVertex<?>> e) {
             visitedVertices.add(e.getVertex());
 
             indent(e.getVertex());
@@ -78,11 +75,11 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
         }
 
         @Override
-        public void vertexFinished(final VertexTraversalEvent<ServiceTreeVertex<?>> e) {
+        public void vertexFinished(final VertexTraversalEvent<IServiceTreeVertex<?>> e) {
             graphDepth.decrementAndGet();
         }
 
-        private void indent(final ServiceTreeVertex<?> vertex) {
+        private void indent(final IServiceTreeVertex<?> vertex) {
             for (int i = 1; i < graphDepth.get(); i++) {
                 textGraph.append(isLast(vertex, i) ? LAST_FILL_INDENT : FILL_INDENT);
             }
@@ -92,17 +89,17 @@ class TextServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
             }
         }
 
-        private boolean isLast(final ServiceTreeVertex<?> vertex) {
+        private boolean isLast(final IServiceTreeVertex<?> vertex) {
             if (vertex.isRoot()) {
                 return true;
             }
 
-            final Set<ServiceTreeVertex<?>> siblings = serviceTree.getSiblings(vertex);
+            final Set<IServiceTreeVertex<?>> siblings = serviceTree.getSiblings(vertex);
             return visitedVertices.containsAll(siblings);
         }
 
-        private boolean isLast(final ServiceTreeVertex<?> vertex, final int ancestorDepth) {
-            ServiceTreeVertex<?> depthVertex = vertex;
+        private boolean isLast(final IServiceTreeVertex<?> vertex, final int ancestorDepth) {
+            IServiceTreeVertex<?> depthVertex = vertex;
             int distance = graphDepth.get() - ancestorDepth;
 
             while (distance-- > 0) {

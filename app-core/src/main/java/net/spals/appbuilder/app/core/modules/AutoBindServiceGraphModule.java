@@ -13,6 +13,7 @@ import com.google.inject.spi.DefaultBindingTargetVisitor;
 import com.google.inject.spi.ProvisionListener;
 import net.spals.appbuilder.config.matcher.BindingMatchers;
 import net.spals.appbuilder.config.service.ServiceScan;
+import net.spals.appbuilder.graph.model.IServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceDAG;
 import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
@@ -79,7 +80,7 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         public <T> void onProvision(final ProvisionInvocation<T> provision) {
             final T serviceInstance = provision.provision();
 
-            final ServiceDAGVertex<T> vertex =
+            final IServiceDAGVertex<T> vertex =
                 ServiceDAGVertex.createVertex(provision.getBinding().getKey(), serviceInstance);
             serviceDAG.addVertex(vertex);
 
@@ -90,8 +91,8 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
         @Override
         public Void visit(final ConstructorBinding<?> binding) {
-            final ServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(binding.getKey()).get();
-            final Set<ServiceDAGVertex<?>> dependencyVertices =
+            final IServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(binding.getKey()).get();
+            final Set<IServiceDAGVertex<?>> dependencyVertices =
                 binding.getConstructor().getDependencies().stream()
                     .map(dependency -> serviceDAG.findVertex(dependency.getKey()))
                     .filter(vertexOpt -> vertexOpt.isPresent())
@@ -105,10 +106,10 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         @Override
         public Void visit(final MultibinderBinding<?> multibinding) {
             if (!multibinding.getElements().isEmpty()) {
-                final ServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(multibinding.getSetKey()).get();
+                final IServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(multibinding.getSetKey()).get();
                 final Binding<?> bindingElement = multibinding.getElements().get(0);
 
-                final Set<ServiceDAGVertex<?>> dependencyVertices = serviceDAG.findAllVertices(
+                final Set<IServiceDAGVertex<?>> dependencyVertices = serviceDAG.findAllVertices(
                     rawTypeThat(subclassesOf(bindingElement.getKey().getTypeLiteral().getRawType()))
                 );
 
@@ -121,10 +122,10 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         @Override
         public Void visit(final MapBinderBinding<?> mapbinding) {
             if (!mapbinding.getEntries().isEmpty()) {
-                final ServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(mapbinding.getMapKey()).get();
+                final IServiceDAGVertex<?> bindingVertex = serviceDAG.findVertex(mapbinding.getMapKey()).get();
                 final Map.Entry<?, Binding<?>> bindingEntry = mapbinding.getEntries().get(0);
 
-                final Set<ServiceDAGVertex<?>> dependencyVertices = serviceDAG.findAllVertices(
+                final Set<IServiceDAGVertex<?>> dependencyVertices = serviceDAG.findAllVertices(
                     rawTypeThat(subclassesOf(bindingEntry.getValue().getKey().getTypeLiteral().getRawType()))
                 );
 

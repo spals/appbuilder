@@ -18,16 +18,16 @@ import java.util.stream.Collectors;
  * @author tkral
  */
 public class ServiceTree
-    extends GraphDelegator<ServiceTreeVertex<?>, DefaultEdge>
-    implements DirectedGraph<ServiceTreeVertex<?>, DefaultEdge> {
+    extends GraphDelegator<IServiceTreeVertex<?>, DefaultEdge>
+    implements DirectedGraph<IServiceTreeVertex<?>, DefaultEdge> {
 
-    private final ServiceTreeVertex<?> root;
+    private final IServiceTreeVertex<?> root;
 
-    ServiceTree(final ServiceDAGVertex<?> root) {
+    ServiceTree(final IServiceDAGVertex<?> root) {
         this(ServiceTreeVertex.createRoot(root));
     }
 
-    ServiceTree(final ServiceTreeVertex<?> root) {
+    ServiceTree(final IServiceTreeVertex<?> root) {
         super(new DirectedAcyclicGraph<>(DefaultEdge.class));
 
         Preconditions.checkArgument(root.isRoot());
@@ -35,24 +35,24 @@ public class ServiceTree
         addVertex(root);
     }
 
-    Optional<ServiceTreeVertex<?>> findVertex(final ServiceDAGVertex<?> delegate,
-                                              final ServiceTreeVertex<?> parent) {
-        final ServiceTreeVertex<?> vertex = ServiceTreeVertex.createChild(delegate, parent);
+    Optional<IServiceTreeVertex<?>> findVertex(final IServiceDAGVertex<?> delegate,
+                                              final IServiceTreeVertex<?> parent) {
+        final IServiceTreeVertex<?> vertex = ServiceTreeVertex.createChild(delegate, parent);
         return vertexSet().stream()
             .filter(v -> v.equals(vertex))
             .findAny();
     }
 
-    public ServiceTreeVertex<?> getRoot() {
+    public IServiceTreeVertex<?> getRoot() {
         return root;
     }
 
-    public Set<ServiceTreeVertex<?>> getSiblings(final ServiceTreeVertex<?> vertex) {
+    public Set<IServiceTreeVertex<?>> getSiblings(final IServiceTreeVertex<?> vertex) {
         if (vertex.isRoot()) {
             return Collections.emptySet();
         }
 
-        final ServiceTreeVertex<?> parent = vertex.getParent().get();
+        final IServiceTreeVertex<?> parent = vertex.getParent().get();
         final Set<DefaultEdge> parentEdges = outgoingEdgesOf(parent);
 
         return parentEdges.stream()

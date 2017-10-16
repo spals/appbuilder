@@ -26,34 +26,34 @@ import java.util.stream.Collectors;
  * @author tkral
  */
 public class ServiceDAG
-    extends GraphDelegator<ServiceDAGVertex<?>, DefaultEdge>
-    implements DirectedGraph<ServiceDAGVertex<?>, DefaultEdge> {
+    extends GraphDelegator<IServiceDAGVertex<?>, DefaultEdge>
+    implements DirectedGraph<IServiceDAGVertex<?>, DefaultEdge> {
 
     public ServiceDAG() {
         super(new DirectedAcyclicGraph<>(DefaultEdge.class));
     }
 
-    public Optional<ServiceDAGVertex<?>> findVertex(final Key<?> guiceKey) {
+    public Optional<IServiceDAGVertex<?>> findVertex(final Key<?> guiceKey) {
         return vertexSet().stream()
             .filter(vertex -> guiceKey.equals(vertex.getGuiceKey()))
             .findAny();
     }
 
-    public Set<ServiceDAGVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
+    public Set<IServiceDAGVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
         return vertexSet().stream()
             .filter(vertex -> typeMatcher.matches(vertex.getGuiceKey().getTypeLiteral()))
             .collect(Collectors.toSet());
     }
 
-    public ServiceTree toTree(final ServiceDAGVertex<?> root) {
+    public ServiceTree toTree(final IServiceDAGVertex<?> root) {
         final ServiceTree serviceTree = new ServiceTree(root);
 
         // Reverse the edges of the service graph before we perform our walk.
         // We do this because the service graph is built with the root vertex
         // at the bottom. And this moves it to the top.
-        final DirectedGraph<ServiceDAGVertex<?>,DefaultEdge> reversedGraph =
+        final DirectedGraph<IServiceDAGVertex<?>,DefaultEdge> reversedGraph =
             new EdgeReversedGraph<>(this);
-        final TopologicalOrderIterator<ServiceDAGVertex<?>, DefaultEdge> topoOrder =
+        final TopologicalOrderIterator<IServiceDAGVertex<?>, DefaultEdge> topoOrder =
             new TopologicalOrderIterator<>(reversedGraph);
 
         // Walk the graph in topographical order and use the tree conversion listener
@@ -76,15 +76,15 @@ public class ServiceDAG
      * @author tkral
      */
     @VisibleForTesting
-    static class ServiceTreeConversionListener extends TraversalListenerAdapter<ServiceDAGVertex<?>, DefaultEdge> {
+    static class ServiceTreeConversionListener extends TraversalListenerAdapter<IServiceDAGVertex<?>, DefaultEdge> {
 
         private final ServiceTree serviceTree;
-        private final DirectedGraph<ServiceDAGVertex<?>, DefaultEdge> traversedGraph;
+        private final DirectedGraph<IServiceDAGVertex<?>, DefaultEdge> traversedGraph;
 
-        private final Deque<ServiceTreeVertex<?>> visitedVertices = new LinkedList<>();
+        private final Deque<IServiceTreeVertex<?>> visitedVertices = new LinkedList<>();
 
         ServiceTreeConversionListener(final ServiceTree serviceTree,
-                                      final DirectedGraph<ServiceDAGVertex<?>, DefaultEdge> traversedGraph) {
+                                      final DirectedGraph<IServiceDAGVertex<?>, DefaultEdge> traversedGraph) {
             this.serviceTree = serviceTree;
             this.traversedGraph = traversedGraph;
 
@@ -93,24 +93,24 @@ public class ServiceDAG
 
         @Override
         public void edgeTraversed(final EdgeTraversalEvent<DefaultEdge> e) {
-            final ServiceDAGVertex<?> dagSource = traversedGraph.getEdgeSource(e.getEdge());
-            final ServiceDAGVertex<?> dagTarget = traversedGraph.getEdgeTarget(e.getEdge());
+            final IServiceDAGVertex<?> dagSource = traversedGraph.getEdgeSource(e.getEdge());
+            final IServiceDAGVertex<?> dagTarget = traversedGraph.getEdgeTarget(e.getEdge());
 
-            final Set<ServiceTreeVertex<?>> treeParents = findVisitedDAGVertices(dagSource);
+            final Set<IServiceTreeVertex<?>> treeParents = findVisitedDAGVertices(dagSource);
             treeParents.forEach(treeParent -> addTreeVertex(treeParent, dagTarget));
         }
 
-        private void addTreeVertex(final ServiceTreeVertex<?> treeParent, final ServiceDAGVertex<?> dagChild) {
-            final ServiceTreeVertex<?> treeChild = ServiceTreeVertex.createChild(dagChild, treeParent);
+        private void addTreeVertex(final IServiceTreeVertex<?> treeParent, final IServiceDAGVertex<?> dagChild) {
+            final IServiceTreeVertex<?> treeChild = ServiceTreeVertex.createChild(dagChild, treeParent);
             visitedVertices.addLast(treeChild);
 
             serviceTree.addVertex(treeChild);
             serviceTree.addEdge(treeParent, treeChild);
         }
 
-        private Set<ServiceTreeVertex<?>> findVisitedDAGVertices(final ServiceDAGVertex<?> dagVertex) {
+        private Set<IServiceTreeVertex<?>> findVisitedDAGVertices(final IServiceDAGVertex<?> dagVertex) {
             return visitedVertices.stream()
-                .filter(visitedVertex -> visitedVertex.getDelegate().equals(dagVertex))
+                .filter(visitedVertex -> ((ServiceTreeVertex)visitedVertex).getDelegate().equals(dagVertex))
                 .collect(Collectors.toSet());
         }
     }

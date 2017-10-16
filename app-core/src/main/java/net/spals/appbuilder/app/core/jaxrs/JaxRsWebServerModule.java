@@ -7,6 +7,7 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+import net.spals.appbuilder.graph.model.IServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceDAG;
 import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import org.inferred.freebuilder.FreeBuilder;
@@ -60,7 +61,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         getConfigurable().register(wsComponent);
 
         final Key<Object> wsKey = (Key<Object>) Key.get(TypeLiteral.get(wsComponent.getClass()));
-        final ServiceDAGVertex<?> wsVertex = ServiceDAGVertex.createVertex(wsKey, wsComponent);
+        final IServiceDAGVertex<?> wsVertex = ServiceDAGVertex.createVertex(wsKey, wsComponent);
         getServiceDAG().addVertex(wsVertex);
         getServiceDAG().addEdge(wsVertex, theWebServerVertex);
     }
@@ -90,7 +91,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
      *
      * @author tkral
      */
-    static class JaxRsWebServerVertex extends ServiceDAGVertex<String> {
+    static class JaxRsWebServerVertex implements IServiceDAGVertex<String> {
 
         @Override
         public Key<String> getGuiceKey() {
@@ -103,12 +104,12 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         }
 
         @Override
-        public Optional<ServiceDAGVertex<?>> getProviderSource() {
+        public Optional<IServiceDAGVertex<?>> getProviderSource() {
             return Optional.empty();
         }
 
         @Override
-        protected String toString(final String separator) {
+        public String toString(final String separator) {
             return getServiceInstance();
         }
     }

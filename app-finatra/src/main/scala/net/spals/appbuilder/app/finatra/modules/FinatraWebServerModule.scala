@@ -11,7 +11,7 @@ import com.twitter.finatra.http.exceptions.ExceptionMapper
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
 import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat
-import net.spals.appbuilder.graph.model.{ServiceDAG, ServiceDAGVertex}
+import net.spals.appbuilder.graph.model.{IServiceDAGVertex, ServiceDAG, ServiceDAGVertex}
 
 import scala.collection.mutable.ListBuffer
 
@@ -103,13 +103,13 @@ private[finatra] case class FinatraWebServerModule(
   *
   * @author tkral
   */
-private[modules] class FinatraWebServerVertex extends ServiceDAGVertex[String] {
+private[modules] class FinatraWebServerVertex extends IServiceDAGVertex[String] {
 
   override def getGuiceKey: Key[String] = Key.get(classOf[String])
 
   override def getServiceInstance = "FINATRA WEBSERVER"
 
-  override def getProviderSource: Optional[ServiceDAGVertex[_]] = Optional.empty[ServiceDAGVertex[_]]
+  override def getProviderSource: Optional[IServiceDAGVertex[_]] = Optional.empty[IServiceDAGVertex[_]]
 
-  override protected def toString(separator: String): String = getServiceInstance
+  override def toString(separator: String): String = getServiceInstance
 }

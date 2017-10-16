@@ -9,28 +9,28 @@ import java.util.Optional;
 /**
  * @author tkral
  */
-public class ServiceTreeVertex<T> extends ServiceDAGVertex<T> {
+public class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
 
-    private final ServiceDAGVertex<T> delegate;
-    private final Optional<ServiceTreeVertex<?>> parent;
+    private final IServiceDAGVertex<T> delegate;
+    private final Optional<IServiceTreeVertex<?>> parent;
 
-    static <T2> ServiceTreeVertex<T2> createChild(final ServiceDAGVertex<T2> delegate,
-                                                  final ServiceTreeVertex<?> parent) {
+    static <T2> ServiceTreeVertex<T2> createChild(final IServiceDAGVertex<T2> delegate,
+                                                  final IServiceTreeVertex<?> parent) {
         Preconditions.checkNotNull(parent);
         return new ServiceTreeVertex<T2>(delegate, Optional.of(parent));
     }
 
-    static <T2> ServiceTreeVertex<T2> createRoot(final ServiceDAGVertex<T2> delegate) {
+    static <T2> ServiceTreeVertex<T2> createRoot(final IServiceDAGVertex<T2> delegate) {
         return new ServiceTreeVertex<T2>(delegate, Optional.empty());
     }
 
-    private ServiceTreeVertex(final ServiceDAGVertex<T> delegate,
-                              final Optional<ServiceTreeVertex<?>> parent) {
+    private ServiceTreeVertex(final IServiceDAGVertex<T> delegate,
+                              final Optional<IServiceTreeVertex<?>> parent) {
         this.delegate = delegate;
         this.parent = parent;
     }
 
-    ServiceDAGVertex<?> getDelegate() {
+    IServiceDAGVertex<T> getDelegate() {
         return delegate;
     }
 
@@ -44,17 +44,14 @@ public class ServiceTreeVertex<T> extends ServiceDAGVertex<T> {
         return delegate.getServiceInstance();
     }
 
-    public Optional<ServiceTreeVertex<?>> getParent() {
+    @Override
+    public Optional<IServiceTreeVertex<?>> getParent() {
         return parent;
     }
 
     @Override
-    public Optional<ServiceDAGVertex<?>> getProviderSource() {
+    public Optional<IServiceDAGVertex<?>> getProviderSource() {
         return delegate.getProviderSource();
-    }
-
-    public boolean isRoot() {
-        return !parent.isPresent();
     }
 
     @Override
@@ -75,7 +72,7 @@ public class ServiceTreeVertex<T> extends ServiceDAGVertex<T> {
     }
 
     @Override
-    protected String toString(final String separator) {
+    public String toString(final String separator) {
         return delegate.toString(separator);
     }
 }

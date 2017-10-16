@@ -29,8 +29,8 @@ public class ServiceDAGTest {
     public void testDuplicateVertices() {
         final ServiceDAG serviceDAG = new ServiceDAG();
 
-        final ServiceDAGVertex<?> vertex1 = createDAGVertex("vertex");
-        final ServiceDAGVertex<?> vertex2 = createDAGVertex("vertex");
+        final IServiceDAGVertex<?> vertex1 = createDAGVertex("vertex");
+        final IServiceDAGVertex<?> vertex2 = createDAGVertex("vertex");
 
         serviceDAG.addVertex(vertex1);
         serviceDAG.addVertex(vertex2);
@@ -42,10 +42,10 @@ public class ServiceDAGTest {
     public void testFindVertex() {
         final ServiceDAG serviceDAG = new ServiceDAG();
 
-        final ServiceDAGVertex<?> vertex = createDAGVertex("vertex");
+        final IServiceDAGVertex<?> vertex = createDAGVertex("vertex");
         serviceDAG.addVertex(vertex);
 
-        final Optional<ServiceDAGVertex<?>> findVertex = serviceDAG.findVertex(Key.get(String.class));
+        final Optional<IServiceDAGVertex<?>> findVertex = serviceDAG.findVertex(Key.get(String.class));
         assertThat(findVertex, not(Optional.empty()));
         assertThat(findVertex.get(), is(vertex));
     }
@@ -54,7 +54,7 @@ public class ServiceDAGTest {
     public void testFindAllVertices() {
         final ServiceDAG serviceDAG = new ServiceDAG();
 
-        final ServiceDAGVertex<?> vertex = createDAGVertex("vertex");
+        final IServiceDAGVertex<?> vertex = createDAGVertex("vertex");
         serviceDAG.addVertex(vertex);
 
         assertThat(serviceDAG.findAllVertices(rawTypeThat(subclassesOf(String.class))), contains(vertex));
@@ -62,12 +62,12 @@ public class ServiceDAGTest {
 
     @DataProvider
     Object[][] basicToTreeProvider() {
-        final ServiceDAGVertex<?> a = createDAGVertex("a");
-        final ServiceDAGVertex<?> b = createDAGVertex("b");
-        final ServiceDAGVertex<?> c = createDAGVertex("c");
-        final ServiceDAGVertex<?> d = createDAGVertex("d");
-        final ServiceDAGVertex<?> e = createDAGVertex("e");
-        final ServiceDAGVertex<?> f = createDAGVertex("f");
+        final IServiceDAGVertex<?> a = createDAGVertex("a");
+        final IServiceDAGVertex<?> b = createDAGVertex("b");
+        final IServiceDAGVertex<?> c = createDAGVertex("c");
+        final IServiceDAGVertex<?> d = createDAGVertex("d");
+        final IServiceDAGVertex<?> e = createDAGVertex("e");
+        final IServiceDAGVertex<?> f = createDAGVertex("f");
 
         final ServiceDAG basicDiamond = diamondGraph(a, b, c, d);
 
@@ -97,7 +97,7 @@ public class ServiceDAGTest {
 
     @Test(dataProvider = "basicToTreeProvider")
     public void testBasicToTree(final ServiceDAG serviceDAG,
-                                final ServiceDAGVertex<?> root,
+                                final IServiceDAGVertex<?> root,
                                 final List<String> expectedBFSWalk) {
         final ServiceTree serviceTree = serviceDAG.toTree(root);
 
@@ -107,16 +107,16 @@ public class ServiceDAGTest {
 
     @DataProvider
     Object[][] complexToTreeProvider() {
-        final ServiceDAGVertex<?> a = createDAGVertex("a");
-        final ServiceDAGVertex<?> b = createDAGVertex("b");
-        final ServiceDAGVertex<?> c = createDAGVertex("c");
-        final ServiceDAGVertex<?> d = createDAGVertex("d");
-        final ServiceDAGVertex<?> e = createDAGVertex("e");
-        final ServiceDAGVertex<?> f = createDAGVertex("f");
-        final ServiceDAGVertex<?> g = createDAGVertex("g");
-        final ServiceDAGVertex<?> h = createDAGVertex("h");
-        final ServiceDAGVertex<?> i = createDAGVertex("i");
-        final ServiceDAGVertex<?> j = createDAGVertex("j");
+        final IServiceDAGVertex<?> a = createDAGVertex("a");
+        final IServiceDAGVertex<?> b = createDAGVertex("b");
+        final IServiceDAGVertex<?> c = createDAGVertex("c");
+        final IServiceDAGVertex<?> d = createDAGVertex("d");
+        final IServiceDAGVertex<?> e = createDAGVertex("e");
+        final IServiceDAGVertex<?> f = createDAGVertex("f");
+        final IServiceDAGVertex<?> g = createDAGVertex("g");
+        final IServiceDAGVertex<?> h = createDAGVertex("h");
+        final IServiceDAGVertex<?> i = createDAGVertex("i");
+        final IServiceDAGVertex<?> j = createDAGVertex("j");
 
         final ServiceDAG multiDiamond = diamondGraph(a, c, d, f);
         multiDiamond.addVertex(b);
@@ -158,7 +158,7 @@ public class ServiceDAGTest {
 
     @Test(dataProvider = "complexToTreeProvider")
     public void testComplexToTree(final ServiceDAG serviceDAG,
-                                  final ServiceDAGVertex<?> root,
+                                  final IServiceDAGVertex<?> root,
                                   final List<String> expectedBFSWalk) {
         final ServiceTree serviceTree = serviceDAG.toTree(root);
 
@@ -167,25 +167,25 @@ public class ServiceDAGTest {
     }
 
     private List<String> bfsWalk(final ServiceTree serviceTree) {
-        final BreadthFirstIterator<ServiceTreeVertex<?>, DefaultEdge> bfs =
+        final BreadthFirstIterator<IServiceTreeVertex<?>, DefaultEdge> bfs =
             new BreadthFirstIterator<>(serviceTree);
 
         final List<String> bfsResult = new ArrayList<>();
         while (bfs.hasNext()) {
-            bfsResult.add(bfs.next().getDelegate().getServiceInstance().toString());
+            bfsResult.add(bfs.next().getServiceInstance().toString());
         }
 
         return bfsResult;
     }
 
-    private ServiceDAGVertex<?> createDAGVertex(final String label) {
+    private IServiceDAGVertex<?> createDAGVertex(final String label) {
         return createVertex(Key.get(String.class), label);
     }
 
-    private ServiceDAG diamondGraph(final ServiceDAGVertex<?> a,
-                                    final ServiceDAGVertex<?> b,
-                                    final ServiceDAGVertex<?> c,
-                                    final ServiceDAGVertex<?> d) {
+    private ServiceDAG diamondGraph(final IServiceDAGVertex<?> a,
+                                    final IServiceDAGVertex<?> b,
+                                    final IServiceDAGVertex<?> c,
+                                    final IServiceDAGVertex<?> d) {
         final ServiceDAG serviceDAG = new ServiceDAG();
 
         serviceDAG.addVertex(a);
