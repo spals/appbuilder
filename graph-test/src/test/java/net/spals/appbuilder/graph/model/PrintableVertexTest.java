@@ -14,16 +14,16 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 
 /**
- * Unit tests for {@link PrintableGraphVertex}.
+ * Unit tests for {@link PrintableVertex}.
  *
  * @author tkral
  */
-public class PrintableServiceVertexTest {
+public class PrintableVertexTest {
 
     @Test
     public void tetGetGuiceKey() {
         final ServiceDAGVertex vertex = Mockito.mock(ServiceDAGVertex.class);
-        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, " ");
+        final PrintableVertex printableVertex = new PrintableVertex(vertex, " ");
 
         printableVertex.getGuiceKey();
         verify(vertex).getGuiceKey();
@@ -32,7 +32,7 @@ public class PrintableServiceVertexTest {
     @Test
     public void tetGetServiceInstance() {
         final ServiceDAGVertex vertex = Mockito.mock(ServiceDAGVertex.class);
-        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, " ");
+        final PrintableVertex printableVertex = new PrintableVertex(vertex, " ");
 
         printableVertex.getServiceInstance();
         verify(vertex).getServiceInstance();
@@ -41,7 +41,7 @@ public class PrintableServiceVertexTest {
     @Test
     public void tetGetProviderSource() {
         final ServiceDAGVertex vertex = Mockito.mock(ServiceDAGVertex.class);
-        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, " ");
+        final PrintableVertex printableVertex = new PrintableVertex(vertex, " ");
 
         printableVertex.getProviderSource();
         verify(vertex).getProviderSource();
@@ -53,14 +53,14 @@ public class PrintableServiceVertexTest {
             {createVertex(Key.get(String.class), "1"), " ", "\"1\""},
             {createVertex(Key.get(String.class, Names.named("constant")), "1"), "~",
                 "@Named(constant)~\"1\""},
-            {createVertexWithProvider(createVertex(Key.get(PrintableServiceVertexTest.class), new PrintableServiceVertexTest()),
-                createVertex(Key.get(Provider.class), new Provider<PrintableServiceVertexTest>() {
+            {createVertexWithProvider(createVertex(Key.get(PrintableVertexTest.class), new PrintableVertexTest()),
+                createVertex(Key.get(Provider.class), new Provider<PrintableVertexTest>() {
                     @Override
-                    public PrintableServiceVertexTest get() {
-                        return new PrintableServiceVertexTest();
+                    public PrintableVertexTest get() {
+                        return new PrintableVertexTest();
                     }
                 })), "~",
-                "PrintableServiceVertexTest~[Provider:Provider]"},
+                "PrintableVertexTest~[Provider:Provider]"},
 
         };
     }
@@ -69,7 +69,7 @@ public class PrintableServiceVertexTest {
     public void testToString(final ServiceDAGVertex<?> vertex,
                              final String separator,
                              final String expectedResult) {
-        final PrintableGraphVertex printableVertex = new PrintableGraphVertex(vertex, separator);
+        final PrintableVertex printableVertex = new PrintableVertex(vertex, separator);
         assertThat(printableVertex.toString(), is(expectedResult));
     }
 }

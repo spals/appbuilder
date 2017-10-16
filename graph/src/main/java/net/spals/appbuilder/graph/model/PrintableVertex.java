@@ -11,12 +11,12 @@ import java.util.Optional;
  *
  * @author tkral
  */
-public class PrintableGraphVertex<T> extends ServiceDAGVertex<T> {
+public class PrintableVertex<T> extends ServiceDAGVertex<T> {
 
     private final ServiceDAGVertex<T> delegate;
     private final String separator;
 
-    public PrintableGraphVertex(final ServiceDAGVertex<T> delegate, final String separator) {
+    public PrintableVertex(final ServiceDAGVertex<T> delegate, final String separator) {
         this.delegate = delegate;
         this.separator = separator;
     }
