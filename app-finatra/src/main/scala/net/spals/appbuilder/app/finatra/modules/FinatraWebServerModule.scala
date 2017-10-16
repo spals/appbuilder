@@ -11,7 +11,8 @@ import com.twitter.finatra.http.exceptions.ExceptionMapper
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
 import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat
-import net.spals.appbuilder.graph.model.{IServiceDAGVertex, ServiceDAG, ServiceDAGVertex}
+import net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertex
+import net.spals.appbuilder.graph.model.{IServiceDAGVertex, ServiceDAG}
 
 import scala.collection.mutable.ListBuffer
 
@@ -46,7 +47,7 @@ private[finatra] case class FinatraWebServerModule(
 
   private[finatra] def addComponentVertex[T](wsComponent: T): Unit = {
     val wsKey: Key[T] = Key.get(TypeLiteral.get(wsComponent.getClass.asInstanceOf[Class[T]]))
-    val wsVertex = ServiceDAGVertex.createVertex(wsKey, wsComponent)
+    val wsVertex = createDAGVertex(wsKey, wsComponent)
     serviceDAG.addVertex(wsVertex)
     serviceDAG.addEdge(wsVertex, webServerVertex)
   }

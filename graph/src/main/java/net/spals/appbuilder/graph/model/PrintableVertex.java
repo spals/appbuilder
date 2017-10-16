@@ -1,8 +1,7 @@
 package net.spals.appbuilder.graph.model;
 
+import com.google.auto.value.AutoValue;
 import com.google.inject.Key;
-
-import java.util.Optional;
 
 /**
  * A {@link ServiceDAGVertex} wrapper which
@@ -11,33 +10,44 @@ import java.util.Optional;
  *
  * @author tkral
  */
-public class PrintableVertex<T> extends ServiceDAGVertex<T> {
+@AutoValue
+public abstract class PrintableVertex<T> implements IServiceGraphVertex<T> {
 
-    private final IServiceDAGVertex<T> delegate;
-    private final String separator;
-
-    public PrintableVertex(final IServiceDAGVertex<T> delegate, final String separator) {
-        this.delegate = delegate;
-        this.separator = separator;
+    public static <T2> PrintableVertex<T2> createPrintableVertex(final IServiceGraphVertex<T2> delegate,
+                                                                 final String separator) {
+        return new AutoValue_PrintableVertex<>(delegate, separator);
     }
+
+    abstract IServiceGraphVertex<T> getDelegate();
+    abstract String getSeparator();
 
     @Override
     public Key<T> getGuiceKey() {
-        return delegate.getGuiceKey();
+        return getDelegate().getGuiceKey();
     }
 
     @Override
     public T getServiceInstance() {
-        return delegate.getServiceInstance();
+        return getDelegate().getServiceInstance();
     }
 
     @Override
-    public Optional<IServiceDAGVertex<?>> getProviderSource() {
-        return delegate.getProviderSource();
+    public final boolean equals(final Object obj) {
+        return getDelegate().equals(obj);
     }
 
     @Override
-    public String toString() {
-        return delegate.toString(separator);
+    public final int hashCode() {
+        return getDelegate().hashCode();
+    }
+
+    @Override
+    public final String toString() {
+        return toString(getSeparator());
+    }
+
+    @Override
+    public String toString(final String separator) {
+        return getDelegate().toString(separator);
     }
 }

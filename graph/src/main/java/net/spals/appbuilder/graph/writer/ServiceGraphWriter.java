@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertexWithProvider;
 
 /**
  * @author tkral
@@ -103,7 +104,7 @@ public class ServiceGraphWriter {
     void mergeProviderSourceVertex(final ServiceDAG serviceDAG,
                                    final IServiceDAGVertex<?> providerSourceVertex,
                                    final IServiceDAGVertex<?> providedVertex) {
-        final IServiceDAGVertex<?> mergedVertex = ServiceDAGVertex.createVertexWithProvider(providedVertex,
+        final IServiceDAGVertex<?> mergedVertex = createDAGVertexWithProvider(providedVertex,
             providerSourceVertex);
 
         serviceDAG.addVertex(mergedVertex);

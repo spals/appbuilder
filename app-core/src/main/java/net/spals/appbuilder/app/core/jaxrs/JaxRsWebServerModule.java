@@ -26,6 +26,7 @@ import java.util.Optional;
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.annotatedWith;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertex;
 
 /**
  * @author tkral
@@ -61,7 +62,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         getConfigurable().register(wsComponent);
 
         final Key<Object> wsKey = (Key<Object>) Key.get(TypeLiteral.get(wsComponent.getClass()));
-        final IServiceDAGVertex<?> wsVertex = ServiceDAGVertex.createVertex(wsKey, wsComponent);
+        final IServiceDAGVertex<?> wsVertex = createDAGVertex(wsKey, wsComponent);
         getServiceDAG().addVertex(wsVertex);
         getServiceDAG().addEdge(wsVertex, theWebServerVertex);
     }

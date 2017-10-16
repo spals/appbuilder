@@ -15,7 +15,6 @@ import net.spals.appbuilder.config.matcher.BindingMatchers;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.IServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceDAG;
-import net.spals.appbuilder.graph.model.ServiceDAGVertex;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
+import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertex;
 
 /**
  * @author tkral
@@ -81,7 +81,7 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
             final T serviceInstance = provision.provision();
 
             final IServiceDAGVertex<T> vertex =
-                ServiceDAGVertex.createVertex(provision.getBinding().getKey(), serviceInstance);
+                createDAGVertex(provision.getBinding().getKey(), serviceInstance);
             serviceDAG.addVertex(vertex);
 
             if (serviceScanMatcher.matches(provision.getBinding())) {

@@ -13,7 +13,6 @@ import java.util.Optional;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
-import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createVertex;
 import static net.spals.appbuilder.graph.model.ServiceTreeVertex.createTreeRoot;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -179,7 +178,7 @@ public class ServiceDAGTest {
     }
 
     private IServiceDAGVertex<?> createDAGVertex(final String label) {
-        return createVertex(Key.get(String.class), label);
+        return ServiceDAGVertex.createDAGVertex(Key.get(String.class), label);
     }
 
     private ServiceDAG diamondGraph(final IServiceDAGVertex<?> a,

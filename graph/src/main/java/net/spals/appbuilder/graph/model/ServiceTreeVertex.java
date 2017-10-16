@@ -7,6 +7,8 @@ import com.google.inject.Key;
 
 import java.util.Optional;
 
+import static net.spals.appbuilder.graph.model.ServiceGraphVertex.DEFAULT_SEPARATOR;
+
 /**
  * @author tkral
  */
@@ -14,7 +16,6 @@ import java.util.Optional;
 public abstract class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
 
     abstract IServiceDAGVertex<T> getDelegate();
-    public abstract Optional<IServiceTreeVertex<?>> getParent();
 
     static <T2> ServiceTreeVertex<T2> createTreeChild(final IServiceDAGVertex<T2> delegate,
                                                       final IServiceTreeVertex<?> parent) {
@@ -37,6 +38,9 @@ public abstract class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
     }
 
     @Override
+    public abstract Optional<IServiceTreeVertex<?>> getParent();
+
+    @Override
     public final Optional<IServiceDAGVertex<?>> getProviderSource() {
         return getDelegate().getProviderSource();
     }
@@ -57,8 +61,8 @@ public abstract class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
     }
 
     @Override
-    public final String toString() {
-        return getDelegate().toString();
+    public String toString() {
+        return toString(DEFAULT_SEPARATOR);
     }
 
     @Override
