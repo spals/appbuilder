@@ -35,7 +35,7 @@ private[dynamodb] class DynamoDBClientProvider @Inject() (
   @Configuration("mapStore.dynamoDB.awsSecretKey")
   private[dynamodb] var awsSecretKey: String = null
 
-  @Configuration("fileStore.dynamoDB.awsSessionToken")
+  @Configuration("mapStore.dynamoDB.awsSessionToken")
   private[dynamodb] var awsSessionToken: String = null
 
   @NotNull
