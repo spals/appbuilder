@@ -4,6 +4,7 @@ import io.opentracing.Tracer
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
 import net.spals.appbuilder.filestore.core.FileStore
+import net.spals.appbuilder.graph.model.ServiceGraphFormat
 import net.spals.appbuilder.mapstore.core.MapStore
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
@@ -17,6 +18,7 @@ object PluginsFinatraWebAppMain extends PluginsFinatraWebApp
 
 private[finatra] class PluginsFinatraWebApp extends FinatraWebApp {
 
+  enableServiceGraph(ServiceGraphFormat.TEXT)
   setServiceConfigFromClasspath("config/plugins-finatra-service.conf")
   setServiceScan(new ServiceScan.Builder()
     .addServicePackages("net.spals.appbuilder.app.finatra.plugins")
