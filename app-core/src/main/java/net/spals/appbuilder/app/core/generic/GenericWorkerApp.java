@@ -20,12 +20,13 @@ import net.spals.appbuilder.app.core.modules.AutoBindServiceGraphModule;
 import net.spals.appbuilder.app.core.modules.AutoBindServicesModule;
 import net.spals.appbuilder.config.provider.TypesafeConfigurationProvider;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.graph.model.ServiceDAG;
+import net.spals.appbuilder.graph.model.ServiceGraph;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +41,7 @@ public abstract class GenericWorkerApp implements App {
 
         private final List<Module> orderedModules = new ArrayList<>();
         private final LifecycleInjectorBuilder lifecycleInjectorBuilder;
-        private final ServiceDAG serviceDAG = new ServiceDAG();
+        private final ServiceGraph serviceGraph = new ServiceGraph();
 
         private final AutoBindConfigModule.Builder configModuleBuilder;
         private final AutoBindServiceGraphModule.Builder serviceGraphModuleBuilder;
@@ -62,7 +63,7 @@ public abstract class GenericWorkerApp implements App {
                         bootstrapBinder.requireExactBindingAnnotations();
                     });
             this.configModuleBuilder = new AutoBindConfigModule.Builder(name);
-            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceDAG);
+            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceGraph);
 
             setName(name);
             setLogger(logger);
@@ -98,8 +99,8 @@ public abstract class GenericWorkerApp implements App {
             return this;
         }
 
-        public ServiceDAG getServiceDAG() {
-            return serviceDAG;
+        public ServiceGraph getServiceGraph() {
+            return serviceGraph;
         }
 
         @Override
@@ -151,7 +152,10 @@ public abstract class GenericWorkerApp implements App {
             final Injector serviceInjector = buildServiceInjector(lifecycleInjectorBuilder);
             setServiceInjector(serviceInjector);
             // Write the service graph
-            serviceInjector.getInstance(ServiceGraphWriter.class).writeServiceGraph(serviceDAG);
+            final StringWriter sw = new StringWriter();
+            serviceInjector.getInstance(ServiceGraphWriter.class).writeServiceGraph(sw);
+            getLogger().info(sw.toString());
+
             return super.build();
         }
 

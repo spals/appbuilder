@@ -13,26 +13,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * An implementation of a Directed Acyclic Graph
- * which stores relationships between micro-services.
- *
  * @author tkral
  */
-public class ServiceDAG
-    extends GraphDelegator<IServiceDAGVertex<?>, DefaultEdge>
-    implements DirectedGraph<IServiceDAGVertex<?>, DefaultEdge> {
+public class ServiceGraph
+    extends GraphDelegator<IServiceGraphVertex<?>, DefaultEdge>
+    implements DirectedGraph<IServiceGraphVertex<?>, DefaultEdge> {
 
-    public ServiceDAG() {
+    public ServiceGraph() {
         super(new DirectedAcyclicGraph<>(DefaultEdge.class));
     }
 
-    public Optional<IServiceDAGVertex<?>> findVertex(final Key<?> guiceKey) {
+    public Optional<IServiceGraphVertex<?>> findVertex(final Key<?> guiceKey) {
         return vertexSet().stream()
             .filter(vertex -> guiceKey.equals(vertex.getGuiceKey()))
             .findAny();
     }
 
-    public Set<IServiceDAGVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
+    public Set<IServiceGraphVertex<?>> findAllVertices(final Matcher<TypeLiteral<?>> typeMatcher) {
         return vertexSet().stream()
             .filter(vertex -> typeMatcher.matches(vertex.getGuiceKey().getTypeLiteral()))
             .collect(Collectors.toSet());

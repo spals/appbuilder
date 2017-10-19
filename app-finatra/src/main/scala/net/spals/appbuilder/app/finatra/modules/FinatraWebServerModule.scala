@@ -1,7 +1,5 @@
 package net.spals.appbuilder.app.finatra.modules
 
-import java.util.Optional
-
 import com.google.inject.matcher.Matchers.subclassesOf
 import com.google.inject.spi.{InjectionListener, TypeEncounter, TypeListener}
 import com.google.inject.{Key, TypeLiteral}
@@ -12,7 +10,7 @@ import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.inject.TwitterModule
 import net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat
 import net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertex
-import net.spals.appbuilder.graph.model.{IServiceDAGVertex, ServiceDAG}
+import net.spals.appbuilder.graph.model.{IServiceGraphVertex, ServiceGraph}
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,7 +18,7 @@ import scala.collection.mutable.ListBuffer
   * @author tkral
   */
 private[finatra] case class FinatraWebServerModule(
-    serviceDAG: ServiceDAG,
+    serviceGraph: ServiceGraph,
     runWebServerAutoBinding: Boolean = true
   ) extends TwitterModule
   with InjectionListener[AnyRef]
@@ -48,8 +46,8 @@ private[finatra] case class FinatraWebServerModule(
   private[finatra] def addComponentVertex[T](wsComponent: T): Unit = {
     val wsKey: Key[T] = Key.get(TypeLiteral.get(wsComponent.getClass.asInstanceOf[Class[T]]))
     val wsVertex = createDAGVertex(wsKey, wsComponent)
-    serviceDAG.addVertex(wsVertex)
-    serviceDAG.addEdge(wsVertex, webServerVertex)
+    serviceGraph.addVertex(wsVertex)
+    serviceGraph.addEdge(wsVertex, webServerVertex)
   }
 
   private[finatra] def runWebServerAutoBind(router: HttpRouter): Unit = {
@@ -58,8 +56,8 @@ private[finatra] case class FinatraWebServerModule(
     val filters = new ListBuffer[Filter[finaglehttp.Request, finaglehttp.Response, finaglehttp.Request, finaglehttp.Response]]
     Option(runWebServerAutoBinding).filter(b => b).foreach(b => {
       // Add the dummy webserver vertex to the service DAG
-      if(!serviceDAG.containsVertex(webServerVertex)) {
-        serviceDAG.addVertex(webServerVertex)
+      if(!serviceGraph.containsVertex(webServerVertex)) {
+        serviceGraph.addVertex(webServerVertex)
       }
 
       val wsComponentsList = wsComponents.toList
@@ -104,13 +102,11 @@ private[finatra] case class FinatraWebServerModule(
   *
   * @author tkral
   */
-private[modules] class FinatraWebServerVertex extends IServiceDAGVertex[String] {
+private[modules] class FinatraWebServerVertex extends IServiceGraphVertex[String] {
 
   override def getGuiceKey: Key[String] = Key.get(classOf[String])
 
   override def getServiceInstance = "FINATRA WEBSERVER"
-
-  override def getProviderSource: Optional[IServiceDAGVertex[_]] = Optional.empty[IServiceDAGVertex[_]]
 
   override def toString(separator: String): String = getServiceInstance
 }

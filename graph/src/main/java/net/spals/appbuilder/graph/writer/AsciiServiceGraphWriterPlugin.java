@@ -3,6 +3,7 @@ package net.spals.appbuilder.graph.writer;
 import com.github.mdr.ascii.graph.Graph;
 import com.github.mdr.ascii.java.GraphBuilder;
 import com.github.mdr.ascii.java.GraphLayouter;
+import net.spals.appbuilder.graph.model.IServiceDAGVertex;
 import net.spals.appbuilder.graph.model.IServiceGraphVertex;
 import net.spals.appbuilder.graph.model.PrintableVertex;
 import net.spals.appbuilder.graph.model.ServiceDAG;
@@ -12,7 +13,7 @@ import static net.spals.appbuilder.graph.model.PrintableVertex.createPrintableVe
 /**
  * @author tkral
  */
-class AsciiServiceGraphWriterPlugin implements ServiceGraphWriterPlugin {
+class AsciiServiceGraphWriterPlugin implements ServiceGraphWriterPlugin<IServiceDAGVertex<?>, ServiceDAG> {
 
     @Override
     public String writeServiceGraph(final ServiceDAG serviceDAG) {

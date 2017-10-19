@@ -7,9 +7,9 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import net.spals.appbuilder.graph.model.IServiceDAGVertex;
-import net.spals.appbuilder.graph.model.ServiceDAG;
+import net.spals.appbuilder.graph.model.IServiceGraphVertex;
 import net.spals.appbuilder.graph.model.ServiceDAGVertex;
+import net.spals.appbuilder.graph.model.ServiceGraph;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +21,11 @@ import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.core.Configurable;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.util.Optional;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.annotatedWith;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
-import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertex;
+import static net.spals.appbuilder.graph.model.ServiceGraphVertex.createGraphVertex;
 
 /**
  * @author tkral
@@ -37,7 +36,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
 
     public abstract boolean isActive();
     public abstract Configurable<?> getConfigurable();
-    public abstract ServiceDAG getServiceDAG();
+    public abstract ServiceGraph getServiceGraph();
 
     public static class Builder extends JaxRsWebServerModule_Builder {
         public Builder() {
@@ -62,9 +61,9 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         getConfigurable().register(wsComponent);
 
         final Key<Object> wsKey = (Key<Object>) Key.get(TypeLiteral.get(wsComponent.getClass()));
-        final IServiceDAGVertex<?> wsVertex = createDAGVertex(wsKey, wsComponent);
-        getServiceDAG().addVertex(wsVertex);
-        getServiceDAG().addEdge(wsVertex, theWebServerVertex);
+        final IServiceGraphVertex<?> wsVertex = createGraphVertex(wsKey, wsComponent);
+        getServiceGraph().addVertex(wsVertex);
+        getServiceGraph().addEdge(wsVertex, theWebServerVertex);
     }
 
     @Override
@@ -73,8 +72,8 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         if (isActive()) {
             // Add a dummy JAXRS WEBSERVER vertex to the service graph to show how WebServer components
             // relate to one another
-            if (!getServiceDAG().containsVertex(theWebServerVertex)) {
-                getServiceDAG().addVertex(theWebServerVertex);
+            if (!getServiceGraph().containsVertex(theWebServerVertex)) {
+                getServiceGraph().addVertex(theWebServerVertex);
             }
 
             typeEncounter.register(this);
@@ -92,7 +91,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
      *
      * @author tkral
      */
-    static class JaxRsWebServerVertex implements IServiceDAGVertex<String> {
+    static class JaxRsWebServerVertex implements IServiceGraphVertex<String> {
 
         @Override
         public Key<String> getGuiceKey() {
@@ -102,11 +101,6 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
         @Override
         public String getServiceInstance() {
             return "JAX-RS WEBSERVER";
-        }
-
-        @Override
-        public Optional<IServiceDAGVertex<?>> getProviderSource() {
-            return Optional.empty();
         }
 
         @Override

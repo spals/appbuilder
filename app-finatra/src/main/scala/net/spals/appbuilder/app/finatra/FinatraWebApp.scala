@@ -1,5 +1,6 @@
 package net.spals.appbuilder.app.finatra
 
+import java.io.StringWriter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
@@ -20,7 +21,7 @@ import net.spals.appbuilder.app.finatra.bootstrap.FinatraBootstrapModule
 import net.spals.appbuilder.app.finatra.modules.{AutoBindConfigFlagsModule, FinatraMonitorModule, FinatraWebServerModule}
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.config.service.ServiceScan
-import net.spals.appbuilder.graph.model.{ServiceDAG, ServiceGraphFormat}
+import net.spals.appbuilder.graph.model.{ServiceGraph, ServiceGraphFormat}
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter
 import org.slf4j
 import org.slf4j.LoggerFactory
@@ -89,8 +90,11 @@ trait FinatraWebApp extends HttpServer
   @Lifecycle
   override protected def postInjectorStartup(): Unit = {
     super.postInjectorStartup()
+
+    val sw = new StringWriter()
     val serviceGraphWriter = injector.instance[ServiceGraphWriter]
-    serviceGraphWriter.writeServiceGraph(serviceDAG)
+    serviceGraphWriter.writeServiceGraph(sw)
+    getLogger.info(sw.toString)
   }
 
   // ========== Spals App ==========
@@ -111,13 +115,13 @@ trait FinatraWebApp extends HttpServer
 
   // Alternative configuration outside of Flags
   private var altConfig: Option[Config] = None
-  private val serviceDAG = new ServiceDAG()
+  private val serviceGraph = new ServiceGraph()
 
   private var bootstrapModule = new FinatraBootstrapModule()
   private val configModuleBuilder = new AutoBindConfigModule.Builder(getName)
   private val monitorModule = new FinatraMonitorModule
-  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceDAG)
-  private var webServerModule = FinatraWebServerModule(serviceDAG)
+  private val serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceGraph)
+  private var webServerModule = FinatraWebServerModule(serviceGraph)
 
   override def addModule(module: Module): FinatraWebApp = {
     customModules += module

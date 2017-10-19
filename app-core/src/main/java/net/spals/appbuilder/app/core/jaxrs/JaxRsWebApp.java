@@ -113,7 +113,7 @@ public abstract class JaxRsWebApp implements App {
         public JaxRsWebApp build() {
             appDelegateBuilder.addModule(monitorModuleBuilder.build());
 
-            webServerModuleBuilder.setServiceDAG(appDelegateBuilder.getServiceDAG());
+            webServerModuleBuilder.setServiceGraph(appDelegateBuilder.getServiceGraph());
             appDelegateBuilder.addModule(webServerModuleBuilder.build());
 
             final GenericWorkerApp appDelegate = appDelegateBuilder.build();
