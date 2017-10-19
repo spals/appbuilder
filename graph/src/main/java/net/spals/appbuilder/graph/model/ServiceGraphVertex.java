@@ -39,21 +39,6 @@ public abstract class ServiceGraphVertex<T> implements IServiceGraphVertex<T> {
     public abstract T getServiceInstance();
 
     @Override
-    public boolean equals(final Object obj) {
-        if (obj == null || !(IServiceGraphVertex.class.isAssignableFrom(obj.getClass()))) {
-            return false;
-        }
-        final IServiceGraphVertex that = (IServiceGraphVertex) obj;
-        return Objects.equal(getGuiceKey(), that.getGuiceKey()) &&
-            Objects.equal(getServiceInstance(), that.getServiceInstance());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getGuiceKey(), getServiceInstance());
-    }
-
-    @Override
     public String toString() {
         return toString(DEFAULT_SEPARATOR);
     }

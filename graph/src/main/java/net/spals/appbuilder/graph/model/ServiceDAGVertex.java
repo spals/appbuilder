@@ -51,21 +51,6 @@ public abstract class ServiceDAGVertex<T> implements IServiceDAGVertex<T> {
     public abstract Optional<IServiceDAGVertex<?>> getProviderSource();
 
     @Override
-    public final boolean equals(final Object obj) {
-        if (!getDelegate().equals(obj) || !(IServiceDAGVertex.class.isAssignableFrom(obj.getClass()))) {
-            return false;
-        }
-
-        final IServiceDAGVertex that = (IServiceDAGVertex) obj;
-        return Objects.equal(getProviderSource(), that.getProviderSource());
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hashCode(getDelegate().hashCode(), getProviderSource());
-    }
-
-    @Override
     public final String toString() {
         return toString(DEFAULT_SEPARATOR);
     }

@@ -46,21 +46,6 @@ public abstract class ServiceTreeVertex<T> implements IServiceTreeVertex<T> {
     }
 
     @Override
-    public final boolean equals(final Object obj) {
-        if (!getDelegate().equals(obj) || !(IServiceTreeVertex.class.isAssignableFrom(obj.getClass()))) {
-            return false;
-        }
-
-        final IServiceTreeVertex that = (IServiceTreeVertex) obj;
-        return Objects.equal(getParent(), that.getParent());
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hashCode(getDelegate().hashCode(), getParent());
-    }
-
-    @Override
     public String toString() {
         return toString(DEFAULT_SEPARATOR);
     }

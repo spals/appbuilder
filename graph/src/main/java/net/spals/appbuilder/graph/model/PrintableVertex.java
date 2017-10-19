@@ -32,16 +32,6 @@ public abstract class PrintableVertex<T> implements IServiceGraphVertex<T> {
     }
 
     @Override
-    public final boolean equals(final Object obj) {
-        return getDelegate().equals(obj);
-    }
-
-    @Override
-    public final int hashCode() {
-        return getDelegate().hashCode();
-    }
-
-    @Override
     public final String toString() {
         return toString(getSeparator());
     }
