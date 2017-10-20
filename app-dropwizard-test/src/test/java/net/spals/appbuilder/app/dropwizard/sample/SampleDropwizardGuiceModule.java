@@ -14,6 +14,7 @@ class SampleDropwizardGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        binder().bind(String.class).annotatedWith(Names.named("GuiceModule")).toInstance(this.getClass().getName());
+        binder().bind(String.class).annotatedWith(Names.named("GuiceModule"))
+            .toInstance(this.getClass().getSimpleName());
     }
 }

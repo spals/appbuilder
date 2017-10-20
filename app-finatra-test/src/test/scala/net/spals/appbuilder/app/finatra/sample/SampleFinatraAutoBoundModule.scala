@@ -17,6 +17,6 @@ private[sample] class SampleFinatraAutoBoundModule @Inject()(@ApplicationName ap
 
   override def configure(): Unit = {
     binder.bind(classOf[String]).annotatedWith(Names.named("AutoBoundModule"))
-      .toInstance(s"$applicationName:${this.getClass.getName}")
+      .toInstance(s"$applicationName:${this.getClass.getSimpleName}")
   }
 }

@@ -65,9 +65,9 @@ class SampleFinatraWebAppFTest {
   @DataProvider def customModuleInjectionProvider(): Array[Array[AnyRef]] = {
     Array(
       Array("AutoBoundModule",
-        "net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp:net.spals.appbuilder.app.finatra.sample.SampleFinatraAutoBoundModule"),
-      Array("GuiceModule", "net.spals.appbuilder.app.finatra.sample.SampleFinatraGuiceModule"),
-      Array("TwitterModule", "net.spals.appbuilder.app.finatra.sample.SampleFinatraTwitterModule")
+        "net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp:SampleFinatraAutoBoundModule"),
+      Array("GuiceModule", "SampleFinatraGuiceModule"),
+      Array("TwitterModule", "SampleFinatraTwitterModule")
     )
   }
 

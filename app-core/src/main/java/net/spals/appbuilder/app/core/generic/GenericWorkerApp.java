@@ -1,7 +1,6 @@
 package net.spals.appbuilder.app.core.generic;
 
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Module;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
@@ -27,6 +26,7 @@ import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,7 +63,7 @@ public abstract class GenericWorkerApp implements App {
                         bootstrapBinder.requireExactBindingAnnotations();
                     });
             this.configModuleBuilder = new AutoBindConfigModule.Builder(name);
-            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(serviceGraph);
+            this.serviceGraphModuleBuilder = new AutoBindServiceGraphModule.Builder(name, serviceGraph);
 
             setName(name);
             setLogger(logger);
@@ -125,6 +125,8 @@ public abstract class GenericWorkerApp implements App {
             // 3. Use the serviceScan to find auto bound services
             servicesModuleBuilder.setServiceScan(serviceScan);
             servicesModuleIndex.set(orderedModules.size());
+            // 4. Use the serviceScan in building the services graph
+            serviceGraphModuleBuilder.setServiceScan(serviceScan);
 
             return this;
         }
@@ -138,7 +140,7 @@ public abstract class GenericWorkerApp implements App {
                 bootstrapBinder.bindConfigurationProvider()
                     .toInstance(new TypesafeConfigurationProvider(configModule.getServiceConfig())));
 
-            // Add config and serviceGraph bindings in bootstrap phase
+            // Add config and service graph bindings in bootstrap phase
             // so that they can be consumed by auto bound Modules
             addBootstrapModule(new BootstrapModuleWrapper(configModule));
             addBootstrapModule(new BootstrapModuleWrapper(serviceGraphModuleBuilder.build()));
@@ -147,7 +149,13 @@ public abstract class GenericWorkerApp implements App {
             // Add all modules to the lifecycle injector builder in the order in which they arrived.
             lifecycleInjectorBuilder.withAdditionalModules(orderedModules);
 
-            setServiceInjector(buildServiceInjector(lifecycleInjectorBuilder));
+            final Injector serviceInjector = buildServiceInjector(lifecycleInjectorBuilder);
+            setServiceInjector(serviceInjector);
+            // Write the service graph
+            final StringWriter sw = new StringWriter();
+            serviceInjector.getInstance(ServiceGraphWriter.class).writeServiceGraph(sw);
+            getLogger().info(sw.toString());
+
             return super.build();
         }
 
@@ -168,12 +176,7 @@ public abstract class GenericWorkerApp implements App {
                 lifecycleManager.close();
             }));
             // 3. Grab the Guice injector from which we can get service references
-            final Injector serviceInjecter = lifecycleInjector.createInjector();
-            // 4. Output the service graph
-            final ServiceGraphWriter serviceGraphWriter = serviceInjecter.getInstance(Key.get(ServiceGraphWriter.class));
-            serviceGraphWriter.writeServiceGraph();
-
-            return serviceInjecter;
+            return lifecycleInjector.createInjector();
         }
     }
 

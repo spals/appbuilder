@@ -25,6 +25,6 @@ class SampleDropwizardAutoBoundModule implements Module {
     @Override
     public void configure(final Binder binder) {
         binder.bind(String.class).annotatedWith(Names.named("AutoBoundModule"))
-                .toInstance(applicationName + ":" + this.getClass().getName());
+                .toInstance(applicationName + ":" + this.getClass().getSimpleName());
     }
 }

@@ -1,5 +1,7 @@
 package net.spals.appbuilder.app.dropwizard.sample;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
 /**
@@ -10,5 +12,6 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 @AutoBindSingleton
 public class SampleDropwizardCustomService {
 
-    SampleDropwizardCustomService() {  }
+    @Inject
+    SampleDropwizardCustomService(@Named("AutoBoundModule") final String autoBoundModuleName) {  }
 }

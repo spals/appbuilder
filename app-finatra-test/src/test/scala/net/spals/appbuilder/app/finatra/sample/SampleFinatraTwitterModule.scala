@@ -11,6 +11,7 @@ import com.twitter.inject.TwitterModule
   */
 private[sample] class SampleFinatraTwitterModule extends TwitterModule {
   override protected def configure(): Unit = {
-    binder.bind(classOf[String]).annotatedWith(Names.named("TwitterModule")).toInstance(this.getClass.getName)
+    binder.bind(classOf[String]).annotatedWith(Names.named("TwitterModule"))
+      .toInstance(this.getClass.getSimpleName)
   }
 }

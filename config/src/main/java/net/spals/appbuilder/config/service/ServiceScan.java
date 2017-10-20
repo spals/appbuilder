@@ -2,11 +2,21 @@ package net.spals.appbuilder.config.service;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+import com.google.inject.Binding;
+import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matcher;
+import com.google.inject.matcher.Matchers;
+import net.spals.appbuilder.config.matcher.TypeLiteralMatchers;
 import org.inferred.freebuilder.FreeBuilder;
 import org.reflections.Reflections;
 
 import java.util.Arrays;
 import java.util.Set;
+
+import static com.google.inject.matcher.Matchers.inSubpackage;
+import static net.spals.appbuilder.config.matcher.BindingMatchers.keyTypeThat;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.hasParameterTypeThat;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
 
 /**
  * Bean for holding configuration for a service scan.
@@ -22,6 +32,17 @@ import java.util.Set;
  */
 @FreeBuilder
 public interface ServiceScan {
+
+    default Matcher<Binding<?>> asBindingMatcher() {
+        return keyTypeThat(asTypeLiteralMatcher());
+    }
+
+    default Matcher<TypeLiteral<?>> asTypeLiteralMatcher() {
+        return getServicePackages().stream()
+            .map(servicePackage -> rawTypeThat(inSubpackage(servicePackage))
+                .or(hasParameterTypeThat(rawTypeThat(inSubpackage(servicePackage)))))
+            .reduce(TypeLiteralMatchers.none(), (matcher1, matcher2) -> matcher1.or(matcher2));
+    }
 
     Set<String> getServicePackages();
 
@@ -56,6 +77,7 @@ public interface ServiceScan {
         // be added as runtime-scoped dependencies in the app-core
         // module to guarantee that they are always available.
         private static Set<String> DEFAULT_SERVICE_PACKAGES = ImmutableSet.of(
+            "net.spals.appbuilder.config",
             "net.spals.appbuilder.executor.core",
             "net.spals.appbuilder.monitor.core"
         );

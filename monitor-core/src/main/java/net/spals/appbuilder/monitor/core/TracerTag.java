@@ -18,26 +18,31 @@ import org.inferred.freebuilder.FreeBuilder;
  */
 @FreeBuilder
 @JsonDeserialize(builder = TracerTag.Builder.class)
-public interface TracerTag extends TaggedConfig {
+public abstract class TracerTag implements TaggedConfig {
 
-    String TAG_VALUE_KEY = "tagValue";
+    private static final String TAG_VALUE_KEY = "tagValue";
 
     @Override
     @JsonIgnore
-    default boolean isActive() {
+    public final boolean isActive() {
         return true;
     }
 
     @JsonIgnore
-    default String getKey() {
+    public final String getKey() {
         return getTag();
     }
 
     @JsonProperty(TAG_VALUE_KEY)
-    Object getValue();
+    public abstract Object getValue();
 
     @Override
-    String getTag();
+    public abstract String getTag();
 
-    class Builder extends TracerTag_Builder {  }
+    @Override
+    public final String toString() {
+        return getTag() + "->" + getValue();
+    }
+
+    public static class Builder extends TracerTag_Builder {  }
 }

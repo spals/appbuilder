@@ -6,5 +6,6 @@ package net.spals.appbuilder.graph.model;
 public enum ServiceGraphFormat {
     ASCII,
     NONE,
+    TEXT,
     ;
 }

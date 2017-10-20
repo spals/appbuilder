@@ -72,9 +72,9 @@ public class SampleDropwizardWebAppFTest {
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "SampleDropwizardWebApp:net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardAutoBoundModule"},
-                {"BootstrapModule", "net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardBootstrapModule"},
-                {"GuiceModule", "net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardGuiceModule"},
+                {"AutoBoundModule", "SampleDropwizardWebApp:SampleDropwizardAutoBoundModule"},
+                {"BootstrapModule", "SampleDropwizardBootstrapModule"},
+                {"GuiceModule", "SampleDropwizardGuiceModule"},
         };
     }
 

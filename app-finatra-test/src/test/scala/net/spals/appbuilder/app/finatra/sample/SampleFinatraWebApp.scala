@@ -4,6 +4,7 @@ import com.twitter.finatra.http.routing.HttpRouter
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
 import net.spals.appbuilder.filestore.core.FileStore
+import net.spals.appbuilder.graph.model.ServiceGraphFormat
 import net.spals.appbuilder.mapstore.core.MapStore
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
@@ -21,6 +22,7 @@ private[finatra] class SampleFinatraWebApp extends FinatraWebApp {
 
   val mockRouter = mock(classOf[HttpRouter])
 
+  enableServiceGraph(ServiceGraphFormat.ASCII)
   setServiceConfigFromClasspath("config/sample-finatra-service.conf")
   setServiceScan(new ServiceScan.Builder()
     .addServicePackages("net.spals.appbuilder.app.finatra.sample")

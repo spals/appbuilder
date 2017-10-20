@@ -15,35 +15,42 @@ import java.util.Optional;
  */
 @FreeBuilder
 @JsonDeserialize(builder = MessageProducerConfig.Builder.class)
-public interface MessageProducerConfig extends TaggedConfig {
+public abstract class MessageProducerConfig implements TaggedConfig {
 
-    String CHANNEL_KEY = "channel";
-    String DESTINATION_KEY = "destination";
-    String FORMAT_KEY = "format";
-    String GLOBAL_ID_KEY = "globalId";
+    private static final String CHANNEL_KEY = "channel";
+    private static final String DESTINATION_KEY = "destination";
+    private static final String FORMAT_KEY = "format";
+    private static final String GLOBAL_ID_KEY = "globalId";
 
     @JsonProperty(TaggedConfig.ACTIVE_KEY)
-    Optional<Boolean> getActive();
+    public abstract Optional<Boolean> getActive();
 
     @Override
     @JsonIgnore
-    default boolean isActive() {
+    public final boolean isActive() {
         return getActive().orElse(true);
     }
 
-    @JsonProperty(MessageProducerConfig.CHANNEL_KEY)
-    String getChannel();
+    @JsonProperty(CHANNEL_KEY)
+    public abstract String getChannel();
 
-    @JsonProperty(MessageProducerConfig.DESTINATION_KEY)
-    String getDestination();
+    @JsonProperty(DESTINATION_KEY)
+    public abstract String getDestination();
 
-    @JsonProperty(MessageProducerConfig.FORMAT_KEY)
-    String getFormat();
+    @JsonProperty(FORMAT_KEY)
+    public abstract String getFormat();
 
-    @JsonProperty(MessageProducerConfig.GLOBAL_ID_KEY)
-    String getGlobalId();
+    @JsonProperty(GLOBAL_ID_KEY)
+    public abstract String getGlobalId();
 
-    String getTag();
+    public abstract String getTag();
 
-    class Builder extends MessageProducerConfig_Builder {  }
+    @Override
+    public final String toString() {
+        return String.format("%s(%s)[ch->%s,dest->%s,fmt->%s,gId->%s]", getTag(),
+            isActive() ? "ACTIVE" : "INACTIVE",
+            getChannel(), getDestination(), getFormat(), getGlobalId());
+    }
+
+    public static class Builder extends MessageProducerConfig_Builder {  }
 }

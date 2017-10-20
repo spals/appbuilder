@@ -18,6 +18,7 @@ import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
+import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -65,6 +66,7 @@ public class SampleJaxRsWebAppFTest {
 
     private final JaxRsWebApp sampleApp = new JaxRsWebApp.Builder("sample", LOGGER)
             .setConfigurable(configurable)
+            .enableServiceGraph(ServiceGraphFormat.ASCII)
             .setFilterRegistration(filterRegistration)
             .setServiceConfigFromClasspath("config/sample-jaxrs-service.conf")
             .setServiceScan(new ServiceScan.Builder()
@@ -96,9 +98,9 @@ public class SampleJaxRsWebAppFTest {
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "sample:net.spals.appbuilder.app.core.sample.SampleCoreAutoBoundModule"},
-                {"BootstrapModule", "net.spals.appbuilder.app.core.sample.SampleCoreBootstrapModule"},
-                {"GuiceModule", "net.spals.appbuilder.app.core.sample.SampleCoreGuiceModule"},
+                {"AutoBoundModule", "sample:SampleCoreAutoBoundModule"},
+                {"BootstrapModule", "SampleCoreBootstrapModule"},
+                {"GuiceModule", "SampleCoreGuiceModule"},
         };
     }
 
