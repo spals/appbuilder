@@ -7,6 +7,7 @@ import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.name.Names;
+import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.config.service.ServiceScan;
 
 import java.lang.reflect.Method;
@@ -17,6 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
+import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.annotatedWith;
 import static net.spals.appbuilder.config.matcher.TypeLiteralMatchers.rawTypeThat;
 import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertex;
 import static net.spals.appbuilder.graph.model.ServiceDAGVertex.createDAGVertexWithProvider;
@@ -43,6 +45,7 @@ class ServiceDAGConverter {
 
         removeExternalVertices(serviceDAG, serviceScanMatcher);
         mergeProviderSourceVertices(serviceDAG);
+        mergeSingletonVertices(serviceDAG);
         addApplicationVertex(serviceDAG);
 
         return serviceDAG;
@@ -84,27 +87,64 @@ class ServiceDAGConverter {
         // 3. For each provider, provided pair, merge them together within the service graph
         providerSourceMap.entrySet().stream()
             .filter(entry -> entry.getValue().isPresent())
-            .forEach(entry -> mergeProviderSourceVertex(serviceDAG, entry.getKey(), entry.getValue().get()));
+            .forEach(entry -> {
+                final IServiceDAGVertex<?> providerSourceVertex = entry.getKey();
+                final IServiceDAGVertex<?> providedVertex = entry.getValue().get();
+                final IServiceDAGVertex<?> mergedVertex = createDAGVertexWithProvider(providedVertex,
+                    providerSourceVertex);
+                mergeVertices(serviceDAG, providerSourceVertex, providedVertex, mergedVertex);
+            });
     }
 
     @VisibleForTesting
-    void mergeProviderSourceVertex(final ServiceDAG serviceDAG,
-                                   final IServiceDAGVertex<?> providerSourceVertex,
-                                   final IServiceDAGVertex<?> providedVertex) {
-        final IServiceDAGVertex<?> mergedVertex = createDAGVertexWithProvider(providedVertex,
-            providerSourceVertex);
+    void mergeSingletonVertices(final ServiceDAG serviceDAG) {
+        // 1.
+        final Map<IServiceDAGVertex<?>, Optional<IServiceDAGVertex<?>>> singletonVertexMap =
+            serviceDAG.findAllVertices(annotatedWith(AutoBindSingleton.class)).stream()
+                .filter(singletonVertex -> {
+                    final Class<?> baseClass = singletonVertex.getServiceInstance().getClass()
+                        .getAnnotation(AutoBindSingleton.class).baseClass();
+                    return !baseClass.equals(Void.class);
+                })
+                .collect(Collectors.toMap(Function.identity(),
+                    singletonVertex -> {
+                        final Class<?> baseClass = singletonVertex.getServiceInstance().getClass()
+                            .getAnnotation(AutoBindSingleton.class).baseClass();
+                        return serviceDAG.findVertex(Key.get(baseClass));
+                    }));
 
+        singletonVertexMap.entrySet().stream()
+            .filter(entry -> entry.getValue().isPresent())
+            .forEach(entry -> {
+                final IServiceDAGVertex<?> classVertex = entry.getKey();
+                final IServiceDAGVertex<?> interfaceVertex = entry.getValue().get();
+                mergeVertices(serviceDAG, classVertex, interfaceVertex, classVertex);
+            });
+    }
+
+    @VisibleForTesting
+    void mergeVertices(final ServiceDAG serviceDAG,
+                       final IServiceDAGVertex<?> vertex1,
+                       final IServiceDAGVertex<?> vertex2,
+                       final IServiceDAGVertex<?> mergedVertex) {
+
+        final Set<IServiceDAGVertex<?>> incomingEdgeSources = ImmutableSet.<IServiceDAGVertex<?>>builder()
+            .addAll(serviceDAG.incomingEdgesOf(vertex1).stream().map(edge -> serviceDAG.getEdgeSource(edge))
+                .collect(Collectors.toSet()))
+            .addAll(serviceDAG.incomingEdgesOf(vertex2).stream().map(edge -> serviceDAG.getEdgeSource(edge))
+                .collect(Collectors.toSet()))
+            .build();
+        final Set<IServiceDAGVertex<?>> outgoingEdgeTargets = ImmutableSet.<IServiceDAGVertex<?>>builder()
+            .addAll(serviceDAG.outgoingEdgesOf(vertex1).stream().map(edge -> serviceDAG.getEdgeTarget(edge))
+                .collect(Collectors.toSet()))
+            .addAll(serviceDAG.outgoingEdgesOf(vertex2).stream().map(edge -> serviceDAG.getEdgeTarget(edge))
+                .collect(Collectors.toSet()))
+            .build();
+
+        serviceDAG.removeAllVertices(ImmutableSet.of(vertex1, vertex2));
         serviceDAG.addVertex(mergedVertex);
-        serviceDAG.incomingEdgesOf(providerSourceVertex)
-            .forEach(edge -> serviceDAG.addEdge(serviceDAG.getEdgeSource(edge), mergedVertex));
-        serviceDAG.incomingEdgesOf(providedVertex)
-            .forEach(edge -> serviceDAG.addEdge(serviceDAG.getEdgeSource(edge), mergedVertex));
-        serviceDAG.outgoingEdgesOf(providerSourceVertex)
-            .forEach(edge -> serviceDAG.addEdge(mergedVertex, serviceDAG.getEdgeTarget(edge)));
-        serviceDAG.outgoingEdgesOf(providedVertex)
-            .forEach(edge -> serviceDAG.addEdge(mergedVertex, serviceDAG.getEdgeTarget(edge)));
-
-        serviceDAG.removeAllVertices(ImmutableSet.of(providerSourceVertex, providedVertex));
+        incomingEdgeSources.forEach(edgeSource -> serviceDAG.addEdge(edgeSource, mergedVertex));
+        outgoingEdgeTargets.forEach(edgeTarget -> serviceDAG.addEdge(mergedVertex, edgeTarget));
     }
 
     @VisibleForTesting

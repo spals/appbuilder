@@ -1,7 +1,7 @@
 package net.spals.appbuilder.graph.model;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.inject.Key;
 
 import java.util.Optional;
@@ -18,23 +18,25 @@ public abstract class ServiceDAGVertex<T> implements IServiceDAGVertex<T> {
     abstract IServiceGraphVertex<T> getDelegate();
 
     public static <T2> ServiceDAGVertex<T2> createDAGVertex(final IServiceGraphVertex<T2> vertex) {
-        return new AutoValue_ServiceDAGVertex(vertex, Optional.empty());
+        return new AutoValue_ServiceDAGVertex<>(vertex, Optional.empty());
     }
 
     public static <T2> ServiceDAGVertex<T2> createDAGVertex(final Key<T2> guiceKey, final T2 serviceInstance) {
-        return new AutoValue_ServiceDAGVertex(createGraphVertex(guiceKey, serviceInstance), Optional.empty());
+        return new AutoValue_ServiceDAGVertex<>(createGraphVertex(guiceKey, serviceInstance), Optional.empty());
     }
 
-    public static <T2> ServiceDAGVertex<T2> createDAGVertexWithProvider(final IServiceGraphVertex<T2> vertex,
-                                                                        final IServiceDAGVertex<?> providerSource) {
-        return new AutoValue_ServiceDAGVertex(vertex, Optional.ofNullable(providerSource));
+    static <T2> ServiceDAGVertex<T2> createDAGVertexWithProvider(final IServiceGraphVertex<T2> vertex,
+                                                                 final IServiceDAGVertex<?> providerSource) {
+        Preconditions.checkNotNull(providerSource);
+        return new AutoValue_ServiceDAGVertex<>(vertex, Optional.of(providerSource));
     }
 
-    public static <T2> ServiceDAGVertex<T2> createDAGVertexWithProvider(final Key<T2> guiceKey,
-                                                                        final T2 serviceInstance,
-                                                                        final IServiceDAGVertex<?> providerSource) {
-        return new AutoValue_ServiceDAGVertex(createGraphVertex(guiceKey, serviceInstance),
-            Optional.ofNullable(providerSource));
+    static <T2> ServiceDAGVertex<T2> createDAGVertexWithProvider(final Key<T2> guiceKey,
+                                                                 final T2 serviceInstance,
+                                                                 final IServiceDAGVertex<?> providerSource) {
+        Preconditions.checkNotNull(providerSource);
+        return new AutoValue_ServiceDAGVertex<>(createGraphVertex(guiceKey, serviceInstance),
+            Optional.of(providerSource));
     }
 
     @Override

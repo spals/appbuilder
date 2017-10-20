@@ -3,6 +3,9 @@ package net.spals.appbuilder.app.core.modules;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.internal.BindingImpl;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.multibindings.MapBinderBinding;
 import com.google.inject.multibindings.MultibinderBinding;
@@ -10,6 +13,7 @@ import com.google.inject.multibindings.MultibindingsTargetVisitor;
 import com.google.inject.multibindings.OptionalBinderBinding;
 import com.google.inject.spi.ConstructorBinding;
 import com.google.inject.spi.DefaultBindingTargetVisitor;
+import com.google.inject.spi.Dependency;
 import com.google.inject.spi.ProvisionListener;
 import net.spals.appbuilder.config.matcher.BindingMatchers;
 import net.spals.appbuilder.config.service.ServiceScan;
@@ -21,7 +25,9 @@ import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
@@ -96,14 +102,29 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         @Override
         public Void visit(final ConstructorBinding<?> binding) {
             final IServiceGraphVertex<?> bindingVertex = serviceGraph.findVertex(binding.getKey()).get();
-            final Set<IServiceGraphVertex<?>> dependencyVertices =
+            final Map<Dependency<?>, Optional<IServiceGraphVertex<?>>> dependencyVertices =
                 binding.getConstructor().getDependencies().stream()
-                    .map(dependency -> serviceGraph.findVertex(dependency.getKey()))
-                    .filter(vertexOpt -> vertexOpt.isPresent())
-                    .map(vertexOpt -> vertexOpt.get())
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toMap(Function.identity(),
+                        dependency -> serviceGraph.findVertex(dependency.getKey())));
 
-            dependencyVertices.forEach(dependencyVertex -> serviceGraph.addEdge(dependencyVertex, bindingVertex));
+            dependencyVertices.forEach((dependency, vertex) -> {
+                // If the dependency vertex already exists in the graph, then just add an edge between the two...
+                if(vertex.isPresent()) {
+                    serviceGraph.addEdge(vertex.get(), bindingVertex);
+                // ...otherwise, we have a key mismatch. This happens when the dependency uses an interface
+                // but the Guice binding uses the implementing singleton class. In that case, we'll create
+                // a vertex ad-hoc here for the interface and provide the edge. This will be merged in the DAG.
+                } else {
+                    final Key<Object> dependencyKey = (Key<Object>)dependency.getKey();
+
+                    final Injector injector = ((BindingImpl) binding).getInjector();
+                    final Object dependencyInstance = injector.getInstance(dependencyKey);
+
+                    final IServiceGraphVertex<?> dependencyVertex = createGraphVertex(dependencyKey, dependencyInstance);
+                    serviceGraph.addVertex(dependencyVertex);
+                    serviceGraph.addEdge(dependencyVertex, bindingVertex);
+                }
+            });
             return null;
         }
 

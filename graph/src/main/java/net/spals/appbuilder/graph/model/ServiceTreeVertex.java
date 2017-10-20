@@ -1,7 +1,6 @@
 package net.spals.appbuilder.graph.model;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.inject.Key;
 
