@@ -91,6 +91,7 @@
         <module>app-dropwizard-test</module>
         <module>app-finatra</module>
         <module>app-finatra-test</module>
+        <module>app-mock</module>
         <module>bom</module>
         <module>config</module>
         <module>config-test</module>
