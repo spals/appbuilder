@@ -19,8 +19,10 @@ class TraceableExecutorService implements ExecutorService {
     private final ExecutorService delegate;
     private final TracedExecutorService tracedDelegate;
 
-    TraceableExecutorService(final ExecutorService delegate,
-                             final Tracer tracer) {
+    TraceableExecutorService(
+        final ExecutorService delegate,
+        final Tracer tracer
+    ) {
         this.delegate = delegate;
         this.tracedDelegate = new TracedExecutorService(delegate, tracer);
     }
@@ -46,9 +48,11 @@ class TraceableExecutorService implements ExecutorService {
     }
 
     @Override
-    public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks,
-                                         final long timeout,
-                                         final TimeUnit unit) throws InterruptedException {
+    public <T> List<Future<T>> invokeAll(
+        final Collection<? extends Callable<T>> tasks,
+        final long timeout,
+        final TimeUnit unit
+    ) throws InterruptedException {
         return tracedDelegate.invokeAll(tasks, timeout, unit);
     }
 
@@ -58,9 +62,11 @@ class TraceableExecutorService implements ExecutorService {
     }
 
     @Override
-    public <T> T invokeAny(final Collection<? extends Callable<T>> tasks,
-                           final long timeout,
-                           final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public <T> T invokeAny(
+        final Collection<? extends Callable<T>> tasks,
+        final long timeout,
+        final TimeUnit unit
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         return tracedDelegate.invokeAny(tasks, timeout, unit);
     }
 
