@@ -40,8 +40,10 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     }
 
     @Override
-    public ExecutorService createFixedThreadPool(final int nThreads,
-                                                 final Key key) {
+    public ExecutorService createFixedThreadPool(
+        final int nThreads,
+        final Key key
+    ) {
         final ExecutorService delegate = Executors.newFixedThreadPool(nThreads);
 
         final StoppableExecutorService stoppableExecutorService = decorateExecutorService(delegate, key);
@@ -70,21 +72,33 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         return stoppableExecutorService;
     }
 
-    StoppableExecutorService decorateExecutorService(final ExecutorService delegate,
-                                                     final Key key) {
+    @Override
+    public ExecutorService createSingleThreadScheduledExecutor(final Key key) {
+        final ExecutorService delegate = Executors.newSingleThreadScheduledExecutor();
+
+        final StoppableExecutorService stoppableExecutorService = decorateExecutorService(delegate, key);
+        logExecutorService("SingleThreadScheduledExecutor", key);
+        stoppableExecutorServices.put(key, stoppableExecutorService);
+        return stoppableExecutorService;
+    }
+
+    StoppableExecutorService decorateExecutorService(
+        final ExecutorService delegate,
+        final Key key
+    ) {
         // First, wrap the delegate as a traced executor service so we get nice asynchronous tracing
         final ExecutorService traceableExecutorService = new TraceableExecutorService(delegate, tracer);
         // Second, wrap the delegate as a stoppable executor service so we can gracefully shutdown
         // at the end of the application's life
         final StoppableExecutorService stoppableExecutorService =
-                new StoppableExecutorService(traceableExecutorService, key, shutdown, shutdownUnit);
+            new StoppableExecutorService(traceableExecutorService, key, shutdown, shutdownUnit);
 
         return stoppableExecutorService;
     }
 
     void logExecutorService(final String description, final Key key) {
         LOGGER.info("Created " + description + " executor service for " + key.getParentClass().getSimpleName() +
-                "(" + key.getTags() + ")");
+            "(" + key.getTags() + ")");
     }
 
     @VisibleForTesting
@@ -95,10 +109,10 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     @PreDestroy
     public synchronized void stop() {
         stoppableExecutorServices.entrySet()
-                .forEach(entry -> {
-                    LOGGER.info("Shutting down ExecutorService for " +
-                            entry.getKey().getParentClass().getSimpleName() + "(" + entry.getKey().getTags() + ")");
-                    entry.getValue().stop();
-                });
+            .forEach(entry -> {
+                LOGGER.info("Shutting down ExecutorService for " +
+                    entry.getKey().getParentClass().getSimpleName() + "(" + entry.getKey().getTags() + ")");
+                entry.getValue().stop();
+            });
     }
 }
