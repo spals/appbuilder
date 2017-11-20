@@ -332,6 +332,60 @@ class CalculatorWebApp extends FinatraWebApp {
 
 ```
 
+## Testing
+
+AppBuilder includes a `MockApp` which allows you to mix real micro-services with mocked micro-services for testing purposes. Consider that we want to write a test for our calculator application which uses the full micro-service graph except that we wish to replace the `ArithmeticCalculator` service with a mocked implementation created in our test. Here's how that can be done using Mockito:
+
+```java
+import static org.mockito.Mockito.mock;
+
+public class CalculatorAppTest {
+
+    @Test
+    public void testArithmeticCalculator() {
+        // Build the full micro-service graph for the calculator application,
+        // but substitute in a mocked ArithmeticCalculator service
+        final MockApp app = new MockApp.Builder(MockAppTest.class)
+            .addMockSingleton(mock(ArithmeticCalculator.class), ArithmeticCalculator.class)
+            .setServiceScan(new ServiceScan.Builder()
+                .addServicePackages("com.example.calculator")
+                .build())
+            .build();
+
+        final Injector serviceInjector = app.getServiceInjector();
+        final ArithmeticCalculator mockedCalculator = serviceInjector.getInstance(ArithmeticCalculator.class);
+        
+        ...
+    }
+```
+
+AppBuilder also includes an inteface called `MockSingleton` which emulates the `@AutoBindSingleton` annotation. This allows testers to hand craft mock services:
+
+```java
+import net.spals.appbuilder.app.mock.MockSingleton;
+
+public class MockArithmeticCalculator implements ArithmeticCalculator, MockSingleton<ArithmeticCalculator> {
+
+    @Override
+    public Class<ArithmeticCalculator> baseClass() {
+        return ArithmeticCalculator.class;
+    }
+    
+    ...
+}
+```
+
+These hand crafted mock services can also be included in a `MockApp` instance:
+
+```java
+final MockApp app = new MockApp.Builder(MockAppTest.class)
+    .addMockSingleton(new MockArithmeticCalculator())
+    .setServiceScan(new ServiceScan.Builder()
+        .addServicePackages("com.example.calculator")
+        .build())
+    .build();
+```
+
 ## Notes
 
 - It is important to keep package names organized because the `ServiceScan` works by scanning for package prefixes. It is recommended that all package names at least start with [com|org|net].[organizationName].[applicationName]
