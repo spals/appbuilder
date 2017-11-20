@@ -19,7 +19,7 @@ import java.util.List;
  * services. In other words, this will execute a service scan
  * and selectively replace services within the dependency
  * graph with mocked services.
- * <p/>
+ * <p>
  * This is a valuable pattern as it allows a
  * mixture of real and mocked services for testing purposes.
  *

@@ -5,7 +5,7 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 /**
  * An interface for mock service singletons that are to be
  * added to a {@link MockApp}.
- * <p/>
+ * <p>
  * This emulate the {@link AutoBindSingleton} annotation.
  * It allows a tester to add binding details to a hand
  * created a mock service. These details are the same as
@@ -17,7 +17,7 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 public interface MockSingleton<I> {
 
     /**
-     * @see {@link AutoBindSingleton#baseClass()}
+     * @see AutoBindSingleton#baseClass()
      */
     Class<I> baseClass();
 }
