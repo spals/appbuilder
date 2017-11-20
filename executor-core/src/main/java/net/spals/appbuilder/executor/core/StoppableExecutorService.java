@@ -25,14 +25,16 @@ class StoppableExecutorService implements ExecutorService {
     private final long shutdown;
     private final TimeUnit shutdownUnit;
 
-    StoppableExecutorService(final ExecutorService delegate,
-                             final ExecutorServiceFactory.Key key,
-                             final long shutdown,
-                             final TimeUnit shutdownUnit) {
+    StoppableExecutorService(
+        final ExecutorService delegate,
+        final ExecutorServiceFactory.Key key,
+        final long shutdown,
+        final TimeUnit shutdownUnit
+    ) {
         this.delegate = delegate;
 
         final String loggerName = String.format("%s[%s]", key.getParentClass().getName(),
-                Joiner.on(',').join(key.getTags()));
+            Joiner.on(',').join(key.getTags()));
         this.logger = LoggerFactory.getLogger(loggerName);
 
         this.shutdown = shutdown;
@@ -75,9 +77,11 @@ class StoppableExecutorService implements ExecutorService {
     }
 
     @Override
-    public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks,
-                                         final long timeout,
-                                         final TimeUnit unit) throws InterruptedException {
+    public <T> List<Future<T>> invokeAll(
+        final Collection<? extends Callable<T>> tasks,
+        final long timeout,
+        final TimeUnit unit
+    ) throws InterruptedException {
         return delegate.invokeAll(tasks, timeout, unit);
     }
 
@@ -87,9 +91,11 @@ class StoppableExecutorService implements ExecutorService {
     }
 
     @Override
-    public <T> T invokeAny(final Collection<? extends Callable<T>> tasks,
-                           final long timeout,
-                           final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public <T> T invokeAny(
+        final Collection<? extends Callable<T>> tasks,
+        final long timeout,
+        final TimeUnit unit
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         return delegate.invokeAny(tasks, timeout, unit);
     }
 
