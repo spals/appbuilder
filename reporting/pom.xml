@@ -24,6 +24,14 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-app-mock</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-app-mock-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-config</artifactId>
         </dependency>
         <dependency>

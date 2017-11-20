@@ -91,6 +91,8 @@
         <module>app-dropwizard-test</module>
         <module>app-finatra</module>
         <module>app-finatra-test</module>
+        <module>app-mock</module>
+        <module>app-mock-test</module>
         <module>bom</module>
         <module>config</module>
         <module>config-test</module>
@@ -435,6 +437,17 @@
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
                 <artifactId>spals-appbuilder-model-core-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-app-mock</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-app-mock-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
