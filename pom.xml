@@ -110,6 +110,8 @@
         <module>mapstore-core-test</module>
         <module>mapstore-dynamodb</module>
         <module>mapstore-dynamodb-test</module>
+        <module>mapstore-mongodb</module>
+        <module>mapstore-mongodb-test</module>
         <module>message-core</module>
         <module>message-core-test</module>
         <module>message-kafka</module>
@@ -514,6 +516,17 @@
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-mapstore-dynamodb-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-mapstore-mongodb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-mapstore-mongodb-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
