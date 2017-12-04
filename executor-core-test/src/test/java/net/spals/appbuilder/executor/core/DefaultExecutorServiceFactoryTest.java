@@ -5,10 +5,7 @@ import io.opentracing.mock.MockTracer;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -89,6 +86,24 @@ public class DefaultExecutorServiceFactoryTest {
     }
 
     @Test
+    public void testCreateScheduledThreadPool() {
+        final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
+
+        final ScheduledExecutorService scheduledExecutorService =
+            executorServiceFactory.createScheduledThreadPool(2, this.getClass());
+        assertThat(scheduledExecutorService, instanceOf(TracedScheduledExecutorService.class));
+
+        final TracedScheduledExecutorService tracedScheduledExecutorService = (TracedScheduledExecutorService) scheduledExecutorService;
+        final ScheduledExecutorService delegate = tracedScheduledExecutorService.getDelegate();
+        assertThat(delegate, instanceOf(ScheduledThreadPoolExecutor.class));
+
+        final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = (ScheduledThreadPoolExecutor) delegate;
+        assertThat(scheduledThreadPoolExecutor.getCorePoolSize(), is(2));
+        assertThat(scheduledThreadPoolExecutor.getMaximumPoolSize(), is(Integer.MAX_VALUE));
+        assertThat(scheduledThreadPoolExecutor.getKeepAliveTime(TimeUnit.MILLISECONDS), is(0L));
+    }
+
+    @Test
     public void testRegisterFixedThreadPool() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
@@ -133,6 +148,19 @@ public class DefaultExecutorServiceFactoryTest {
 
         final ScheduledExecutorService scheduledExecutorService =
             executorServiceFactory.createSingleThreadScheduledExecutor(this.getClass());
+        final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
+            .setParentClass(this.getClass()).build();
+
+        assertThat(executorServiceFactory.getExecutorServices(),
+            hasEntry(is(expectedKey), sameInstance(scheduledExecutorService)));
+    }
+
+    @Test
+    public void testRegisterScheduledThreadPool() {
+        final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
+
+        final ScheduledExecutorService scheduledExecutorService =
+            executorServiceFactory.createScheduledThreadPool(2, this.getClass());
         final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
             .setParentClass(this.getClass()).build();
 

@@ -1,14 +1,13 @@
 package net.spals.appbuilder.executor.core;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.Inject;
 import com.netflix.governator.annotations.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
+import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Inject;
-import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
@@ -88,6 +87,20 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         final ScheduledExecutorService scheduledExecutorService = decorateScheduledExecutorService(delegate);
         executorServices.put(key, scheduledExecutorService);
         getExecutorServiceLogger(key).info("Created SingleThreadScheduledExecutor scheduled executor service");
+
+        return scheduledExecutorService;
+    }
+
+    @Override
+    public ScheduledExecutorService createScheduledThreadPool(
+        final int nThreads,
+        final Key key
+    ) {
+        final ScheduledExecutorService delegate = Executors.newScheduledThreadPool(nThreads);
+
+        final ScheduledExecutorService scheduledExecutorService = decorateScheduledExecutorService(delegate);
+        executorServices.put(key, scheduledExecutorService);
+        getExecutorServiceLogger(key).info("Created ScheduledThreadPool scheduled executor service");
 
         return scheduledExecutorService;
     }

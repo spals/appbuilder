@@ -21,8 +21,10 @@ public interface ExecutorServiceFactory {
         Class<?> parentClass,
         String... tags
     ) {
-        return createFixedThreadPool(nThreads,
-            new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+        return createFixedThreadPool(
+            nThreads,
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
     }
 
     ExecutorService createCachedThreadPool(Key key);
@@ -31,7 +33,9 @@ public interface ExecutorServiceFactory {
         Class<?> parentClass,
         String... tags
     ) {
-        return createCachedThreadPool(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+        return createCachedThreadPool(
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
     }
 
     ExecutorService createSingleThreadExecutor(Key key);
@@ -40,7 +44,9 @@ public interface ExecutorServiceFactory {
         Class<?> parentClass,
         String... tags
     ) {
-        return createSingleThreadExecutor(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+        return createSingleThreadExecutor(
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
     }
 
     ScheduledExecutorService createSingleThreadScheduledExecutor(Key key);
@@ -50,10 +56,23 @@ public interface ExecutorServiceFactory {
         String... tags
     ) {
         return createSingleThreadScheduledExecutor(
-            new Key.Builder()
-                .setParentClass(parentClass)
-                .addTags(tags)
-                .build()
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
+    }
+
+    ScheduledExecutorService createScheduledThreadPool(
+        int nThreads,
+        Key key
+    );
+
+    default ScheduledExecutorService createScheduledThreadPool(
+        int nThreads,
+        Class<?> parentClass,
+        String... tags
+    ) {
+        return createScheduledThreadPool(
+            nThreads,
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
         );
     }
 
