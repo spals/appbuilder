@@ -4,7 +4,7 @@ import org.inferred.freebuilder.FreeBuilder;
 
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author tkral
@@ -21,8 +21,10 @@ public interface ExecutorServiceFactory {
         Class<?> parentClass,
         String... tags
     ) {
-        return createFixedThreadPool(nThreads,
-            new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+        return createFixedThreadPool(
+            nThreads,
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
     }
 
     ExecutorService createCachedThreadPool(Key key);
@@ -31,7 +33,9 @@ public interface ExecutorServiceFactory {
         Class<?> parentClass,
         String... tags
     ) {
-        return createCachedThreadPool(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+        return createCachedThreadPool(
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
     }
 
     ExecutorService createSingleThreadExecutor(Key key);
@@ -40,20 +44,35 @@ public interface ExecutorServiceFactory {
         Class<?> parentClass,
         String... tags
     ) {
-        return createSingleThreadExecutor(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
+        return createSingleThreadExecutor(
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
     }
 
-    ExecutorService createSingleThreadScheduledExecutor(Key key);
+    ScheduledExecutorService createSingleThreadScheduledExecutor(Key key);
 
-    default ExecutorService createSingleThreadScheduledExecutor(
+    default ScheduledExecutorService createSingleThreadScheduledExecutor(
         Class<?> parentClass,
         String... tags
     ) {
         return createSingleThreadScheduledExecutor(
-            new Key.Builder()
-                .setParentClass(parentClass)
-                .addTags(tags)
-                .build()
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
+        );
+    }
+
+    ScheduledExecutorService createScheduledThreadPool(
+        int nThreads,
+        Key key
+    );
+
+    default ScheduledExecutorService createScheduledThreadPool(
+        int nThreads,
+        Class<?> parentClass,
+        String... tags
+    ) {
+        return createScheduledThreadPool(
+            nThreads,
+            new Key.Builder().setParentClass(parentClass).addTags(tags).build()
         );
     }
 

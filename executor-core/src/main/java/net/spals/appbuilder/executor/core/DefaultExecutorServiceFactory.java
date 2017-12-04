@@ -1,7 +1,7 @@
 package net.spals.appbuilder.executor.core;
 
-import com.google.inject.Inject;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.Inject;
 import com.netflix.governator.annotations.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
@@ -9,12 +9,16 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link ExecutorServiceFactory}.
@@ -25,14 +29,15 @@ import java.util.concurrent.TimeUnit;
 class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExecutorServiceFactory.class);
 
+    private final Map<Key, ExecutorService> executorServices = new HashMap<>();
+
+    private final Tracer tracer;
+
     @Configuration("executorService.registry.shutdown")
     private volatile Long shutdown = 1000L;
 
     @Configuration("executorService.registry.shutdownUnit")
     private volatile TimeUnit shutdownUnit = TimeUnit.MILLISECONDS;
-
-    private final Map<Key, StoppableExecutorService> stoppableExecutorServices = new HashMap<>();
-    private final Tracer tracer;
 
     @Inject
     DefaultExecutorServiceFactory(final Tracer tracer) {
@@ -46,73 +51,123 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     ) {
         final ExecutorService delegate = Executors.newFixedThreadPool(nThreads);
 
-        final StoppableExecutorService stoppableExecutorService = decorateExecutorService(delegate, key);
-        logExecutorService("FixedThreadPool", key);
-        stoppableExecutorServices.put(key, stoppableExecutorService);
-        return stoppableExecutorService;
+        final ExecutorService executorService = decorateExecutorService(delegate);
+        executorServices.put(key, executorService);
+        getExecutorServiceLogger(key).info("Created FixThreadPool executor service");
+
+        return executorService;
     }
 
     @Override
     public ExecutorService createCachedThreadPool(final Key key) {
         final ExecutorService delegate = Executors.newCachedThreadPool();
 
-        final StoppableExecutorService stoppableExecutorService = decorateExecutorService(delegate, key);
-        logExecutorService("CachedThreadPool", key);
-        stoppableExecutorServices.put(key, stoppableExecutorService);
-        return stoppableExecutorService;
+        final ExecutorService executorService = decorateExecutorService(delegate);
+        executorServices.put(key, executorService);
+        getExecutorServiceLogger(key).info("Created CachedThreadPool executor service");
+
+        return executorService;
     }
 
     @Override
     public ExecutorService createSingleThreadExecutor(final Key key) {
         final ExecutorService delegate = Executors.newSingleThreadExecutor();
 
-        final StoppableExecutorService stoppableExecutorService = decorateExecutorService(delegate, key);
-        logExecutorService("SingleThreadExecutor", key);
-        stoppableExecutorServices.put(key, stoppableExecutorService);
-        return stoppableExecutorService;
+        final ExecutorService executorService = decorateExecutorService(delegate);
+        executorServices.put(key, executorService);
+        getExecutorServiceLogger(key).info("Created SingleThreadExecutor executor service");
+
+        return executorService;
     }
 
     @Override
-    public ExecutorService createSingleThreadScheduledExecutor(final Key key) {
-        final ExecutorService delegate = Executors.newSingleThreadScheduledExecutor();
+    public ScheduledExecutorService createSingleThreadScheduledExecutor(final Key key) {
+        final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor();
 
-        final StoppableExecutorService stoppableExecutorService = decorateExecutorService(delegate, key);
-        logExecutorService("SingleThreadScheduledExecutor", key);
-        stoppableExecutorServices.put(key, stoppableExecutorService);
-        return stoppableExecutorService;
+        final ScheduledExecutorService scheduledExecutorService = decorateScheduledExecutorService(delegate);
+        executorServices.put(key, scheduledExecutorService);
+        getExecutorServiceLogger(key).info("Created SingleThreadScheduledExecutor scheduled executor service");
+
+        return scheduledExecutorService;
     }
 
-    StoppableExecutorService decorateExecutorService(
-        final ExecutorService delegate,
+    @Override
+    public ScheduledExecutorService createScheduledThreadPool(
+        final int nThreads,
         final Key key
     ) {
-        // First, wrap the delegate as a traced executor service so we get nice asynchronous tracing
-        final ExecutorService traceableExecutorService = new TraceableExecutorService(delegate, tracer);
-        // Second, wrap the delegate as a stoppable executor service so we can gracefully shutdown
-        // at the end of the application's life
-        final StoppableExecutorService stoppableExecutorService =
-            new StoppableExecutorService(traceableExecutorService, key, shutdown, shutdownUnit);
+        final ScheduledExecutorService delegate = Executors.newScheduledThreadPool(nThreads);
 
-        return stoppableExecutorService;
+        final ScheduledExecutorService scheduledExecutorService = decorateScheduledExecutorService(delegate);
+        executorServices.put(key, scheduledExecutorService);
+        getExecutorServiceLogger(key).info("Created ScheduledThreadPool scheduled executor service");
+
+        return scheduledExecutorService;
     }
 
-    void logExecutorService(final String description, final Key key) {
-        LOGGER.info("Created " + description + " executor service for " + key.getParentClass().getSimpleName() +
-            "(" + key.getTags() + ")");
+    ExecutorService decorateExecutorService(final ExecutorService delegate) {
+        // Wrap the delegate as a traced executor service so we get nice asynchronous tracing
+        final TracedExecutorService tracedExecutorService = new TracedExecutorService(delegate, tracer);
+        return tracedExecutorService;
+    }
+
+    ScheduledExecutorService decorateScheduledExecutorService(final ScheduledExecutorService delegate) {
+        // Wrap the delegate as a traced scheduled executor service so we get nice asynchronous tracing
+        final TracedScheduledExecutorService tracedScheduledExecutorService =
+            new TracedScheduledExecutorService(delegate, tracer);
+        return tracedScheduledExecutorService;
+    }
+
+    private static final Collector<CharSequence, ?, String> JOINING = Collectors.joining(",", "[", "]");
+
+    Logger getExecutorServiceLogger(final Key key) {
+        final String loggerName = key.getParentClass().getName()
+            + key.getTags().stream().collect(JOINING);
+        return LoggerFactory.getLogger(loggerName);
     }
 
     @VisibleForTesting
-    Map<Key, StoppableExecutorService> getStoppableExecutorServices() {
-        return stoppableExecutorServices;
+    Map<Key, ExecutorService> getExecutorServices() {
+        return executorServices;
     }
 
     @PreDestroy
     public synchronized void stop() {
-        stoppableExecutorServices.entrySet()
-            .forEach(entry -> {
-                LOGGER.info("Shutting down ExecutorService for " +
-                    entry.getKey().getParentClass().getSimpleName() + "(" + entry.getKey().getTags() + ")");
-                entry.getValue().stop();
-            });
+        // TODO TPK: Is it OK that all executor service shutdowns happen sequentially?
+        executorServices.forEach((key, value) -> stopExecutorService(key, value));
+    }
+
+    @VisibleForTesting
+    void stopExecutorService(
+        @Nonnull final Key key,
+        @Nonnull final ExecutorService executorService
+    ) {
+        if (executorService.isShutdown()) {
+            return;
+        }
+
+        final Logger executorServiceLogger = getExecutorServiceLogger(key);
+        executorServiceLogger.info(
+            "Shutting down ExecutorService for " + key.getParentClass().getSimpleName() +
+                "(" + key.getTags() + ")"
+        );
+        // See https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html
+        executorService.shutdown(); // Disable new tasks from being submitted
+
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!executorService.awaitTermination(shutdown, shutdownUnit)) {
+                executorService.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executorService.awaitTermination(shutdown, shutdownUnit)) {
+                    executorServiceLogger.warn("Timed out waiting for ExecutorService to terminate.");
+                }
+            }
+        } catch (final InterruptedException e) {
+            // (Re-)Cancel if current thread also interrupted
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt(); // Preserve interrupt status
+            executorServiceLogger.warn("Interrupted during shutdown of ExecutorService.");
+        }
     }
 }
