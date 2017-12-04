@@ -1,11 +1,10 @@
 package net.spals.appbuilder.executor.core;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedCallable;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
 import io.opentracing.contrib.concurrent.TracedRunnable;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.*;
@@ -15,12 +14,12 @@ import java.util.concurrent.*;
  *
  * @author spags
  */
-public class TraceableScheduledExecutorService extends TracedExecutorService implements ScheduledExecutorService {
+public class TracedScheduledExecutorService extends TracedExecutorService implements ScheduledExecutorService {
 
     private final ScheduledExecutorService delegate;
     private final Tracer tracer;
 
-    TraceableScheduledExecutorService(
+    TracedScheduledExecutorService(
         final ScheduledExecutorService delegate,
         final Tracer tracer
     ) {
@@ -90,7 +89,7 @@ public class TraceableScheduledExecutorService extends TracedExecutorService imp
     }
 
     @VisibleForTesting
-    ExecutorService getDelegate() {
+    ScheduledExecutorService getDelegate() {
         return delegate;
     }
 }
