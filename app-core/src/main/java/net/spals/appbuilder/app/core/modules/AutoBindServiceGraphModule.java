@@ -1,20 +1,15 @@
 package net.spals.appbuilder.app.core.modules;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.AbstractModule;
-import com.google.inject.Binding;
-import com.google.inject.Injector;
-import com.google.inject.Key;
+import com.google.common.base.Throwables;
+import com.google.inject.*;
 import com.google.inject.internal.BindingImpl;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.multibindings.MapBinderBinding;
 import com.google.inject.multibindings.MultibinderBinding;
 import com.google.inject.multibindings.MultibindingsTargetVisitor;
 import com.google.inject.multibindings.OptionalBinderBinding;
-import com.google.inject.spi.ConstructorBinding;
-import com.google.inject.spi.DefaultBindingTargetVisitor;
-import com.google.inject.spi.Dependency;
-import com.google.inject.spi.ProvisionListener;
+import com.google.inject.spi.*;
 import net.spals.appbuilder.config.matcher.BindingMatchers;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.IServiceGraphVertex;
@@ -24,6 +19,7 @@ import net.spals.appbuilder.graph.model.ServiceGraphs;
 import net.spals.appbuilder.graph.writer.ServiceGraphWriter;
 import org.inferred.freebuilder.FreeBuilder;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -56,12 +52,17 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
 
     @Override
     public void configure() {
-        // 1. Add a listener for all service provisioning
-        //    (assuming that we actually want to show a graph).
+        final ServiceInitErrorHandler serviceInitErrorHandler = new ServiceInitErrorHandler();
+
+        // 1. Add a listener for all service graph provisioning (assuming that we actually want to show a graph).
+        //    Note that this also encompasses the handler for service initialization errors.
         if (getGraphFormat() != ServiceGraphFormat.NONE) {
             final ServiceGraphBuilder serviceGraphBuilder =
-                new ServiceGraphBuilder(getServiceGraph(), getServiceScan());
+                new ServiceGraphBuilder(getServiceGraph(), serviceInitErrorHandler, getServiceScan());
             binder().bindListener(BindingMatchers.any(), serviceGraphBuilder);
+        } else {
+            // In the cases where we don't show a graph, we'll still look for service initialization errors.
+            binder().bindListener(BindingMatchers.any(), serviceInitErrorHandler);
         }
 
         // 2. Bind the serviceGraphWriter instance
@@ -78,17 +79,26 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
             implements MultibindingsTargetVisitor<Object, Void>, ProvisionListener {
 
         private final ServiceGraph serviceGraph;
+        private final ServiceInitErrorHandler serviceInitErrorHandler;
         private final Matcher<Binding<?>> serviceScanMatcher;
 
         ServiceGraphBuilder(final ServiceGraph serviceGraph,
+                            final ServiceInitErrorHandler serviceInitErrorHandler,
                             final ServiceScan serviceScan) {
             this.serviceGraph = serviceGraph;
+            this.serviceInitErrorHandler = serviceInitErrorHandler;
             this.serviceScanMatcher = serviceScan.asBindingMatcher();
         }
 
         @Override
         public <T> void onProvision(final ProvisionInvocation<T> provision) {
-            final T serviceInstance = provision.provision();
+            final T serviceInstance;
+            try {
+                serviceInstance = provision.provision();
+            } catch (Throwable t) {
+                // If we encounter any errors during provisioning, immediately stop the graph build
+                throw serviceInitErrorHandler.createProvisionException(provision, t);
+            }
 
             final IServiceGraphVertex<T> vertex =
                 createGraphVertex(provision.getBinding().getKey(), serviceInstance);
@@ -163,6 +173,38 @@ public abstract class AutoBindServiceGraphModule extends AbstractModule {
         @Override
         public Void visit(final OptionalBinderBinding<?> optionalbinding) {
             return null;
+        }
+    }
+
+    @VisibleForTesting
+    static class ServiceInitErrorHandler implements ProvisionListener {
+
+        @Override
+        public <T> void onProvision(final ProvisionInvocation<T> provision) {
+            try {
+                provision.provision();
+            } catch (Throwable t) {
+                throw createProvisionException(provision, t);
+            }
+        }
+
+        public ProvisionException createProvisionException(
+            final ProvisionInvocation<?> provision,
+            final Throwable t
+        ) {
+            // On any unexpected provision exception, ensure that we get the full stack trace into the log.
+            // We do this by separating each exception in the causal chain into a separate message. Guice,
+            // by convention, will print the individual causes in a messages list. Unfortunately, we have to
+            // do this because Guice will swallow stack traces for only a single exception.
+            final List<Message> messages = Throwables.getCausalChain(t).stream()
+                .map(cause -> new Message(
+                    cause.getClass().getSimpleName() + " during provision of "
+                        + provision.getBinding().getKey().getTypeLiteral(),
+                    cause
+                ))
+                .collect(Collectors.toList());
+
+            return new ProvisionException(messages);
         }
     }
 }
