@@ -5,6 +5,7 @@ import org.inferred.freebuilder.FreeBuilder;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author tkral
@@ -43,9 +44,9 @@ public interface ExecutorServiceFactory {
         return createSingleThreadExecutor(new Key.Builder().setParentClass(parentClass).addTags(tags).build());
     }
 
-    ExecutorService createSingleThreadScheduledExecutor(Key key);
+    ScheduledExecutorService createSingleThreadScheduledExecutor(Key key);
 
-    default ExecutorService createSingleThreadScheduledExecutor(
+    default ScheduledExecutorService createSingleThreadScheduledExecutor(
         Class<?> parentClass,
         String... tags
     ) {

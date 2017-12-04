@@ -10,23 +10,16 @@ import java.util.concurrent.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-/**
- * An {@link ExecutorService} delegater which provides
- * a {@link #stop()} method to run a graceful shutdown
- * of the executor.
- *
- * @author tkral
- */
-class StoppableExecutorService implements ExecutorService {
+class StoppableScheduledExecutorService implements ScheduledExecutorService {
 
     private static final Collector<CharSequence, ?, String> JOINING = Collectors.joining(",", "[", "]");
-    private final ExecutorService delegate;
+    private final ScheduledExecutorService delegate;
     private final Logger logger;
     private final long shutdown;
     private final TimeUnit shutdownUnit;
 
-    StoppableExecutorService(
-        final ExecutorService delegate,
+    StoppableScheduledExecutorService(
+        final ScheduledExecutorService delegate,
         final ExecutorServiceFactory.Key key,
         final long shutdown,
         final TimeUnit shutdownUnit
@@ -39,6 +32,47 @@ class StoppableExecutorService implements ExecutorService {
         this.shutdownUnit = shutdownUnit;
     }
 
+    @Nonnull
+    @Override
+    public ScheduledFuture<?> schedule(
+        @Nonnull final Runnable command,
+        final long delay,
+        @Nonnull final TimeUnit unit
+    ) {
+        return delegate.schedule(command, delay, unit);
+    }
+
+    @Nonnull
+    @Override
+    public <V> ScheduledFuture<V> schedule(
+        @Nonnull final Callable<V> callable,
+        final long delay,
+        @Nonnull final TimeUnit unit
+    ) {
+        return delegate.schedule(callable, delay, unit);
+    }
+
+    @Nonnull
+    @Override
+    public ScheduledFuture<?> scheduleAtFixedRate(
+        @Nonnull final Runnable command,
+        final long initialDelay,
+        final long period,
+        @Nonnull final TimeUnit unit
+    ) {
+        return delegate.scheduleAtFixedRate(command, initialDelay, period, unit);
+    }
+
+    @Nonnull
+    @Override
+    public ScheduledFuture<?> scheduleWithFixedDelay(
+        @Nonnull final Runnable command,
+        final long initialDelay,
+        final long delay,
+        @Nonnull final TimeUnit unit
+    ) {
+        return delegate.scheduleWithFixedDelay(command, initialDelay, delay, unit);
+    }
 
     @Override
     public void shutdown() {
