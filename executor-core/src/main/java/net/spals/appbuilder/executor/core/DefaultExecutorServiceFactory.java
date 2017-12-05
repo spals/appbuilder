@@ -101,31 +101,13 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     }
 
     @Override
-    public Optional<Boolean> stop(final Key key) {
-        Objects.requireNonNull(key);
-        final Optional<ExecutorService> executoreService = Optional.ofNullable(executorServices.get(key));
-        if (executoreService.isPresent()) {
-            if (executoreService.get().isShutdown()) {
-                return Optional.of(false);
-            }
-            executoreService.ifPresent(x -> stopExecutorService(key, x));
-            return executoreService.map(x -> true);
-        }
-        return Optional.empty();
+    public Optional<Boolean> stop(@Nonnull final Key key) {
+        return get(key).map(x -> stopExecutorService(key, x));
     }
 
     @Override
-    public Optional<Boolean> isTerminated(final Key key) {
-        Objects.requireNonNull(key);
-        return Optional.ofNullable(executorServices.get(key))
-            .map(ExecutorService::isTerminated);
-    }
-
-    @Override
-    public Optional<Boolean> isShutdown(final Key key) {
-        Objects.requireNonNull(key);
-        return Optional.ofNullable(executorServices.get(key))
-            .map(ExecutorService::isShutdown);
+    public Optional<ExecutorService> get(@Nonnull final Key key) {
+        return Optional.ofNullable(executorServices.get(key));
     }
 
     private ExecutorService decorateExecutorService(final ExecutorService delegate) {
@@ -148,19 +130,22 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         return executorServices;
     }
 
+    /**
+     * Stops all executors for this factory before the factory is destroyed by the overall service.
+     */
     @PreDestroy
-    public synchronized void stop() {
+    public synchronized void stopAll() {
         // TODO TPK: Is it OK that all executor service shutdowns happen sequentially?
         executorServices.forEach(this::stopExecutorService);
     }
 
     @VisibleForTesting
-    void stopExecutorService(
+    boolean stopExecutorService(
         @Nonnull final Key key,
         @Nonnull final ExecutorService executorService
     ) {
         if (executorService.isShutdown()) {
-            return;
+            return false;
         }
 
         final Logger executorServiceLogger = getExecutorServiceLogger(key);
@@ -186,5 +171,6 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
             Thread.currentThread().interrupt(); // Preserve interrupt status
             executorServiceLogger.warn("Interrupted during shutdown of ExecutorService.");
         }
+        return true;
     }
 }

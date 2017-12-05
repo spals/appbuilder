@@ -192,14 +192,14 @@ public class DefaultExecutorServiceFactoryTest {
     }
 
     @Test
-    public void testAllStop() {
+    public void testStopAll() {
         final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
         final ExecutorService executorService1 = mock(ExecutorService.class);
         executorServiceFactory.getExecutorServices().put(KEY_1, executorService1);
         final ExecutorService executorService2 = mock(ExecutorService.class);
         executorServiceFactory.getExecutorServices().put(KEY_2, executorService2);
 
-        executorServiceFactory.stop();
+        executorServiceFactory.stopAll();
 
         verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService1));
         verify(executorServiceFactory).stopExecutorService(eq(KEY_2), eq(executorService2));
@@ -227,7 +227,7 @@ public class DefaultExecutorServiceFactoryTest {
         final Optional<Boolean> stopped = executorServiceFactory.stop(KEY_1);
 
         assertThat(stopped, is(Optional.of(false)));
-        verify(executorServiceFactory, never()).stopExecutorService(any(Key.class), any(ExecutorService.class));
+        verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService));
     }
 
     @Test
@@ -241,67 +241,23 @@ public class DefaultExecutorServiceFactoryTest {
     }
 
     @Test
-    public void testIsTerminatedNotTerminated() {
+    public void testGetWith() {
         final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
         final ExecutorService executorService = mock(ExecutorService.class);
         executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
 
-        final Optional<Boolean> terminated = executorServiceFactory.isTerminated(KEY_1);
+        final Optional<ExecutorService> actual = executorServiceFactory.get(KEY_1);
 
-        assertThat(terminated, is(Optional.of(false)));
+        assertThat(actual, is(Optional.of(executorService)));
     }
 
     @Test
-    public void testIsTerminated() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
-        final ExecutorService executorService = mock(ExecutorService.class);
-        when(executorService.isTerminated()).thenReturn(true);
-        executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
-
-        final Optional<Boolean> terminated = executorServiceFactory.isTerminated(KEY_1);
-
-        assertThat(terminated, is(Optional.of(true)));
-    }
-
-    @Test
-    public void testIsTerminatedMissingKey() {
+    public void testGetMissingKey() {
         final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
 
-        final Optional<Boolean> terminated = executorServiceFactory.isTerminated(KEY_1);
+        final Optional<ExecutorService> actual = executorServiceFactory.get(KEY_1);
 
-        assertThat(terminated, is(Optional.empty()));
-    }
-
-    @Test
-    public void testIsShutdownNotShutdown() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
-        final ExecutorService executorService = mock(ExecutorService.class);
-        executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
-
-        final Optional<Boolean> shutdown = executorServiceFactory.isShutdown(KEY_1);
-
-        assertThat(shutdown, is(Optional.of(false)));
-    }
-
-    @Test
-    public void testIsShutdown() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
-        final ExecutorService executorService = mock(ExecutorService.class);
-        when(executorService.isShutdown()).thenReturn(true);
-        executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
-
-        final Optional<Boolean> shutdown = executorServiceFactory.isShutdown(KEY_1);
-
-        assertThat(shutdown, is(Optional.of(true)));
-    }
-
-    @Test
-    public void testIsShutdownMissingKey() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
-
-        final Optional<Boolean> shutdown = executorServiceFactory.isShutdown(KEY_1);
-
-        assertThat(shutdown, is(Optional.empty()));
+        assertThat(actual, is(Optional.empty()));
     }
 
     private ExecutorService getTracedDelegate(final TracedExecutorService tracedExecutorService) {

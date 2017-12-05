@@ -78,8 +78,9 @@ public interface ExecutorServiceFactory {
     }
 
     /**
-     * Stops the executor of the given key. If the key does exist, then attempts to shutdown the executor.
-     * If the key does NOT exist, then no-ops and returns false.
+     * Stops the executor of the given key. If the key does exist, then shutdown the executor returning an optional of true.
+     * If the key does exist and the executor was already shutdown returns an optional of false.
+     * If the key does NOT exist, then no-ops and returns empty.
      * <p>
      * Performs stop via the recommend oracle best practice <a href='https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html'>here</a>
      * </p>
@@ -90,24 +91,12 @@ public interface ExecutorServiceFactory {
     Optional<Boolean> stop(Key key);
 
     /**
-     * Checks if the executor of the given key is terminated. If an executor exists, then returns an optional of true if terminated
-     * otherwise an optional of false. If an executor does NOT exist, then returns {@link Optional#empty()}.
-     * See {@link ExecutorService#isTerminated()}.
+     * Gets the executor of the given key if it exists. If an executor does NOT exist, then returns {@link Optional#empty()}.
      *
      * @param key key of the executor
-     * @return true if the key exists and is terminated, false if it exists but not terminated, otherwise empty
+     * @return an executor if it exists otherwise empty
      */
-    Optional<Boolean> isTerminated(Key key);
-
-    /**
-     * Checks if the executor of the given key is shutdown. If an executor exists, then returns an optional of true if shutdown
-     * otherwise an optional of false. If an executor does NOT exist, then returns {@link Optional#empty()}.
-     * See {@link ExecutorService#isShutdown()}.
-     *
-     * @param key key of the executor
-     * @return true if the key exists and is shutdown, false if it exists but not terminated, otherwise empty
-     */
-    Optional<Boolean> isShutdown(Key key);
+    Optional<ExecutorService> get(Key key);
 
     @FreeBuilder
     interface Key {
