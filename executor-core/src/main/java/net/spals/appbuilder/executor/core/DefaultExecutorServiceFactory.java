@@ -102,7 +102,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
 
     @Override
     public Optional<Boolean> stop(@Nonnull final Key key) {
-        return get(key).map(x -> stopExecutorService(key, x));
+        return get(key).map(executorService -> stopExecutorService(key, executorService));
     }
 
     @Override
@@ -145,7 +145,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         @Nonnull final ExecutorService executorService
     ) {
         if (executorService.isShutdown()) {
-            return false;
+            return true;
         }
 
         final Logger executorServiceLogger = getExecutorServiceLogger(key);
@@ -163,14 +163,16 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
                 // Wait a while for tasks to respond to being cancelled
                 if (!executorService.awaitTermination(shutdown, shutdownUnit)) {
                     executorServiceLogger.warn("Timed out waiting for ExecutorService to terminate.");
+                    return false;
                 }
             }
+            return true;
         } catch (final InterruptedException e) {
             // (Re-)Cancel if current thread also interrupted
             executorService.shutdownNow();
             Thread.currentThread().interrupt(); // Preserve interrupt status
             executorServiceLogger.warn("Interrupted during shutdown of ExecutorService.");
+            return false;
         }
-        return true;
     }
 }
