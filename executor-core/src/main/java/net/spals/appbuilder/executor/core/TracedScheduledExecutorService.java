@@ -14,7 +14,7 @@ import java.util.concurrent.*;
  *
  * @author spags
  */
-public class TracedScheduledExecutorService extends TracedExecutorService implements ScheduledExecutorService {
+class TracedScheduledExecutorService extends TracedExecutorService implements ScheduledExecutorService {
 
     private final ScheduledExecutorService delegate;
     private final Tracer tracer;

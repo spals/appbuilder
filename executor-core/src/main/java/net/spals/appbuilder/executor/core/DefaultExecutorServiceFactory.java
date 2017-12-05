@@ -1,24 +1,22 @@
 package net.spals.appbuilder.executor.core;
 
+import javax.annotation.Nonnull;
+import javax.annotation.PreDestroy;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+
 import com.netflix.governator.annotations.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
-import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.PreDestroy;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
 /**
  * Default implementation of {@link ExecutorServiceFactory}.
@@ -27,15 +25,12 @@ import java.util.stream.Collectors;
  */
 @AutoBindSingleton(baseClass = ExecutorServiceFactory.class)
 class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExecutorServiceFactory.class);
 
+    private static final Collector<CharSequence, ?, String> JOINING = Collectors.joining(",", "[", "]");
     private final Map<Key, ExecutorService> executorServices = new HashMap<>();
-
     private final Tracer tracer;
-
     @Configuration("executorService.registry.shutdown")
     private volatile Long shutdown = 1000L;
-
     @Configuration("executorService.registry.shutdownUnit")
     private volatile TimeUnit shutdownUnit = TimeUnit.MILLISECONDS;
 
@@ -105,24 +100,28 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         return scheduledExecutorService;
     }
 
-    ExecutorService decorateExecutorService(final ExecutorService delegate) {
+    @Override
+    public Optional<Boolean> stop(@Nonnull final Key key) {
+        return get(key).map(executorService -> stopExecutorService(key, executorService));
+    }
+
+    @Override
+    public Optional<ExecutorService> get(@Nonnull final Key key) {
+        return Optional.ofNullable(executorServices.get(key));
+    }
+
+    private ExecutorService decorateExecutorService(final ExecutorService delegate) {
         // Wrap the delegate as a traced executor service so we get nice asynchronous tracing
-        final TracedExecutorService tracedExecutorService = new TracedExecutorService(delegate, tracer);
-        return tracedExecutorService;
+        return new TracedExecutorService(delegate, tracer);
     }
 
-    ScheduledExecutorService decorateScheduledExecutorService(final ScheduledExecutorService delegate) {
+    private ScheduledExecutorService decorateScheduledExecutorService(final ScheduledExecutorService delegate) {
         // Wrap the delegate as a traced scheduled executor service so we get nice asynchronous tracing
-        final TracedScheduledExecutorService tracedScheduledExecutorService =
-            new TracedScheduledExecutorService(delegate, tracer);
-        return tracedScheduledExecutorService;
+        return new TracedScheduledExecutorService(delegate, tracer);
     }
 
-    private static final Collector<CharSequence, ?, String> JOINING = Collectors.joining(",", "[", "]");
-
-    Logger getExecutorServiceLogger(final Key key) {
-        final String loggerName = key.getParentClass().getName()
-            + key.getTags().stream().collect(JOINING);
+    private Logger getExecutorServiceLogger(final Key key) {
+        final String loggerName = key.getParentClass().getName() + key.getTags().stream().collect(JOINING);
         return LoggerFactory.getLogger(loggerName);
     }
 
@@ -131,19 +130,22 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
         return executorServices;
     }
 
+    /**
+     * Stops all executors for this factory before the factory is destroyed by the overall service.
+     */
     @PreDestroy
-    public synchronized void stop() {
+    public synchronized void stopAll() {
         // TODO TPK: Is it OK that all executor service shutdowns happen sequentially?
-        executorServices.forEach((key, value) -> stopExecutorService(key, value));
+        executorServices.forEach(this::stopExecutorService);
     }
 
     @VisibleForTesting
-    void stopExecutorService(
+    boolean stopExecutorService(
         @Nonnull final Key key,
         @Nonnull final ExecutorService executorService
     ) {
         if (executorService.isShutdown()) {
-            return;
+            return true;
         }
 
         final Logger executorServiceLogger = getExecutorServiceLogger(key);
@@ -161,13 +163,16 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
                 // Wait a while for tasks to respond to being cancelled
                 if (!executorService.awaitTermination(shutdown, shutdownUnit)) {
                     executorServiceLogger.warn("Timed out waiting for ExecutorService to terminate.");
+                    return false;
                 }
             }
+            return true;
         } catch (final InterruptedException e) {
             // (Re-)Cancel if current thread also interrupted
             executorService.shutdownNow();
             Thread.currentThread().interrupt(); // Preserve interrupt status
             executorServiceLogger.warn("Interrupted during shutdown of ExecutorService.");
+            return false;
         }
     }
 }
