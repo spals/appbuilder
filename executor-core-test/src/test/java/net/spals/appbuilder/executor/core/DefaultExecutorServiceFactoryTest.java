@@ -211,9 +211,8 @@ public class DefaultExecutorServiceFactoryTest {
         final ExecutorService executorService = mock(ExecutorService.class);
         executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
 
-        final Optional<Boolean> stopped = executorServiceFactory.stop(KEY_1);
-
-        assertThat(stopped, is(Optional.of(true)));
+        executorServiceFactory.stop(KEY_1);
+        // Verify that we called the stopExecutorService with the correct parameters
         verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService));
     }
 
@@ -226,7 +225,7 @@ public class DefaultExecutorServiceFactoryTest {
 
         final Optional<Boolean> stopped = executorServiceFactory.stop(KEY_1);
 
-        assertThat(stopped, is(Optional.of(false)));
+        assertThat(stopped, is(Optional.of(true)));
         verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService));
     }
 
