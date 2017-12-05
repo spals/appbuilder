@@ -78,15 +78,15 @@ public interface ExecutorServiceFactory {
     }
 
     /**
-     * Stops the executor of the given key. If the key does exist, then shutdown the executor returning an optional of true.
-     * If the key does exist and the executor was already shutdown returns an optional of false.
+     * Stops the executor of the given key. If the key exists, then shutdown the executor returning an optional of true
+     * if the shutdown was successful and fail if it was not.
      * If the key does NOT exist, then no-ops and returns empty.
      * <p>
      * Performs stop via the recommend oracle best practice <a href='https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html'>here</a>
      * </p>
      *
      * @param key key of the executor
-     * @return true if the key exists and the executor was terminated, false if it exists but already terminated, otherwise empty
+     * @return true if the key exists and the executor is now stopped, false if it exists but stop logic failed, otherwise empty
      */
     Optional<Boolean> stop(Key key);
 
