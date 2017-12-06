@@ -15,6 +15,22 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-mapstore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>

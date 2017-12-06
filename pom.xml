@@ -71,6 +71,7 @@
         <lightstep.tracer.version>0.12.15</lightstep.tracer.version>
         <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
+        <mongodb-driver.version>3.5.0</mongodb-driver.version>
         <opentracing.aws.version>0.0.2</opentracing.aws.version>
         <opentracing.cassandra.version>0.0.2</opentracing.cassandra.version>
         <opentracing.concurrent.version>0.0.2</opentracing.concurrent.version>
@@ -591,6 +592,11 @@
                 <groupId>org.mapdb</groupId>
                 <artifactId>mapdb</artifactId>
                 <version>${mapdb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver</artifactId>
+                <version>${mongodb-driver.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.reflections</groupId>
