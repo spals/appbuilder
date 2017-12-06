@@ -8,6 +8,7 @@ import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindInMap
 import net.spals.appbuilder.config.message.MessageConsumerConfig
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key
 import net.spals.appbuilder.message.core.MessageConsumerCallback
 import net.spals.appbuilder.message.core.MessageConsumerCallback.loadCallbacksForTag
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
@@ -66,7 +67,8 @@ private[kafka] class KafkaMessageConsumerPlugin @Inject()
       consumerConfig, modelSerializer)
     consumerRunnableCache ++= Map(consumerConfig -> consumerRunnable)
 
-    val executorService = executorServiceFactory.createFixedThreadPool(numThreads, getClass, consumerConfig.getTag)
+    val executorService = executorServiceFactory.createFixedThreadPool(numThreads,
+      new Key.Builder(getClass).addTags(consumerConfig.getTag).build())
     executorService.submit(consumerRunnable)
   }
 

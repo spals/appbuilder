@@ -23,12 +23,10 @@ import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key;
  */
 public class DefaultExecutorServiceFactoryTest {
 
-    private static final ExecutorServiceFactory.Key KEY_1 = new ExecutorServiceFactory.Key.Builder()
-        .setParentClass(DefaultExecutorServiceFactoryTest.class)
+    private static final Key KEY_1 = new Key.Builder(DefaultExecutorServiceFactoryTest.class)
         .addTags("1")
         .build();
-    private static final ExecutorServiceFactory.Key KEY_2 = new ExecutorServiceFactory.Key.Builder()
-        .setParentClass(DefaultExecutorServiceFactoryTest.class)
+    private static final Key KEY_2 = new Key.Builder(DefaultExecutorServiceFactoryTest.class)
         .addTags("2")
         .build();
 

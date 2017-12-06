@@ -1,11 +1,11 @@
 package net.spals.appbuilder.executor.core;
 
+import org.inferred.freebuilder.FreeBuilder;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.inferred.freebuilder.FreeBuilder;
 
 /**
  * @author tkral
@@ -52,6 +52,9 @@ public interface ExecutorServiceFactory {
 
         class Builder extends ExecutorServiceFactory_Key_Builder {
 
+            public Builder(final Class<?> parentClass) {
+                setParentClass(parentClass);
+            }
         }
     }
 }

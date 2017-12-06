@@ -7,6 +7,7 @@ import net.spals.appbuilder.annotations.config.ServiceConfig;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key;
 import net.spals.appbuilder.message.core.MessageConsumerCallback;
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin;
 import net.spals.appbuilder.model.core.ModelSerializer;
@@ -60,7 +61,7 @@ class BlockingQueueMessageConsumerPlugin implements MessageConsumerPlugin {
         // The number of registered consumer callbacks provides an upper bound on
         // the number of executor threads that we'll need.
         this.executorService = executorServiceFactory.createFixedThreadPool(Math.max(consumerCallbackSet.size(), 1),
-                getClass());
+                new Key.Builder(getClass()).build());
     }
 
     @Override
