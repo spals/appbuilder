@@ -23,12 +23,10 @@ import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key;
  */
 public class DefaultExecutorServiceFactoryTest {
 
-    private static final ExecutorServiceFactory.Key KEY_1 = new ExecutorServiceFactory.Key.Builder()
-        .setParentClass(DefaultExecutorServiceFactoryTest.class)
+    private static final Key KEY_1 = new Key.Builder(DefaultExecutorServiceFactoryTest.class)
         .addTags("1")
         .build();
-    private static final ExecutorServiceFactory.Key KEY_2 = new ExecutorServiceFactory.Key.Builder()
-        .setParentClass(DefaultExecutorServiceFactoryTest.class)
+    private static final Key KEY_2 = new Key.Builder(DefaultExecutorServiceFactoryTest.class)
         .addTags("2")
         .build();
 
@@ -36,8 +34,7 @@ public class DefaultExecutorServiceFactoryTest {
     public void testCreateFixedThreadPool() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
-        final ExecutorService executorService =
-            executorServiceFactory.createFixedThreadPool(2, this.getClass());
+        final ExecutorService executorService = executorServiceFactory.createFixedThreadPool(2, KEY_1);
         assertThat(executorService, instanceOf(TracedExecutorService.class));
 
         final TracedExecutorService tracedExecutorService = (TracedExecutorService) executorService;
@@ -54,8 +51,7 @@ public class DefaultExecutorServiceFactoryTest {
     public void testCreateCachedThreadPool() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
-        final ExecutorService executorService =
-            executorServiceFactory.createCachedThreadPool(this.getClass());
+        final ExecutorService executorService = executorServiceFactory.createCachedThreadPool(KEY_1);
         assertThat(executorService, instanceOf(TracedExecutorService.class));
 
         final TracedExecutorService tracedExecutorService = (TracedExecutorService) executorService;
@@ -72,8 +68,7 @@ public class DefaultExecutorServiceFactoryTest {
     public void testCreateSingleThreadExecutor() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
-        final ExecutorService executorService =
-            executorServiceFactory.createSingleThreadExecutor(this.getClass());
+        final ExecutorService executorService = executorServiceFactory.createSingleThreadExecutor(KEY_1);
         assertThat(executorService, instanceOf(TracedExecutorService.class));
 
         final TracedExecutorService tracedExecutorService = (TracedExecutorService) executorService;
@@ -88,7 +83,7 @@ public class DefaultExecutorServiceFactoryTest {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
         final ScheduledExecutorService scheduledExecutorService =
-            executorServiceFactory.createSingleThreadScheduledExecutor(this.getClass());
+            executorServiceFactory.createSingleThreadScheduledExecutor(KEY_1);
         assertThat(scheduledExecutorService, instanceOf(TracedScheduledExecutorService.class));
 
         final TracedScheduledExecutorService tracedScheduledExecutorService = (TracedScheduledExecutorService) scheduledExecutorService;
@@ -103,7 +98,7 @@ public class DefaultExecutorServiceFactoryTest {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
         final ScheduledExecutorService scheduledExecutorService =
-            executorServiceFactory.createScheduledThreadPool(2, this.getClass());
+            executorServiceFactory.createScheduledThreadPool(2, KEY_1);
         assertThat(scheduledExecutorService, instanceOf(TracedScheduledExecutorService.class));
 
         final TracedScheduledExecutorService tracedScheduledExecutorService = (TracedScheduledExecutorService) scheduledExecutorService;
@@ -120,14 +115,11 @@ public class DefaultExecutorServiceFactoryTest {
     public void testRegisterFixedThreadPool() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
-        final ExecutorService executorService =
-            executorServiceFactory.createFixedThreadPool(2, this.getClass());
-        final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
-            .setParentClass(this.getClass()).build();
+        final ExecutorService executorService = executorServiceFactory.createFixedThreadPool(2, KEY_1);
 
         assertThat(
             executorServiceFactory.getExecutorServices(),
-            hasEntry(is(expectedKey), sameInstance(executorService))
+            hasEntry(is(KEY_1), sameInstance(executorService))
         );
     }
 
@@ -135,14 +127,11 @@ public class DefaultExecutorServiceFactoryTest {
     public void testRegisterCachedThreadPool() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
-        final ExecutorService executorService =
-            executorServiceFactory.createCachedThreadPool(this.getClass());
-        final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
-            .setParentClass(this.getClass()).build();
+        final ExecutorService executorService = executorServiceFactory.createCachedThreadPool(KEY_1);
 
         assertThat(
             executorServiceFactory.getExecutorServices(),
-            hasEntry(is(expectedKey), sameInstance(executorService))
+            hasEntry(is(KEY_1), sameInstance(executorService))
         );
     }
 
@@ -150,14 +139,11 @@ public class DefaultExecutorServiceFactoryTest {
     public void testRegisterSingleThreadExecutor() {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
-        final ExecutorService executorService =
-            executorServiceFactory.createSingleThreadExecutor(this.getClass());
-        final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
-            .setParentClass(this.getClass()).build();
+        final ExecutorService executorService = executorServiceFactory.createSingleThreadExecutor(KEY_1);
 
         assertThat(
             executorServiceFactory.getExecutorServices(),
-            hasEntry(is(expectedKey), sameInstance(executorService))
+            hasEntry(is(KEY_1), sameInstance(executorService))
         );
     }
 
@@ -166,13 +152,11 @@ public class DefaultExecutorServiceFactoryTest {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
         final ScheduledExecutorService scheduledExecutorService =
-            executorServiceFactory.createSingleThreadScheduledExecutor(this.getClass());
-        final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
-            .setParentClass(this.getClass()).build();
+            executorServiceFactory.createSingleThreadScheduledExecutor(KEY_1);
 
         assertThat(
             executorServiceFactory.getExecutorServices(),
-            hasEntry(is(expectedKey), sameInstance(scheduledExecutorService))
+            hasEntry(is(KEY_1), sameInstance(scheduledExecutorService))
         );
     }
 
@@ -181,13 +165,11 @@ public class DefaultExecutorServiceFactoryTest {
         final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
 
         final ScheduledExecutorService scheduledExecutorService =
-            executorServiceFactory.createScheduledThreadPool(2, this.getClass());
-        final ExecutorServiceFactory.Key expectedKey = new ExecutorServiceFactory.Key.Builder()
-            .setParentClass(this.getClass()).build();
+            executorServiceFactory.createScheduledThreadPool(2, KEY_1);
 
         assertThat(
             executorServiceFactory.getExecutorServices(),
-            hasEntry(is(expectedKey), sameInstance(scheduledExecutorService))
+            hasEntry(is(KEY_1), sameInstance(scheduledExecutorService))
         );
     }
 
@@ -212,6 +194,7 @@ public class DefaultExecutorServiceFactoryTest {
         executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
 
         executorServiceFactory.stop(KEY_1);
+
         // Verify that we called the stopExecutorService with the correct parameters
         verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService));
     }

@@ -10,6 +10,7 @@ import com.google.inject.{Inject, Provider}
 import com.netflix.governator.annotations.Configuration
 import net.spals.appbuilder.annotations.service.AutoBindProvider
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key
 
 /**
   * @author tkral
@@ -29,7 +30,7 @@ private[s3] class S3TransferManagerProvider @Inject() (
       .withS3Client(s3Client)
       .withExecutorFactory(new ExecutorFactory() {
         override def newExecutor(): ExecutorService =
-          executorServiceFactory.createFixedThreadPool(numUploadThreads, getClass)
+          executorServiceFactory.createFixedThreadPool(numUploadThreads, new Key.Builder(getClass).build())
       })
       .withShutDownThreadPools(false)
       .build()

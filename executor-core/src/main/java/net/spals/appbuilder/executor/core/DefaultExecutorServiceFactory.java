@@ -42,7 +42,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     @Override
     public ExecutorService createFixedThreadPool(
         final int nThreads,
-        final Key key
+        @Nonnull final Key key
     ) {
         final ExecutorService delegate = Executors.newFixedThreadPool(nThreads);
 
@@ -54,7 +54,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     }
 
     @Override
-    public ExecutorService createCachedThreadPool(final Key key) {
+    public ExecutorService createCachedThreadPool(@Nonnull final Key key) {
         final ExecutorService delegate = Executors.newCachedThreadPool();
 
         final ExecutorService executorService = decorateExecutorService(delegate);
@@ -65,7 +65,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     }
 
     @Override
-    public ExecutorService createSingleThreadExecutor(final Key key) {
+    public ExecutorService createSingleThreadExecutor(@Nonnull final Key key) {
         final ExecutorService delegate = Executors.newSingleThreadExecutor();
 
         final ExecutorService executorService = decorateExecutorService(delegate);
@@ -76,7 +76,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     }
 
     @Override
-    public ScheduledExecutorService createSingleThreadScheduledExecutor(final Key key) {
+    public ScheduledExecutorService createSingleThreadScheduledExecutor(@Nonnull final Key key) {
         final ScheduledExecutorService delegate = Executors.newSingleThreadScheduledExecutor();
 
         final ScheduledExecutorService scheduledExecutorService = decorateScheduledExecutorService(delegate);

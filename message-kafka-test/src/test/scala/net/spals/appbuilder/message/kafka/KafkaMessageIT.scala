@@ -5,6 +5,7 @@ import java.util.concurrent.{CountDownLatch, Executors, TimeUnit}
 import com.google.common.collect.ImmutableSet
 import net.spals.appbuilder.config.message.{MessageConsumerConfig, MessageProducerConfig}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key
 import net.spals.appbuilder.message.core.TestMessageConsumerCallback
 import net.spals.appbuilder.message.kafka.consumer.KafkaMessageConsumerPlugin
 import net.spals.appbuilder.message.kafka.producer.KafkaMessageProducerPlugin
@@ -26,7 +27,7 @@ class KafkaMessageIT {
 
   private lazy val executorServiceFactory = {
     val executorServiceFactory = mock(classOf[ExecutorServiceFactory])
-    when(executorServiceFactory.createFixedThreadPool(anyInt, any(classOf[java.lang.Class[_]]), anyString))
+    when(executorServiceFactory.createFixedThreadPool(anyInt, any(classOf[Key])))
       .thenReturn(Executors.newSingleThreadExecutor)
 
     executorServiceFactory
