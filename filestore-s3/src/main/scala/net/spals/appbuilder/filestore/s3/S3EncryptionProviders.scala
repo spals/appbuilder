@@ -16,6 +16,7 @@ import com.netflix.governator.annotations.Configuration
 import com.typesafe.config.ConfigException
 import net.spals.appbuilder.annotations.service.AutoBindProvider
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key
 
 import scala.compat.java8.OptionConverters._
 import scala.util.Try
@@ -111,7 +112,7 @@ private[s3] class S3TransferEncryptionHolderProvider @Inject() (
         .withS3Client(s3Encryption)
         .withExecutorFactory(new ExecutorFactory() {
           override def newExecutor(): ExecutorService =
-            executorServiceFactory.createFixedThreadPool(numUploadThreads, getClass)
+            executorServiceFactory.createFixedThreadPool(numUploadThreads, new Key.Builder(getClass).build())
         })
         .withShutDownThreadPools(false)
         .build()

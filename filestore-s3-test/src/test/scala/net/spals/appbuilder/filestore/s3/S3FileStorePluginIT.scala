@@ -12,6 +12,7 @@ import com.google.common.base.Charsets
 import com.google.common.io.Resources
 import io.opentracing.mock.{MockSpan, MockTracer}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key
 import net.spals.appbuilder.filestore.core.model._
 import net.spals.appbuilder.filestore.s3.S3SpanMatcher.s3Span
 import org.hamcrest.MatcherAssert._
@@ -51,7 +52,7 @@ class S3FileStorePluginIT {
 
   private lazy val s3TransferManager = {
     val executorServiceFactory = mock(classOf[ExecutorServiceFactory])
-    when(executorServiceFactory.createFixedThreadPool(m_anyInt(), m_any(classOf[Class[_]])))
+    when(executorServiceFactory.createFixedThreadPool(m_anyInt(), m_any(classOf[Key])))
       .thenReturn(Executors.newSingleThreadExecutor())
 
     val s3TransferManagerProvider = new S3TransferManagerProvider(s3Client, executorServiceFactory)

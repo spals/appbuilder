@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import net.spals.appbuilder.config.message.MessageConsumerConfig;
 import net.spals.appbuilder.config.message.MessageProducerConfig;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory.Key;
 import net.spals.appbuilder.message.core.TestMessageConsumerCallback;
 import net.spals.appbuilder.model.core.ModelSerializer;
 import org.testng.annotations.Test;
@@ -56,7 +57,7 @@ public class BlockingQueueMessageIT {
 
     private ExecutorServiceFactory executorServiceFactory() {
         final ExecutorServiceFactory executorServiceFactory = mock(ExecutorServiceFactory.class);
-        when(executorServiceFactory.createFixedThreadPool(anyInt(), any(Class.class)))
+        when(executorServiceFactory.createFixedThreadPool(anyInt(), any(Key.class)))
                 .thenReturn(Executors.newSingleThreadExecutor());
 
         return executorServiceFactory;
