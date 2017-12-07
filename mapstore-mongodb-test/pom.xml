@@ -23,6 +23,10 @@
             <artifactId>catch-throwable</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-mapstore-mongodb</artifactId>
         </dependency>
@@ -86,7 +90,7 @@
                                     <port>mongodb.port:27017</port>
                                 </ports>
                                 <wait>
-                                    <!-- Allow 5 seconds for mongodb container to boot-->
+                                    <log>waiting for connections on port</log>
                                     <time>5000</time>
                                     <shutdown>500</shutdown>
                                 </wait>

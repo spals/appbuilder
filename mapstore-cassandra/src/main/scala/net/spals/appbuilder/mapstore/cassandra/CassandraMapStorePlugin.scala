@@ -48,7 +48,7 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
   private[cassandra] val replicationStrategy: String = "SimpleStrategy"
 
   private lazy val codecRegistry = new CodecRegistry()
-  private val keyspace = Option(configuredKeyspace).getOrElse(applicationName)
+  private lazy val keyspace = Option(configuredKeyspace).getOrElse(applicationName)
   private lazy val session = {
     val replicationOptions = Map[String, AnyRef]("replication_factor" -> Int.box(replicationFactor),
       "class" -> replicationStrategy)

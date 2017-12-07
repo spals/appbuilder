@@ -21,6 +21,7 @@ import org.bson.Document
 import org.bson.conversions.Bson
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
 
 /**
@@ -31,9 +32,11 @@ import scala.compat.java8.OptionConverters._
   */
 @AutoBindInMap(baseClass = classOf[MapStorePlugin], key = "mongoDB")
 private[mongodb] class MongoDBMapStorePlugin @Inject() (
-  mongoDatabase: MongoDatabase,
-  mongoClient: MongoClient
+  mongoClient: MongoClient,
+  mongoDatabase: MongoDatabase
 ) extends MapStorePlugin with Closeable {
+
+  private val ID_FIELD_NAME = "_id"
   private val LOGGER = LoggerFactory.getLogger(classOf[MongoDBMapStorePlugin])
 
   @PreDestroy
@@ -43,20 +46,27 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
     tableName: String,
     tableKey: MapStoreTableKey
   ): Boolean = {
-    // Turn of auto-indexing as we'll create our own explicit index
-    val collectionOptions = new CreateCollectionOptions().autoIndex(false)
-    mongoDatabase.createCollection(tableName, collectionOptions)
+    // Collection creation in MongoDB is not idempotent so we need to check that the tableName
+    // doesn't already exist in the collection name list
+    mongoDatabase.listCollectionNames().into(new java.util.ArrayList[String]()).contains(tableName) match {
+      // Case: Collection already exists
+      case true => true
+      // Case: Collection does not already exist
+      case false => {
+        // Turn of auto-indexing as we'll create our own explicit index
+        val collectionOptions = new CreateCollectionOptions().autoIndex(false)
+        mongoDatabase.createCollection(tableName, collectionOptions)
 
-    val hashIndex = Indexes.hashed(tableKey.getHashField)
-    val fullIndex = tableKey.getRangeField.asScala
-      .map(rangeField => Indexes.compoundIndex(hashIndex, Indexes.ascending(rangeField)))
-      .getOrElse(hashIndex)
+        // From MongoDB: Currently only single field hashed index supported.
+        val hashIndex = Indexes.hashed(tableKey.getHashField)
 
-    val collection = mongoDatabase.getCollection(tableName)
-    val indexOptions = new IndexOptions().name("primary")
-    val indexName = collection.createIndex(fullIndex, indexOptions)
+        val collection = mongoDatabase.getCollection(tableName)
+        val indexOptions = new IndexOptions().name("primary")
+        val indexName = collection.createIndex(hashIndex, indexOptions)
 
-    "primary".equals(indexName)
+        "primary".equals(indexName)
+      }
+    }
   }
 
   override def dropTable(tableName: String): Boolean = {
@@ -84,7 +94,10 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
     val allItems = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
     collection.find().into(allItems)
 
-    allItems
+    allItems.asScala.map(item => {
+      item.remove(ID_FIELD_NAME)
+      item
+    }).asJava
   }
 
   override def getItem(
@@ -96,7 +109,10 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
     val filter = createFilter(key)
     val result = collection.find(filter).first()
 
-    Option(result).map(_.asInstanceOf[java.util.Map[String, AnyRef]]).asJava
+    Option(result).map(r => {
+      r.remove(ID_FIELD_NAME)
+      r.asInstanceOf[java.util.Map[String, AnyRef]]
+    }).asJava
   }
 
   override def getItems(
@@ -118,7 +134,11 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
     val filter = createFilter(key)
     val items = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
     collection.find(filter).limit(findOptions.getLimit).sort(findOptions.getSort).into(items)
-    items
+
+    items.asScala.map(item => {
+      item.remove(ID_FIELD_NAME)
+      item
+    }).asJava
   }
 
   override def putItem(
@@ -139,6 +159,7 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
       .foreach(rangeField => document.append(rangeField, key.getRangeKey.getValue.asInstanceOf[AnyRef]))
 
     collection.insertOne(document, insertOptions)
+    document.remove(ID_FIELD_NAME) // Remove the automatic _id field from the record
     document
   }
 
@@ -150,11 +171,18 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
     val collection = mongoDatabase.getCollection(tableName)
 
     stripKey(key, payload)
-    val document = new Document(payload)
+    val updates = payload.asScala.map(field => field._2 match {
+      case null | "" => Updates.unset(field._1)
+      case _ => Updates.set(field._1, field._2)
+    }).toList
+    val fullUpdate = Updates.combine(updates.asJava)
 
     val filter = createFilter(key)
     val updateOptions = new FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
-    collection.findOneAndUpdate(filter, document, updateOptions)
+
+    val document = collection.findOneAndUpdate(filter, fullUpdate, updateOptions)
+    document.remove(ID_FIELD_NAME)
+    document
   }
 
   @VisibleForTesting
