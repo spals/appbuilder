@@ -31,8 +31,8 @@ class MongoDBMapStorePluginIT {
   private val mongoDBTracer = new MockTracer()
   private lazy val mongoClient = {
     val mongoClientProvider = new MongoClientProvider(mongoDBTracer)
-    mongoClientProvider.host = "localhost"//System.getenv("MONGODB_IP")
-    mongoClientProvider.port = 27017//System.getenv("MONGODB_PORT").asInstanceOf[Int]
+    mongoClientProvider.host = System.getenv("MONGODB_IP")
+    mongoClientProvider.port = System.getenv("MONGODB_PORT").asInstanceOf[Int]
 
     LOGGER.info(s"Connecting to mongoDB instance at ${mongoClientProvider.host}:${mongoClientProvider.port}")
     mongoClientProvider.get()
