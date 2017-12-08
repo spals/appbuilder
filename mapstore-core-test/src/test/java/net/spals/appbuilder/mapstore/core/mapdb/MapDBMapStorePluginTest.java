@@ -64,8 +64,10 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "emptyGetProvider")
-    public void testEmptyGetItem(final MapStoreTableKey tableKey,
-                                 final MapStoreKey storeKey) throws IOException {
+    public void testEmptyGetItem(
+        final MapStoreTableKey tableKey,
+        final MapStoreKey storeKey
+    ) throws IOException {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         storePlugin.createTable("myTable", tableKey);
 
@@ -73,8 +75,10 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "emptyGetProvider")
-    public void testEmptyGetItems(final MapStoreTableKey tableKey,
-                                  final MapStoreKey storeKey) throws IOException {
+    public void testEmptyGetItems(
+        final MapStoreTableKey tableKey,
+        final MapStoreKey storeKey
+    ) throws IOException {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         storePlugin.createTable("myTable", tableKey);
 
@@ -82,8 +86,10 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "emptyGetProvider")
-    public void testEmptyGetAllItems(final MapStoreTableKey tableKey,
-                                     final MapStoreKey storeKey) throws IOException {
+    public void testEmptyGetAllItems(
+        final MapStoreTableKey tableKey,
+        final MapStoreKey storeKey
+    ) throws IOException {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         storePlugin.createTable("myTable", tableKey);
 
@@ -108,10 +114,12 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "putItemProvider")
-    public void testPutItem(final MapStoreTableKey tableKey,
-                            final MapStoreKey storeKey,
-                            final Map<String, Object> payload,
-                            final Map<String, Object> expectedResult) {
+    public void testPutItem(
+        final MapStoreTableKey tableKey,
+        final MapStoreKey storeKey,
+        final Map<String, Object> payload,
+        final Map<String, Object> expectedResult
+    ) {
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(DBMaker.memoryDB().make());
         storePlugin.createTable("myTable", tableKey);
 
@@ -130,8 +138,10 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "updateItemProvider")
-    public void testUpdateItem(final Map<String, Object> payload,
-                               final Map<String, Object> expectedResult) throws IOException {
+    public void testUpdateItem(
+        final Map<String, Object> payload,
+        final Map<String, Object> expectedResult
+    ) throws IOException {
         // Just for kicks, ensure that fileDBs work too
         final Path dbDir = Files.createTempDirectory(MapDBMapStorePluginTest.class.getSimpleName());
         final String dbFilePath = dbDir.resolve(UUID.randomUUID() + ".db").toString();
@@ -186,7 +196,10 @@ public class MapDBMapStorePluginTest {
     }
 
     @Test(dataProvider = "getItemsProvider")
-    public void testGetItems(final MapStoreKey storeKey, final List<Map<String, Object>> expectedResults) {
+    public void testGetItems(
+        final MapStoreKey storeKey,
+        final List<Map<String, Object>> expectedResults
+    ) {
         final Function<Integer, MapStoreKey> keyFunction = i -> new MapStoreKey.Builder()
                 .setHash("myHashField", "myHashValue").setRange("myRangeField", equalTo(i)).build();
 

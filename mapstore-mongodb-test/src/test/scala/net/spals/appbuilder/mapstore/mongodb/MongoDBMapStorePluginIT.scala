@@ -5,14 +5,14 @@ import java.util.Optional
 import io.opentracing.mock.{MockSpan, MockTracer}
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions
 import net.spals.appbuilder.mapstore.core.model.MultiValueMapRangeKey.in
-import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey._
+import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.{equalTo => range_equalTo, greaterThan => range_greaterThan, greaterThanOrEqualTo => range_greaterThanOrEqualTo, lessThan => range_lessThan, lessThanOrEqualTo => range_lessThanOrEqualTo}
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between
 import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all
 import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
 import net.spals.appbuilder.mapstore.mongodb.MongoDBSpanMatcher.mongoDBSpan
 import org.bson.Document
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.{contains, containsString, empty, hasEntry, is}
+import org.hamcrest.Matchers._
 import org.hamcrest.{Description, Matcher, TypeSafeMatcher}
 import org.slf4j.LoggerFactory
 import org.testng.annotations._
@@ -83,11 +83,11 @@ class MongoDBMapStorePluginIT {
       // Case: Hash and range key
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "deadbeef")
-          .setRange("myRangeField", equalTo[String]("deadbeef")).build)
+          .setRange("myRangeField", range_equalTo[String]("deadbeef")).build)
     )
   }
 
-  @Test(dataProvider = "emptyGetProvider")
+  @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
   def testEmptyGetItem(
     tableName: String,
     storeKey: MapStoreKey
@@ -96,7 +96,7 @@ class MongoDBMapStorePluginIT {
     assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
-  @Test(dataProvider = "emptyGetProvider")
+  @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
   def testEmptyGetItems(
     tableName: String,
     storeKey: MapStoreKey
@@ -113,29 +113,29 @@ class MongoDBMapStorePluginIT {
         new Document(Map("myHashField" -> "myHashValue", "key" -> "value").toMap[String, AnyRef].asJava)),
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-          .setRange("myRangeField", equalTo[String]("myRangeValue1")).build,
+          .setRange("myRangeField", range_equalTo[String]("myRangeValue1")).build,
         Map("key" -> "value"),
         new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue1", "key" -> "value").toMap[String, AnyRef].asJava)),
       // Inserted for getItems tests below
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-          .setRange("myRangeField", equalTo[String]("myRangeValue2")).build,
+          .setRange("myRangeField", range_equalTo[String]("myRangeValue2")).build,
         Map("key" -> "value"),
         new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue2", "key" -> "value").toMap[String, AnyRef].asJava)),
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-          .setRange("myRangeField", equalTo[String]("myRangeValue3")).build,
+          .setRange("myRangeField", range_equalTo[String]("myRangeValue3")).build,
         Map("key" -> "value"),
         new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue3", "key" -> "value").toMap[String, AnyRef].asJava)),
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-          .setRange("myRangeField", equalTo[String]("myRangeValue4")).build,
+          .setRange("myRangeField", range_equalTo[String]("myRangeValue4")).build,
         Map("key" -> "value"),
         new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue4", "key" -> "value").toMap[String, AnyRef].asJava))
     )
   }
 
-  @Test(dataProvider = "putItemProvider")
+  @Test(dataProvider = "putItemProvider", groups = Array("put"), dependsOnGroups = Array("empty"))
   def testPutItem(
     tableName: String,
     storeKey: MapStoreKey,
@@ -162,13 +162,13 @@ class MongoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "updateItemProvider", dependsOnMethods = Array("testPutItem"))
+  @Test(dataProvider = "updateItemProvider", groups = Array("update"), dependsOnGroups = Array("put"))
   def testUpdateItem(
     payload: Map[String, AnyRef],
     expectedResult: Document
   ) {
     val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-      .setRange("myRangeField", equalTo[String]("myRangeValue1")).build
+      .setRange("myRangeField", range_equalTo[String]("myRangeValue1")).build
 
     assertThat(mapStorePlugin.updateItem(rangeTableName, storeKey, payload.asJava).asInstanceOf[Document],
       is(expectedResult))
@@ -178,10 +178,15 @@ class MongoDBMapStorePluginIT {
       mongoDBSpan("find")))
   }
 
-  @DataProvider def getItemsProvider(): Array[Array[AnyRef]] = {
-    val result: Int => Document = i => new Document(Map("myHashField" -> "myHashValue",
-      "myRangeField" -> s"myRangeValue$i", "key" -> "value").toMap[String, AnyRef].asJava)
+  @Test(groups = Array("get"), dependsOnGroups = Array("put", "update"))
+  def testGetAllItems() {
+    assertThat(mapStorePlugin.getAllItems(rangeTableName).asInstanceOf[java.util.List[Document]],
+      // getAllItems isn't ordered on range key
+      containsInAnyOrder[Document](result(1), result(2), result(3), result(4)))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
+  }
 
+  @DataProvider def getItemsProvider(): Array[Array[AnyRef]] = {
     Array(
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
         .setRange("myRangeField", all()).build,
@@ -194,27 +199,27 @@ class MongoDBMapStorePluginIT {
         .setRange("myRangeField", between[String]("myRangeValue2", "myRangeValue2")).build,
         List(result(2))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-        .setRange("myRangeField", equalTo[String]("myRangeValue1")).build,
+        .setRange("myRangeField", range_equalTo[String]("myRangeValue1")).build,
         List(result(1))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-        .setRange("myRangeField", greaterThan[String]("myRangeValue2")).build,
+        .setRange("myRangeField", range_greaterThan[String]("myRangeValue2")).build,
         List(result(3), result(4))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-        .setRange("myRangeField", greaterThanOrEqualTo[String]("myRangeValue2")).build,
+        .setRange("myRangeField", range_greaterThanOrEqualTo[String]("myRangeValue2")).build,
         List(result(2), result(3), result(4))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
         .setRange("myRangeField", in[String]("myRangeValue2", "myRangeValue3")).build,
         List(result(2), result(3))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-        .setRange("myRangeField", lessThan[String]("myRangeValue3")).build,
+        .setRange("myRangeField", range_lessThan[String]("myRangeValue3")).build,
         List(result(1), result(2))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-        .setRange("myRangeField", lessThanOrEqualTo[String]("myRangeValue3")).build,
+        .setRange("myRangeField", range_lessThanOrEqualTo[String]("myRangeValue3")).build,
         List(result(1), result(2), result(3)))
     )
   }
 
-  @Test(dataProvider = "getItemsProvider", dependsOnMethods = Array("testPutItem", "testUpdateItem"))
+  @Test(dataProvider = "getItemsProvider", groups = Array("get"), dependsOnGroups = Array("put", "update"))
   def testGetItems(
     storeKey: MapStoreKey,
     expectedResults: List[Document]
@@ -222,6 +227,23 @@ class MongoDBMapStorePluginIT {
     assertThat(mapStorePlugin.getItems(rangeTableName, storeKey, defaultOptions()).asInstanceOf[java.util.List[Document]],
       contains[Document](expectedResults: _*))
     assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
+  }
+
+  @Test(groups = Array("delete"), dependsOnGroups = Array("get"))
+  def testDeleteItem() {
+    val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
+      .setRange("myRangeField", range_equalTo[String]("myRangeValue4")).build
+    mapStorePlugin.deleteItem(rangeTableName, storeKey)
+
+    assertThat(mapStorePlugin.getAllItems(rangeTableName).asInstanceOf[java.util.List[Document]],
+      // getAllItems isn't ordered on range key
+      containsInAnyOrder[Document](result(1), result(2), result(3)))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("delete"), mongoDBSpan("find")))
+  }
+
+  private def result(i: Int): Document = {
+    new Document(Map("myHashField" -> "myHashValue",
+      "myRangeField" -> s"myRangeValue$i", "key" -> "value").toMap[String, AnyRef].asJava)
   }
 }
 
