@@ -10,7 +10,7 @@ import com.mongodb.MongoClient
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model._
 import net.spals.appbuilder.annotations.service.AutoBindInMap
-import net.spals.appbuilder.mapstore.core.MapStorePlugin
+import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.mapstore.core.MapStorePlugin.stripKey
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.{Extended, Standard}
@@ -28,6 +28,18 @@ import scala.compat.java8.OptionConverters._
   * Implementation of [[MapStorePlugin]] which
   * uses MongoDB.
   *
+  * NOTE: This implementation follows the semantics
+  * of a [[MapStore]], not a document store. As such,
+  * it intentionally removes or ignores some default
+  * functionality provided by MongoDB. For example,
+  * this implementation ignores MongoDB's text and
+  * geo search capabilities.
+  *
+  * If an application developer wishes to use more
+  * advanced features of MongoDB, they should inject
+  * the [[MongoClient]] and [[MongoDatabase]] directly
+  * into their own custom services.
+  *
   * @author tkral
   */
 @AutoBindInMap(baseClass = classOf[MapStorePlugin], key = "mongoDB")
@@ -37,7 +49,6 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
 ) extends MapStorePlugin with Closeable {
 
   private val ID_FIELD_NAME = "_id"
-  private val LOGGER = LoggerFactory.getLogger(classOf[MongoDBMapStorePlugin])
 
   @PreDestroy
   override def close(): Unit = mongoClient.close()
@@ -53,7 +64,7 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
       case true => true
       // Case: Collection does not already exist
       case false => {
-        // Turn of auto-indexing as we'll create our own explicit index
+        // Turn off auto-indexing as we'll create our own explicit index
         val collectionOptions = new CreateCollectionOptions().autoIndex(false)
         mongoDatabase.createCollection(tableName, collectionOptions)
 
