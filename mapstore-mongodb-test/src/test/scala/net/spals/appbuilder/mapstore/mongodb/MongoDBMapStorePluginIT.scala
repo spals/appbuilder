@@ -1,44 +1,49 @@
-package net.spals.appbuilder.mapstore.cassandra
+package net.spals.appbuilder.mapstore.mongodb
 
 import java.util.Optional
 
 import io.opentracing.mock.{MockSpan, MockTracer}
-import net.spals.appbuilder.mapstore.cassandra.CassandraSpanMatcher.cassandraSpan
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.defaultOptions
+import net.spals.appbuilder.mapstore.core.model.MultiValueMapRangeKey.in
 import net.spals.appbuilder.mapstore.core.model.SingleValueMapRangeKey.{equalTo => range_equalTo, greaterThan => range_greaterThan, greaterThanOrEqualTo => range_greaterThanOrEqualTo, lessThan => range_lessThan, lessThanOrEqualTo => range_lessThanOrEqualTo}
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.between
 import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all
 import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
+import net.spals.appbuilder.mapstore.mongodb.MongoDBSpanMatcher.mongoDBSpan
+import org.bson.Document
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers._
-import org.hamcrest.{Description, TypeSafeMatcher}
+import org.hamcrest.{Description, Matcher, TypeSafeMatcher}
+import org.slf4j.LoggerFactory
 import org.testng.annotations._
 
 import scala.collection.JavaConverters._
 
 /**
-  * Integration tests for [[CassandraMapStorePlugin]].
+  * Integration tests for [[MongoDBMapStorePlugin]].
   *
   * @author tkral
   */
-class CassandraMapStorePluginIT {
+class MongoDBMapStorePluginIT {
+  private val LOGGER = LoggerFactory.getLogger(classOf[MongoDBMapStorePluginIT])
 
-  private lazy val clusterInitializer = {
-    val initializerProvider = new CassandraClusterInitializerProvider()
-    initializerProvider.clusterName = "CassandraMapStorePluginIT"
-    initializerProvider.hosts = System.getenv("CASSANDRA_IP")
-    initializerProvider.port = System.getenv("CASSANDRA_PORT").toInt
-    initializerProvider.get()
+  private val mongoDBEndpoint = s"http://${System.getenv("MONGODB_IP")}:${System.getenv("MONGODB_PORT")}"
+  private val mongoDBTracer = new MockTracer()
+  private lazy val mongoClient = {
+    val mongoClientProvider = new MongoClientProvider(mongoDBTracer)
+    mongoClientProvider.host = System.getenv("MONGODB_IP")
+    mongoClientProvider.port = System.getenv("MONGODB_PORT").toInt
+
+    LOGGER.info(s"Connecting to mongoDB instance at ${mongoClientProvider.host}:${mongoClientProvider.port}")
+    mongoClientProvider.get()
   }
 
-  private val cassandraTracer = new MockTracer()
-  private lazy val cluster = {
-    val clusterProvider = new CassandraClusterProvider(clusterInitializer, cassandraTracer)
-    clusterProvider.get()
+  private val applicationName = "MongoDBMapStorePluginIT"
+  private lazy val mongoDatabase = {
+    val mongoDatabaseProvider = new MongoDatabaseProvider(applicationName, mongoClient)
+    mongoDatabaseProvider.get()
   }
-
-  private val applicationName = "CassandraMapStorePluginIT"
-  private lazy val mapStorePlugin = new CassandraMapStorePlugin(applicationName, cluster)
+  private lazy val mapStorePlugin = new MongoDBMapStorePlugin(mongoClient, mongoDatabase)
 
   private val hashTableName = "hashTable"
   private val hashTableKey = new MapStoreTableKey.Builder()
@@ -57,7 +62,7 @@ class CassandraMapStorePluginIT {
   }
 
   @BeforeMethod def resetTracer() {
-    cassandraTracer.reset()
+    mongoDBTracer.reset()
   }
 
   @AfterClass(alwaysRun = true) def dropTables() {
@@ -88,9 +93,7 @@ class CassandraMapStorePluginIT {
     storeKey: MapStoreKey
   ) {
     assertThat(mapStorePlugin.getItem(tableName, storeKey), is(Optional.empty[java.util.Map[String, AnyRef]]))
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
   @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
@@ -99,9 +102,7 @@ class CassandraMapStorePluginIT {
     storeKey: MapStoreKey
   ) {
     assertThat(mapStorePlugin.getItems(tableName, storeKey, defaultOptions()), empty[java.util.Map[String, AnyRef]])
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
   @DataProvider def putItemProvider(): Array[Array[AnyRef]] = {
@@ -109,29 +110,28 @@ class CassandraMapStorePluginIT {
       Array(hashTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue").build,
         Map("key" -> "value"),
-        // NOTE: Cassandra keys are case insensitive
-        Map("myhashfield" -> "myHashValue", "key" -> "value")),
+        new Document(Map("myHashField" -> "myHashValue", "key" -> "value").toMap[String, AnyRef].asJava)),
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
           .setRange("myRangeField", range_equalTo[String]("myRangeValue1")).build,
         Map("key" -> "value"),
-        Map("myhashfield" -> "myHashValue", "myrangefield" -> "myRangeValue1", "key" -> "value")),
+        new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue1", "key" -> "value").toMap[String, AnyRef].asJava)),
       // Inserted for getItems tests below
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
           .setRange("myRangeField", range_equalTo[String]("myRangeValue2")).build,
         Map("key" -> "value"),
-        Map("myhashfield" -> "myHashValue", "myrangefield" -> "myRangeValue2", "key" -> "value")),
+        new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue2", "key" -> "value").toMap[String, AnyRef].asJava)),
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
           .setRange("myRangeField", range_equalTo[String]("myRangeValue3")).build,
         Map("key" -> "value"),
-        Map("myhashfield" -> "myHashValue", "myrangefield" -> "myRangeValue3", "key" -> "value")),
+        new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue3", "key" -> "value").toMap[String, AnyRef].asJava)),
       Array(rangeTableName,
         new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
           .setRange("myRangeField", range_equalTo[String]("myRangeValue4")).build,
         Map("key" -> "value"),
-        Map("myhashfield" -> "myHashValue", "myrangefield" -> "myRangeValue4", "key" -> "value"))
+        new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue4", "key" -> "value").toMap[String, AnyRef].asJava))
     )
   }
 
@@ -140,51 +140,50 @@ class CassandraMapStorePluginIT {
     tableName: String,
     storeKey: MapStoreKey,
     payload: Map[String, AnyRef],
-    expectedResult: Map[String, AnyRef]
+    expectedResult: Document
   ) {
-    assertThat(mapStorePlugin.putItem(tableName, storeKey, payload.asJava), is(expectedResult.asJava))
-    assertThat(mapStorePlugin.getItem(tableName, storeKey), is(Optional.of(expectedResult.asJava)))
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "INSERT"),
-      cassandraSpan(applicationName.toLowerCase, "SELECT"),
-      cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+    // The asserts here are technically backwards, but we have to
+    assertThat(mapStorePlugin.putItem(tableName, storeKey, payload.asJava).asInstanceOf[Document],
+      is(expectedResult))
+    assertThat(mapStorePlugin.getItem(tableName, storeKey).asInstanceOf[Optional[Document]],
+      is(Optional.of(expectedResult)))
+    assertThat(mongoDBTracer.finishedSpans(),
+      contains[MockSpan](mongoDBSpan("insert"), mongoDBSpan("find")))
   }
 
   @DataProvider def updateItemProvider(): Array[Array[AnyRef]] = {
     Array(
       Array(Map("numberKey" -> Long.box(1L)),
-        // NOTE: Cassandra keys are case insensitive
-        Map("myhashfield" -> "myHashValue", "myrangefield" -> "myRangeValue1", "key" -> "value", "numberKey" -> java.math.BigDecimal.valueOf(1L))),
+        new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue1",
+          "key" -> "value", "numberKey" -> java.lang.Long.valueOf(1L)).toMap[String, AnyRef].asJava)),
       Array(Map("numberKey" -> ""),
-        Map("myhashfield" -> "myHashValue", "myrangefield" -> "myRangeValue1", "key" -> "value"))
+        new Document(Map("myHashField" -> "myHashValue", "myRangeField" -> "myRangeValue1",
+          "key" -> "value").toMap[String, AnyRef].asJava))
     )
   }
 
-  @Test(enabled = false, dataProvider = "updateItemProvider", groups = Array("update"), dependsOnGroups = Array("put"))
+  @Test(dataProvider = "updateItemProvider", groups = Array("update"), dependsOnGroups = Array("put"))
   def testUpdateItem(
     payload: Map[String, AnyRef],
-    expectedResult: Map[String, AnyRef]
+    expectedResult: Document
   ) {
     val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
       .setRange("myRangeField", range_equalTo[String]("myRangeValue1")).build
 
-    assertThat(mapStorePlugin.updateItem(rangeTableName, storeKey, payload.asJava), is(expectedResult.asJava))
-    assertThat(mapStorePlugin.getItem(rangeTableName, storeKey), is(Optional.of(expectedResult.asJava)))
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "UPDATE"),
-      cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+    assertThat(mapStorePlugin.updateItem(rangeTableName, storeKey, payload.asJava).asInstanceOf[Document],
+      is(expectedResult))
+    assertThat(mapStorePlugin.getItem(rangeTableName, storeKey).asInstanceOf[Optional[Document]],
+      is(Optional.of(expectedResult)))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("findandmodify"),
+      mongoDBSpan("find")))
   }
 
-  @Test(groups = Array("get"), dependsOnGroups = Array("put"/*, "update"*/))
+  @Test(groups = Array("get"), dependsOnGroups = Array("put", "update"))
   def testGetAllItems() {
-    assertThat(mapStorePlugin.getAllItems(rangeTableName),
+    assertThat(mapStorePlugin.getAllItems(rangeTableName).asInstanceOf[java.util.List[Document]],
       // getAllItems isn't ordered on range key
-      containsInAnyOrder[java.util.Map[String, AnyRef]](result(1).asJava, result(2).asJava, result(3).asJava, result(4).asJava))
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+      containsInAnyOrder[Document](result(1), result(2), result(3), result(4)))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
   @DataProvider def getItemsProvider(): Array[Array[AnyRef]] = {
@@ -208,31 +207,26 @@ class CassandraMapStorePluginIT {
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
         .setRange("myRangeField", range_greaterThanOrEqualTo[String]("myRangeValue2")).build,
         List(result(2), result(3), result(4))),
-//      Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-//        .setRange("myRangeField", in[String]("myRangeValue2", "myRangeValue4")).build,
-//        List(result(2), result(4))),
+      Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
+        .setRange("myRangeField", in[String]("myRangeValue2", "myRangeValue3")).build,
+        List(result(2), result(3))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
         .setRange("myRangeField", range_lessThan[String]("myRangeValue3")).build,
         List(result(1), result(2))),
       Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
         .setRange("myRangeField", range_lessThanOrEqualTo[String]("myRangeValue3")).build,
-        List(result(1), result(2), result(3)))//,
-//      Array(new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
-//        .setRange("myRangeField", startsWith("myRangeValue")),
-//        List(result(1), result(2), result(3), result(4)))
+        List(result(1), result(2), result(3)))
     )
   }
 
-  @Test(dataProvider = "getItemsProvider", groups = Array("get"), dependsOnGroups = Array("put"/*, "update"*/))
+  @Test(dataProvider = "getItemsProvider", groups = Array("get"), dependsOnGroups = Array("put", "update"))
   def testGetItems(
     storeKey: MapStoreKey,
-    expectedResults: List[Map[String, AnyRef]]
+    expectedResults: List[Document]
   ) {
-    assertThat(mapStorePlugin.getItems(rangeTableName, storeKey, defaultOptions()),
-      contains[java.util.Map[String, AnyRef]](expectedResults.map(_.asJava): _*))
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+    assertThat(mapStorePlugin.getItems(rangeTableName, storeKey, defaultOptions()).asInstanceOf[java.util.List[Document]],
+      contains[Document](expectedResults: _*))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
   @Test(groups = Array("delete"), dependsOnGroups = Array("get"))
@@ -241,43 +235,37 @@ class CassandraMapStorePluginIT {
       .setRange("myRangeField", range_equalTo[String]("myRangeValue4")).build
     mapStorePlugin.deleteItem(rangeTableName, storeKey)
 
-    assertThat(mapStorePlugin.getAllItems(rangeTableName),
+    assertThat(mapStorePlugin.getAllItems(rangeTableName).asInstanceOf[java.util.List[Document]],
       // getAllItems isn't ordered on range key
-      containsInAnyOrder[java.util.Map[String, AnyRef]](result(1).asJava, result(2).asJava, result(3).asJava))
-    assertThat(cassandraTracer.finishedSpans(), contains[MockSpan](
-      cassandraSpan(applicationName.toLowerCase, "DELETE"), cassandraSpan(applicationName.toLowerCase, "SELECT")
-    ))
+      containsInAnyOrder[Document](result(1), result(2), result(3)))
+    assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("delete"), mongoDBSpan("find")))
   }
 
-  private def result(i: Int): Map[String, AnyRef] = {
-    Map("myhashfield" -> "myHashValue", "myrangefield" -> s"myRangeValue$i", "key" -> "value")
+  private def result(i: Int): Document = {
+    new Document(Map("myHashField" -> "myHashValue",
+      "myRangeField" -> s"myRangeValue$i", "key" -> "value").toMap[String, AnyRef].asJava)
   }
 }
 
-private object CassandraSpanMatcher {
+private object MongoDBSpanMatcher {
 
-  def cassandraSpan(dbInstance: String, dbStatementOp: String): CassandraSpanMatcher =
-    CassandraSpanMatcher(dbInstance, dbStatementOp)
+  def mongoDBSpan(operation: String): MongoDBSpanMatcher =
+    MongoDBSpanMatcher(operation)
 }
 
-private case class CassandraSpanMatcher(
-  dbInstance: String,
-  dbStatementOp: String
-) extends TypeSafeMatcher[MockSpan] {
+private case class MongoDBSpanMatcher(operation: String) extends TypeSafeMatcher[MockSpan] {
 
   override def matchesSafely(mockSpan: MockSpan): Boolean = {
-    hasEntry[String, AnyRef]("component", "java-cassandra").matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("db.instance", dbInstance).matches(mockSpan.tags()) &&
-      hasEntry[String, String](is("db.statement"), startsWith(dbStatementOp)).matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("db.type", "cassandra").matches(mockSpan.tags()) &&
+    hasEntry[String, AnyRef]("component", "java-mongo").matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef](is("db.statement"), containsString(operation).asInstanceOf[Matcher[AnyRef]])
+        .matches(mockSpan.tags()) &&
+      hasEntry[String, AnyRef]("db.type", "mongo").matches(mockSpan.tags()) &&
       hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
-      hasKey[String]("peer.hostname").matches(mockSpan.tags()) &&
-      hasKey[String]("peer.port").matches(mockSpan.tags()) &&
-      "execute".equals(mockSpan.operationName())
+      operation.equals(mockSpan.operationName())
   }
 
   override def describeTo(description: Description): Unit = {
-    description.appendText("a Cassandra span tagged with db instance ")
-    description.appendText(dbInstance)
+    description.appendText("a MongoDB span tagged with operation ")
+    description.appendText(operation)
   }
 }
