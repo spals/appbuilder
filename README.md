@@ -332,7 +332,49 @@ class CalculatorWebApp extends FinatraWebApp {
 
 ```
 
-## Testing
+### Configuration
+
+In your .conf define a configuration key=value.
+
+```yaml
+# sets config a value for 'hello world' allowing overriding environmental variables.
+hello.world="hello world"
+hello.world=${?I18N_LANGUAGE}
+```
+
+To access via app builder one can use the @Configuration annotation and the appropriate key.
+
+```java
+
+@AutoBindSingleton(baseClass = HelloWorld.class)
+class DefaultHelloWorld implements HelloWorld {
+
+    @NotNull
+    @Configuration("hello.world")
+    private volatile String helloWorld;
+
+    DefaultI18nSupport() {
+    }
+    
+    @Override
+    public void printHelloWorld() {
+        System.out.println(helloWorld);
+    }
+}
+```
+
+### Testing
+
+First add the app-mock jar to your dependency.
+```xml
+<dependencies>
+    <dependency>
+        <groupId>net.spals.appbuilder.plugins</groupId>
+        <artifactId>spals-appbuilder-app-mock</artifactId>
+        <version>${appbuilder.version}</version>
+    </dependency>
+</dependencies>
+```
 
 AppBuilder includes a `MockApp` which allows you to mix real micro-services with mocked micro-services for testing purposes. Consider that we want to write a test for our calculator application which uses the full micro-service graph except that we wish to replace the `ArithmeticCalculator` service with a mocked implementation created in our test. Here's how that can be done using Mockito:
 
