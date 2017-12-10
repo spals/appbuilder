@@ -10,6 +10,7 @@ import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import net.spals.appbuilder.keystore.core.KeyStore;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.message.core.MessageConsumer;
 import net.spals.appbuilder.message.core.MessageProducer;
@@ -49,6 +50,7 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.plugins")
                 .addServicePlugins("net.spals.appbuilder.filestore.s3", FileStore.class)
+                .addDefaultServices(KeyStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.dynamodb", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.message.kafka", MessageConsumer.class, MessageProducer.class)

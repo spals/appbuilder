@@ -48,9 +48,9 @@ public class GenericWorkerAppOverridesFTest {
         final MyCoreSingletonService serviceB = new MyCoreSingletonServiceB();
 
         return new Object[][] {
-                // Ensure that binding order is honored. The last one in is chosen
-                {serviceA, serviceB},
-                {serviceB, serviceA},
+            // Ensure that binding order is honored. The last one in is chosen
+            {serviceA, serviceB},
+            {serviceB, serviceA},
         };
     }
 
@@ -86,7 +86,7 @@ public class GenericWorkerAppOverridesFTest {
         // not the auto-bound service because the custom module came second.
         final Injector serviceInjector = app.getServiceInjector();
         assertThat(serviceInjector.getInstance(MyCoreSingletonService.class),
-                instanceOf(MyCoreSingletonServiceA.class));
+            instanceOf(MyCoreSingletonServiceA.class));
     }
 
     @Test
@@ -115,17 +115,17 @@ public class GenericWorkerAppOverridesFTest {
 
         final GenericWorkerApp app = new GenericWorkerApp.Builder(
                 "testEnableBindingOverrides", LOGGER)
-                .addModule(binder -> binder.bind(MyCoreSingletonService.class)
-                        .toInstance(new MyCoreSingletonServiceA()))
-                .setServiceScan(serviceScan)
-                .enableBindingOverrides()
-                .build();
+            .addModule(binder -> binder.bind(MyCoreSingletonService.class)
+                .toInstance(new MyCoreSingletonServiceA()))
+            .setServiceScan(serviceScan)
+            .enableBindingOverrides()
+            .build();
 
         // Assert that the binding override uses the auto-bound service,
         // not the custom module service because the auto-binding came second.
         final Injector serviceInjector = app.getServiceInjector();
         assertThat(serviceInjector.getInstance(MyCoreSingletonService.class),
-                instanceOf(MyCoreSingleTonServiceAutoBind.class));
+            instanceOf(MyCoreSingleTonServiceAutoBind.class));
     }
 
     private ServiceScan createServiceScan() {

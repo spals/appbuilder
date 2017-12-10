@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.*;
 public class TracingDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-            new DropwizardTestSupport<>(TracingDropwizardWebApp.class, new Configuration());
+        new DropwizardTestSupport<>(TracingDropwizardWebApp.class, new Configuration());
     private MockTracer mockTracer;
 
     private final Client webClient = ClientBuilder.newClient();
@@ -49,14 +49,16 @@ public class TracingDropwizardWebAppFTest {
     @DataProvider
     Object[][] serverRequestTracingProvider() {
         return new Object[][] {
-                {"tracing/noAnnotation", "tracing/noAnnotation"},
-                {"tracing/withAnnotation", "customOperationName"},
+            {"tracing/noAnnotation", "tracing/noAnnotation"},
+            {"tracing/withAnnotation", "customOperationName"},
         };
     }
 
     @Test(dataProvider = "serverRequestTracingProvider")
-    public void testServerRequestTracing(final String path,
-                                         final String expectedOperationName) {
+    public void testServerRequestTracing(
+        final String path,
+        final String expectedOperationName
+    ) {
         final String target = "http://localhost:" + testServerWrapper.getLocalPort() + "/" + path;
         final WebTarget webTarget = webClient.target(target);
         webTarget.request().get();

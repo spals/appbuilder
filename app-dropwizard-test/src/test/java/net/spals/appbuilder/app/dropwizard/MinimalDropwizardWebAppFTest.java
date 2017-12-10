@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.notNullValue;
 public class MinimalDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-            new DropwizardTestSupport<>(MinimalDropwizardWebApp.class, new Configuration());
+        new DropwizardTestSupport<>(MinimalDropwizardWebApp.class, new Configuration());
     private DropwizardWebApp webAppDelegate;
 
     @BeforeClass
@@ -59,10 +59,10 @@ public class MinimalDropwizardWebAppFTest {
     @DataProvider
     Object[][] defaultServiceInjectionProvider() {
         return new Object[][] {
-                {TypeLiteral.get(Environment.class)},
-                {TypeLiteral.get(HealthCheckRegistry.class)},
-                {TypeLiteral.get(MetricRegistry.class)},
-                {TypeLiteral.get(Validator.class)},
+            {TypeLiteral.get(Environment.class)},
+            {TypeLiteral.get(HealthCheckRegistry.class)},
+            {TypeLiteral.get(MetricRegistry.class)},
+            {TypeLiteral.get(Validator.class)},
         } ;
     }
 
@@ -75,8 +75,8 @@ public class MinimalDropwizardWebAppFTest {
     @DataProvider
     Object[][] noDefaultServiceInjectionProvider() {
         return new Object[][] {
-                {TypeLiteral.get(ExecutorServiceFactory.class)},
-                {TypeLiteral.get(Tracer.class)},
+            {TypeLiteral.get(ExecutorServiceFactory.class)},
+            {TypeLiteral.get(Tracer.class)},
         };
     }
 
