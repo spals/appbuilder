@@ -24,6 +24,25 @@ import static org.hamcrest.Matchers.is;
 public class TypesafeConfigurationProviderTest {
 
     @DataProvider
+    Object[][] encryptedPatternProvider() {
+        return new Object[][] {
+            {"123", false},
+            {"1ENC(2)3", false},
+            {"ENC(123", false},
+            {"ENC(123)", true},
+        };
+    }
+
+    @Test(dataProvider = "encryptedPatternProvider")
+    public void testEncryptedPattern(
+        final String stringProperty,
+        final boolean expectedIsEncrypted
+    ) {
+        assertThat(TypesafeConfigurationProvider.ENCRYPTED_PATTERN.matcher(stringProperty).matches(),
+            is(expectedIsEncrypted));
+    }
+
+    @DataProvider
     Object[][] getBooleanProvider() {
         return new Object[][] {
                 {ConfigFactory.empty(), "missingKey", false},
@@ -32,7 +51,11 @@ public class TypesafeConfigurationProviderTest {
     }
 
     @Test(dataProvider = "getBooleanProvider")
-    public void testGetBoolean(final Config config, final String rawKey, final Boolean expectedValue) {
+    public void testGetBoolean(
+        final Config config,
+        final String rawKey,
+        final Boolean expectedValue
+    ) {
         final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(config);
 
         final ConfigurationKey configKey = new ConfigurationKey(rawKey, Collections.emptyList());
@@ -58,7 +81,11 @@ public class TypesafeConfigurationProviderTest {
     }
 
     @Test(dataProvider = "getIntegerProvider")
-    public void testGetInteger(final Config config, final String rawKey, final Integer expectedValue) {
+    public void testGetInteger(
+        final Config config,
+        final String rawKey,
+        final Integer expectedValue
+    ) {
         final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(config);
 
         final ConfigurationKey configKey = new ConfigurationKey(rawKey, Collections.emptyList());
@@ -84,7 +111,11 @@ public class TypesafeConfigurationProviderTest {
     }
 
     @Test(dataProvider = "getLongProvider")
-    public void testGetLong(final Config config, final String rawKey, final Long expectedValue) {
+    public void testGetLong(
+        final Config config,
+        final String rawKey,
+        final Long expectedValue
+    ) {
         final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(config);
 
         final ConfigurationKey configKey = new ConfigurationKey(rawKey, Collections.emptyList());
@@ -110,7 +141,11 @@ public class TypesafeConfigurationProviderTest {
     }
 
     @Test(dataProvider = "getDoubleProvider")
-    public void testGetDouble(final Config config, final String rawKey, final Double expectedValue) {
+    public void testGetDouble(
+        final Config config,
+        final String rawKey,
+        final Double expectedValue
+    ) {
         final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(config);
 
         final ConfigurationKey configKey = new ConfigurationKey(rawKey, Collections.emptyList());
@@ -136,10 +171,30 @@ public class TypesafeConfigurationProviderTest {
     }
 
     @Test(dataProvider = "getStringProvider")
-    public void testGetString(final Config config, final String rawKey, final String expectedValue) {
+    public void testGetString(
+        final Config config,
+        final String rawKey,
+        final String expectedValue
+    ) {
         final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(config);
 
         final ConfigurationKey configKey = new ConfigurationKey(rawKey, Collections.emptyList());
         assertThat(configProvider.getStringSupplier(configKey, "").get(), is(expectedValue));
+    }
+
+    @Test()
+    public void testGetEncryptedString() {
+        final Config config = ConfigFactory.parseMap(ImmutableMap.of(
+            "keyStore.system", "password",
+            "keyStore.password.pwd", "myPassword",
+            "encryptedStringKey1", "ENC(VhUMZcKxgwwHAvyWfKaf4VePDeHcIn/j)",
+            "encryptedStringKey2", "ENC(DbU9YAdZhkVeqP+wUlDF9Btq3zkdG/ZH)"
+        ));
+        final ConfigurationProvider configProvider = new TypesafeConfigurationProvider(config);
+
+        final ConfigurationKey configKey1 = new ConfigurationKey("encryptedStringKey1", Collections.emptyList());
+        final ConfigurationKey configKey2 = new ConfigurationKey("encryptedStringKey2", Collections.emptyList());
+        assertThat(configProvider.getStringSupplier(configKey1, "").get(), is("mySecretValue1"));
+        assertThat(configProvider.getStringSupplier(configKey2, "").get(), is("mySecretValue2"));
     }
 }
