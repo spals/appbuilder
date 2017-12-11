@@ -12,6 +12,7 @@ import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 
 import javax.annotation.PostConstruct;
+import javax.validation.ValidationException;
 
 /**
  * A {@link KeyStorePlugin} which stores a single password
@@ -52,7 +53,9 @@ class PasswordKeyStorePlugin implements KeyStorePlugin {
     @VisibleForTesting
     void createEncryptors(String password) {
         if (password == null) {
-            throw new RuntimeException();
+            throw new ValidationException(
+                "may not be null - " + this.getClass().getName() + ".password = null"
+            );
         }
 
         final PooledPBEByteEncryptor pooledPBEByteEncryptor =
