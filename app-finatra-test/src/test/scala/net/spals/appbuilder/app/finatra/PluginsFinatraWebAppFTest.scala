@@ -66,10 +66,11 @@ class PluginsFinatraWebAppFTest {
 
     val mapStorePluginMapKey = new TypeLiteral[java.util.Map[String, MapStorePlugin]](){}
     val mapStorePluginMap = serviceInjector.getInstance(Key.get(mapStorePluginMapKey))
-    assertThat(mapStorePluginMap, Matchers.aMapWithSize[String, MapStorePlugin](3))
+    assertThat(mapStorePluginMap, Matchers.aMapWithSize[String, MapStorePlugin](4))
     assertThat(mapStorePluginMap, hasKey("cassandra"))
     assertThat(mapStorePluginMap, hasKey("dynamoDB"))
     assertThat(mapStorePluginMap, hasKey("mapDB"))
+    assertThat(mapStorePluginMap, hasKey("mongoDB"))
   }
 
   @Test def testCassandraMapStoreInjection() {

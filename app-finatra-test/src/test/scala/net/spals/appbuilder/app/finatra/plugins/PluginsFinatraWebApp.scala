@@ -27,6 +27,7 @@ private[finatra] class PluginsFinatraWebApp extends FinatraWebApp {
     .addDefaultServices(classOf[KeyStore])
     .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", classOf[MapStore])
     .addServicePlugins("net.spals.appbuilder.mapstore.dynamodb", classOf[MapStore])
+    .addServicePlugins("net.spals.appbuilder.mapstore.mongodb", classOf[MapStore])
     .addServicePlugins("net.spals.appbuilder.message.kafka", classOf[MessageConsumer], classOf[MessageProducer])
     .addServicePlugins("net.spals.appbuilder.message.kinesis", classOf[MessageConsumer], classOf[MessageProducer])
     .addServicePlugins("net.spals.appbuilder.model.protobuf", classOf[ModelSerializer])

@@ -90,10 +90,11 @@ public class PluginsDropwizardWebAppFTest {
             new TypeLiteral<Map<String, MapStorePlugin>>(){};
         final Map<String, MapStorePlugin> mapStorePluginMap =
             serviceInjector.getInstance(Key.get(mapStorePluginMapKey));
-        assertThat(mapStorePluginMap, aMapWithSize(3));
+        assertThat(mapStorePluginMap, aMapWithSize(4));
         assertThat(mapStorePluginMap, hasKey("cassandra"));
         assertThat(mapStorePluginMap, hasKey("dynamoDB"));
         assertThat(mapStorePluginMap, hasKey("mapDB"));
+        assertThat(mapStorePluginMap, hasKey("mongoDB"));
     }
 
     @Test

@@ -72,6 +72,10 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-mapstore-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-message-kafka</artifactId>
         </dependency>
         <dependency>
