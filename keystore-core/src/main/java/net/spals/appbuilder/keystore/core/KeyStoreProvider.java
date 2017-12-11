@@ -24,6 +24,10 @@ public class KeyStoreProvider implements Provider<KeyStore> {
      * This can be used for use cases that fall outside of an
      * application's dependency graph. In particular, this is useful
      * for configuration encryption.
+     *
+     * @return A new {@link KeyStore} based on the given {@link Config}.
+     * @throws ConfigException If the given {@link Config} is not properly
+     *         configured to create a {@link KeyStore} instance.
      */
     public static KeyStore createKeyStore(final Config serviceConfig) {
         final String storeSystem = serviceConfig.getString("keyStore.system");

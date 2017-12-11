@@ -74,21 +74,33 @@ class PasswordKeyStorePlugin implements KeyStorePlugin {
         this.password = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String decrypt(final String encryptedString) {
         return stringEncryptor.decrypt(encryptedString);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public byte[] decryptBytes(final byte[] encryptedBytes) {
         return byteEncryptor.decrypt(encryptedBytes);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String encrypt(final String unencryptedString) {
         return stringEncryptor.encrypt(unencryptedString);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public byte[] encryptBytes(final byte[] unencryptedBytes) {
         return byteEncryptor.encrypt(unencryptedBytes);

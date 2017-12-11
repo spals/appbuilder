@@ -27,11 +27,43 @@ package net.spals.appbuilder.keystore.core;
  */
 public interface KeyStore {
 
+    /**
+     * Decrypts the given {@link String}. This
+     * {@link String} should have previously
+     * been encrypted by {@link #encrypt(String)}.
+     *
+     * @return If encrypted, return the given {@link String}
+     * in its plaintext form. If not encrypted, returns
+     * an unknown value.
+     */
     String decrypt(String encryptedString);
 
+    /**
+     * Decrypts the given byte array. This
+     * byte array should have previously
+     * been encrypted by {@link #encryptBytes(byte[])}.
+     *
+     * @return If encrypted, return the given byte array
+     * in its plain, unencrypted form. If not encrypted, returns
+     * an unknown value.
+     */
     byte[] decryptBytes(byte[] encryptedBytes);
 
+    /**
+     * Encrypts the given {@link String}. This
+     * {@link String} should be in its original,
+     * plaintext form.
+     *
+     * @return An encrypted form of the {@link String}.
+     */
     String encrypt(String unencryptedString);
 
+    /**
+     * Encrypts the given byte array. This
+     * byte array should be in its original,
+     * form.
+     *
+     * @return An encrypted form of the byte array.
+     */
     byte[] encryptBytes(byte[] unencryptedBytes);
 }
