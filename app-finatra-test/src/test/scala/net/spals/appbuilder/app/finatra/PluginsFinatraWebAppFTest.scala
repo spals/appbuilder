@@ -6,6 +6,7 @@ import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
+import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
@@ -47,6 +48,16 @@ class PluginsFinatraWebAppFTest {
     assertThat(fileStorePluginMap, Matchers.aMapWithSize[String, FileStorePlugin](2))
     assertThat(fileStorePluginMap, hasKey("localFS"))
     assertThat(fileStorePluginMap, hasKey("s3"))
+  }
+
+  @Test def testKeyStoreInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[KeyStore]), notNullValue())
+
+    val keyStorePluginMapKey = new TypeLiteral[java.util.Map[String, KeyStorePlugin]]() {}
+    val keyStorePluginMap = serviceInjector.getInstance(Key.get(keyStorePluginMapKey))
+    assertThat(keyStorePluginMap, Matchers.aMapWithSize[String, KeyStorePlugin](1))
+    assertThat(keyStorePluginMap, hasKey("password"))
   }
 
   @Test def testMapStoreInjection() {
