@@ -3,6 +3,8 @@ package net.spals.appbuilder.config.provider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.netflix.governator.configuration.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
@@ -14,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -32,13 +32,14 @@ public class TypesafeConfigurationProvider extends DefaultConfigurationProvider 
     private static final Logger LOGGER = LoggerFactory.getLogger(TypesafeConfigurationProvider.class);
 
     private final Config config;
+    private final Supplier<KeyStore> keyStoreSupplier;
 
-    private final AtomicReference<KeyStore> keyStoreRef = new AtomicReference<>();
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new Jdk8Module());
 
     public TypesafeConfigurationProvider(final Config config) {
         this.config = config;
+        this.keyStoreSupplier = Suppliers.memoize(() -> KeyStoreProvider.createKeyStore(config));
     }
 
     @Override
@@ -114,13 +115,7 @@ public class TypesafeConfigurationProvider extends DefaultConfigurationProvider 
                     if (encryptedMatcher.matches()) {
                         final String encryptedStringProperty = encryptedMatcher.group(1);
                         try {
-                            // KeyStores may be expensive to set up, so ensure that we only load it once
-                            // (or, at least, try our best to ensure)
-                            final KeyStore keyStore = Optional.ofNullable(keyStoreRef.get())
-                                .orElseGet(() -> {
-                                    keyStoreRef.compareAndSet(null, KeyStoreProvider.createKeyStore(config));
-                                    return keyStoreRef.get();
-                                });
+                            final KeyStore keyStore = keyStoreSupplier.get();
                             return keyStore.decrypt(encryptedStringProperty);
                         } catch (ConfigException e) {
                             throw new ConfigException.Generic(
