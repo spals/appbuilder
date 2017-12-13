@@ -1,5 +1,7 @@
 package net.spals.appbuilder.executor.core;
 
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -175,7 +177,7 @@ public class DefaultExecutorServiceFactoryTest {
 
     @Test
     public void testStopAll() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
+        final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
         final ExecutorService executorService1 = mock(ExecutorService.class);
         executorServiceFactory.getExecutorServices().put(KEY_1, executorService1);
         final ExecutorService executorService2 = mock(ExecutorService.class);
@@ -183,43 +185,26 @@ public class DefaultExecutorServiceFactoryTest {
 
         executorServiceFactory.stopAll();
 
-        verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService1));
-        verify(executorServiceFactory).stopExecutorService(eq(KEY_2), eq(executorService2));
+        verify(executorService1).shutdown();
+        verify(executorService2).shutdown();
     }
 
     @Test
     public void testStop() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
+        final DefaultExecutorServiceFactory executorServiceFactory = new DefaultExecutorServiceFactory(new MockTracer());
         final ExecutorService executorService = mock(ExecutorService.class);
         executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
 
         executorServiceFactory.stop(KEY_1);
-
-        // Verify that we called the stopExecutorService with the correct parameters
-        verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService));
-    }
-
-    @Test
-    public void testStopAlreadyStopped() {
-        final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
-        final ExecutorService executorService = mock(ExecutorService.class);
-        when(executorService.isShutdown()).thenReturn(true);
-        executorServiceFactory.getExecutorServices().put(KEY_1, executorService);
-
-        final Optional<Boolean> stopped = executorServiceFactory.stop(KEY_1);
-
-        assertThat(stopped, is(Optional.of(true)));
-        verify(executorServiceFactory).stopExecutorService(eq(KEY_1), eq(executorService));
+        verify(executorService).shutdown();
     }
 
     @Test
     public void testStopMissingKey() {
         final DefaultExecutorServiceFactory executorServiceFactory = spy(new DefaultExecutorServiceFactory(new MockTracer()));
 
-        final Optional<Boolean> stopped = executorServiceFactory.stop(KEY_1);
-
-        assertThat(stopped, is(Optional.empty()));
-        verify(executorServiceFactory, never()).stopExecutorService(any(Key.class), any(ExecutorService.class));
+        catchException(() -> executorServiceFactory.stop(KEY_1));
+        assertThat(caughtException(), nullValue());
     }
 
     @Test
