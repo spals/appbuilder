@@ -15,6 +15,8 @@ import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import net.spals.appbuilder.keystore.core.KeyStore;
+import net.spals.appbuilder.keystore.core.KeyStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -48,6 +50,7 @@ public class SampleGenericWorkerAppFTest {
         .setServiceScan(new ServiceScan.Builder()
             .addServicePackages("net.spals.appbuilder.app.core.sample")
             .addDefaultServices(FileStore.class)
+            .addDefaultServices(KeyStore.class)
             .addDefaultServices(MapStore.class)
             .addDefaultServices(MessageConsumer.class, MessageProducer.class)
             .addDefaultServices(ModelSerializer.class)
@@ -59,13 +62,17 @@ public class SampleGenericWorkerAppFTest {
     @DataProvider
     Object[][] serviceConfigProvider() {
         return new Object[][] {
-                {"fileStore.system", "localFS"},
-                {"mapStore.system", "mapDB"},
+            {"fileStore.system", "localFS"},
+            {"keyStore.system", "password"},
+            {"mapStore.system", "mapDB"},
         };
     }
 
     @Test(dataProvider = "serviceConfigProvider")
-    public void testServiceConfig(final String configKey, final Object expectedConfigValue) {
+    public void testServiceConfig(
+        final String configKey,
+        final Object expectedConfigValue
+    ) {
         final Config serviceConfig = sampleApp.getServiceConfig();
         assertThat(serviceConfig.getAnyRef(configKey), is(expectedConfigValue));
     }
@@ -73,14 +80,17 @@ public class SampleGenericWorkerAppFTest {
     @DataProvider
     Object[][] customModuleInjectionProvider() {
         return new Object[][] {
-                {"AutoBoundModule", "sample:SampleCoreAutoBoundModule"},
-                {"BootstrapModule", "SampleCoreBootstrapModule"},
-                {"GuiceModule", "SampleCoreGuiceModule"},
+            {"AutoBoundModule", "sample:SampleCoreAutoBoundModule"},
+            {"BootstrapModule", "SampleCoreBootstrapModule"},
+            {"GuiceModule", "SampleCoreGuiceModule"},
         };
     }
 
     @Test(dataProvider = "customModuleInjectionProvider")
-    public void testCustomModuleInjection(final String keyName, final String expectedBindValue) {
+    public void testCustomModuleInjection(
+        final String keyName,
+        final String expectedBindValue
+    ) {
         final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(Key.get(String.class, Names.named(keyName))),
                 is(expectedBindValue));
@@ -112,14 +122,27 @@ public class SampleGenericWorkerAppFTest {
     }
 
     @Test
+    public void testKeyStoreInjection() {
+        final Injector serviceInjector = sampleApp.getServiceInjector();
+        assertThat(serviceInjector.getInstance(KeyStore.class), notNullValue());
+
+        final TypeLiteral<Map<String, KeyStorePlugin>> keyStorePluginMapKey =
+            new TypeLiteral<Map<String, KeyStorePlugin>>(){};
+        final Map<String, KeyStorePlugin> keyStorePluginMap =
+            serviceInjector.getInstance(Key.get(keyStorePluginMapKey));
+        assertThat(keyStorePluginMap, aMapWithSize(1));
+        assertThat(keyStorePluginMap, hasKey("password"));
+    }
+
+    @Test
     public void testMapStoreInjection() {
         final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(MapStore.class), notNullValue());
 
         final TypeLiteral<Map<String, MapStorePlugin>> mapStorePluginMapKey =
-                new TypeLiteral<Map<String, MapStorePlugin>>(){};
+            new TypeLiteral<Map<String, MapStorePlugin>>(){};
         final Map<String, MapStorePlugin> mapStorePluginMap =
-                serviceInjector.getInstance(Key.get(mapStorePluginMapKey));
+            serviceInjector.getInstance(Key.get(mapStorePluginMapKey));
         assertThat(mapStorePluginMap, aMapWithSize(1));
         assertThat(mapStorePluginMap, hasKey("mapDB"));
     }
@@ -130,9 +153,9 @@ public class SampleGenericWorkerAppFTest {
         assertThat(serviceInjector.getInstance(MessageConsumer.class), notNullValue());
 
         final TypeLiteral<Map<String, MessageConsumerPlugin>> messageConsumerPluginMapKey =
-                new TypeLiteral<Map<String, MessageConsumerPlugin>>(){};
+            new TypeLiteral<Map<String, MessageConsumerPlugin>>(){};
         final Map<String, MessageConsumerPlugin> messageConsumerPluginMap =
-                serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey));
+            serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey));
         assertThat(messageConsumerPluginMap, aMapWithSize(1));
         assertThat(messageConsumerPluginMap, hasKey("blockingQueue"));
     }
@@ -142,9 +165,9 @@ public class SampleGenericWorkerAppFTest {
         final Injector serviceInjector = sampleApp.getServiceInjector();
 
         final TypeLiteral<Set<MessageConsumerCallback<?>>> messageCallbackSetKey =
-                new TypeLiteral<Set<MessageConsumerCallback<?>>>(){};
+            new TypeLiteral<Set<MessageConsumerCallback<?>>>(){};
         final Set<MessageConsumerCallback<?>> messageCallbackSet =
-                serviceInjector.getInstance(Key.get(messageCallbackSetKey));
+            serviceInjector.getInstance(Key.get(messageCallbackSetKey));
         assertThat(messageCallbackSet, notNullValue());
     }
 
@@ -154,9 +177,9 @@ public class SampleGenericWorkerAppFTest {
         assertThat(serviceInjector.getInstance(MessageProducer.class), notNullValue());
 
         final TypeLiteral<Map<String, MessageProducerPlugin>> messageProducerPluginMapKey =
-                new TypeLiteral<Map<String, MessageProducerPlugin>>(){};
+            new TypeLiteral<Map<String, MessageProducerPlugin>>(){};
         final Map<String, MessageProducerPlugin> messageProducerPluginMap =
-                serviceInjector.getInstance(Key.get(messageProducerPluginMapKey));
+            serviceInjector.getInstance(Key.get(messageProducerPluginMapKey));
         assertThat(messageProducerPluginMap, aMapWithSize(1));
         assertThat(messageProducerPluginMap, hasKey("blockingQueue"));
     }
@@ -166,9 +189,9 @@ public class SampleGenericWorkerAppFTest {
         final Injector serviceInjector = sampleApp.getServiceInjector();
 
         final TypeLiteral<Map<String, ModelSerializer>> modelSerializerMapKey =
-                new TypeLiteral<Map<String, ModelSerializer>>(){};
+            new TypeLiteral<Map<String, ModelSerializer>>(){};
         final Map<String, ModelSerializer> modelSerializerMap =
-                serviceInjector.getInstance(Key.get(modelSerializerMapKey));
+            serviceInjector.getInstance(Key.get(modelSerializerMapKey));
         assertThat(modelSerializerMap, aMapWithSize(1));
         assertThat(modelSerializerMap, hasKey("pojo"));
     }

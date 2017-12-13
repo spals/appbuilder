@@ -5,6 +5,7 @@ import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
 import net.spals.appbuilder.filestore.core.FileStore
 import net.spals.appbuilder.graph.model.ServiceGraphFormat
+import net.spals.appbuilder.keystore.core.KeyStore
 import net.spals.appbuilder.mapstore.core.MapStore
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
 import net.spals.appbuilder.model.core.ModelSerializer
@@ -27,6 +28,7 @@ private[finatra] class SampleFinatraWebApp extends FinatraWebApp {
   setServiceScan(new ServiceScan.Builder()
     .addServicePackages("net.spals.appbuilder.app.finatra.sample")
     .addDefaultServices(classOf[FileStore])
+    .addDefaultServices(classOf[KeyStore])
     .addDefaultServices(classOf[MapStore])
     .addDefaultServices(classOf[MessageConsumer], classOf[MessageProducer])
     .addDefaultServices(classOf[ModelSerializer])

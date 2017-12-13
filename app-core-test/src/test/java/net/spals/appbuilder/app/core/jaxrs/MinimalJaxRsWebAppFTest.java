@@ -37,9 +37,9 @@ public class MinimalJaxRsWebAppFTest {
     private final BiFunction<String, Filter, FilterRegistration.Dynamic> filterRegistration = mock(BiFunction.class);
 
     private final JaxRsWebApp minimalApp = new JaxRsWebApp.Builder("minimal", LOGGER)
-            .setConfigurable(configurable)
-            .setFilterRegistration(filterRegistration)
-            .build();
+        .setConfigurable(configurable)
+        .setFilterRegistration(filterRegistration)
+        .build();
 
     @Test
     public void testJaxRsWebAppLogger() {
@@ -59,8 +59,8 @@ public class MinimalJaxRsWebAppFTest {
     @DataProvider
     Object[][] noDefaultServiceInjectionProvider() {
         return new Object[][] {
-                {TypeLiteral.get(ExecutorServiceFactory.class)},
-                {TypeLiteral.get(Tracer.class)},
+            {TypeLiteral.get(ExecutorServiceFactory.class)},
+            {TypeLiteral.get(Tracer.class)},
         };
     }
 

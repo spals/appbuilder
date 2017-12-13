@@ -9,6 +9,7 @@ import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import net.spals.appbuilder.keystore.core.KeyStore;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.message.core.MessageConsumer;
 import net.spals.appbuilder.message.core.MessageProducer;
@@ -49,6 +50,7 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
             .setServiceScan(new ServiceScan.Builder()
                 .addServicePackages("net.spals.appbuilder.app.dropwizard.sample")
                 .addDefaultServices(FileStore.class)
+                .addDefaultServices(KeyStore.class)
                 .addDefaultServices(MapStore.class)
                 .addDefaultServices(MessageConsumer.class, MessageProducer.class)
                 .addDefaultServices(ModelSerializer.class)

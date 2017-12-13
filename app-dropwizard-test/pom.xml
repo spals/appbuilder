@@ -40,6 +40,10 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
+            <artifactId>spals-appbuilder-keystore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-mapstore-core</artifactId>
         </dependency>
         <dependency>
@@ -65,6 +69,10 @@
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-mapstore-dynamodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-mapstore-mongodb</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>

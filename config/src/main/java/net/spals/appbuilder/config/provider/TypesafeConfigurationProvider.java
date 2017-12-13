@@ -2,15 +2,22 @@ package net.spals.appbuilder.config.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.netflix.governator.configuration.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
+import net.spals.appbuilder.keystore.core.KeyStore;
+import net.spals.appbuilder.keystore.core.KeyStoreProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -20,14 +27,19 @@ import java.util.stream.Collectors;
  * @author tkral
  */
 public class TypesafeConfigurationProvider extends DefaultConfigurationProvider {
+    @VisibleForTesting
+    static final Pattern ENCRYPTED_PATTERN = Pattern.compile("^ENC\\((.*)\\)");
     private static final Logger LOGGER = LoggerFactory.getLogger(TypesafeConfigurationProvider.class);
 
     private final Config config;
+    private final Supplier<KeyStore> keyStoreSupplier;
+
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new Jdk8Module());
 
     public TypesafeConfigurationProvider(final Config config) {
         this.config = config;
+        this.keyStoreSupplier = Suppliers.memoize(() -> KeyStoreProvider.createKeyStore(config));
     }
 
     @Override
@@ -97,7 +109,22 @@ public class TypesafeConfigurationProvider extends DefaultConfigurationProvider 
             @Override
             public String get() {
                 try {
-                    return config.getString(key.getRawKey());
+                    final String stringProperty = config.getString(key.getRawKey());
+                    // Check to see if the string property is encrypted
+                    final Matcher encryptedMatcher = ENCRYPTED_PATTERN.matcher(stringProperty);
+                    if (encryptedMatcher.matches()) {
+                        final String encryptedStringProperty = encryptedMatcher.group(1);
+                        try {
+                            final KeyStore keyStore = keyStoreSupplier.get();
+                            return keyStore.decrypt(encryptedStringProperty);
+                        } catch (ConfigException e) {
+                            throw new ConfigException.Generic(
+                                "The configuration uses an encrypted value at " + key.getRawKey() +
+                                    ", but it is not set up to handle encrypted values", e);
+                        }
+                    }
+
+                    return stringProperty;
                 } catch (ConfigException.Missing e) {
                     return defaultValue;
                 }

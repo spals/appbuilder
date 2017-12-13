@@ -9,6 +9,7 @@ import net.spals.appbuilder.app.finatra.sample.web.{SampleFinatraController, Sam
 import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomService, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
+import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
@@ -45,6 +46,7 @@ class SampleFinatraWebAppFTest {
   @DataProvider def serviceConfigProvider(): Array[Array[AnyRef]] = {
     Array(
       Array("fileStore.system", "localFS"),
+      Array("keyStore.system", "password"),
       Array("mapStore.system", "mapDB")
     )
   }
@@ -96,6 +98,16 @@ class SampleFinatraWebAppFTest {
     val fileStorePluginMap = serviceInjector.getInstance(Key.get(fileStorePluginMapKey))
     assertThat(fileStorePluginMap, Matchers.aMapWithSize[String, FileStorePlugin](1))
     assertThat(fileStorePluginMap, hasKey("localFS"))
+  }
+
+  @Test def testKeyStoreInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[KeyStore]), notNullValue())
+
+    val keyStorePluginMapKey = new TypeLiteral[java.util.Map[String, KeyStorePlugin]](){}
+    val keyStorePluginMap = serviceInjector.getInstance(Key.get(keyStorePluginMapKey))
+    assertThat(keyStorePluginMap, Matchers.aMapWithSize[String, KeyStorePlugin](1))
+    assertThat(keyStorePluginMap, hasKey("password"))
   }
 
   @Test def testMapStoreInjection() {

@@ -44,8 +44,8 @@ public class MinimalGenericWorkerAppFTest {
     @DataProvider
     Object[][] noDefaultServiceInjectionProvider() {
         return new Object[][] {
-                {TypeLiteral.get(ExecutorServiceFactory.class)},
-                {TypeLiteral.get(Tracer.class)},
+            {TypeLiteral.get(ExecutorServiceFactory.class)},
+            {TypeLiteral.get(Tracer.class)},
         };
     }
 

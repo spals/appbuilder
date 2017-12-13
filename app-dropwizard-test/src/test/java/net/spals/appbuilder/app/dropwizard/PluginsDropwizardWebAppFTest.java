@@ -12,6 +12,8 @@ import io.opentracing.Tracer;
 import net.spals.appbuilder.app.dropwizard.plugins.PluginsDropwizardWebApp;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
+import net.spals.appbuilder.keystore.core.KeyStore;
+import net.spals.appbuilder.keystore.core.KeyStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
@@ -38,7 +40,7 @@ import static org.hamcrest.Matchers.*;
 public class PluginsDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-            new DropwizardTestSupport<>(PluginsDropwizardWebApp.class, PluginsDropwizardWebApp.APP_CONFIG_FILE_NAME);
+        new DropwizardTestSupport<>(PluginsDropwizardWebApp.class, PluginsDropwizardWebApp.APP_CONFIG_FILE_NAME);
     private DropwizardWebApp webAppDelegate;
 
     @BeforeClass
@@ -58,12 +60,25 @@ public class PluginsDropwizardWebAppFTest {
         assertThat(serviceInjector.getInstance(FileStore.class), notNullValue());
 
         final TypeLiteral<Map<String, FileStorePlugin>> fileStorePluginMapKey =
-                new TypeLiteral<Map<String, FileStorePlugin>>(){};
+            new TypeLiteral<Map<String, FileStorePlugin>>(){};
         final Map<String, FileStorePlugin> fileStorePluginMap =
-                serviceInjector.getInstance(Key.get(fileStorePluginMapKey));
+            serviceInjector.getInstance(Key.get(fileStorePluginMapKey));
         assertThat(fileStorePluginMap, aMapWithSize(2));
         assertThat(fileStorePluginMap, hasKey("localFS"));
         assertThat(fileStorePluginMap, hasKey("s3"));
+    }
+
+    @Test
+    public void testKeyStoreInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(KeyStore.class), notNullValue());
+
+        final TypeLiteral<Map<String, KeyStorePlugin>> keyStorePluginMapKey =
+            new TypeLiteral<Map<String, KeyStorePlugin>>(){};
+        final Map<String, KeyStorePlugin> keyStorePluginMap =
+            serviceInjector.getInstance(Key.get(keyStorePluginMapKey));
+        assertThat(keyStorePluginMap, aMapWithSize(1));
+        assertThat(keyStorePluginMap, hasKey("password"));
     }
 
     @Test
@@ -72,13 +87,14 @@ public class PluginsDropwizardWebAppFTest {
         assertThat(serviceInjector.getInstance(MapStore.class), notNullValue());
 
         final TypeLiteral<Map<String, MapStorePlugin>> mapStorePluginMapKey =
-                new TypeLiteral<Map<String, MapStorePlugin>>(){};
+            new TypeLiteral<Map<String, MapStorePlugin>>(){};
         final Map<String, MapStorePlugin> mapStorePluginMap =
-                serviceInjector.getInstance(Key.get(mapStorePluginMapKey));
-        assertThat(mapStorePluginMap, aMapWithSize(3));
+            serviceInjector.getInstance(Key.get(mapStorePluginMapKey));
+        assertThat(mapStorePluginMap, aMapWithSize(4));
         assertThat(mapStorePluginMap, hasKey("cassandra"));
         assertThat(mapStorePluginMap, hasKey("dynamoDB"));
         assertThat(mapStorePluginMap, hasKey("mapDB"));
+        assertThat(mapStorePluginMap, hasKey("mongoDB"));
     }
 
     @Test
@@ -99,9 +115,9 @@ public class PluginsDropwizardWebAppFTest {
         assertThat(serviceInjector.getInstance(MessageConsumer.class), notNullValue());
 
         final TypeLiteral<Map<String, MessageConsumerPlugin>> messageConsumerPluginMapKey =
-                new TypeLiteral<Map<String, MessageConsumerPlugin>>(){};
+            new TypeLiteral<Map<String, MessageConsumerPlugin>>(){};
         final Map<String, MessageConsumerPlugin> messageConsumerPluginMap =
-                serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey));
+            serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey));
         assertThat(messageConsumerPluginMap, aMapWithSize(3));
         assertThat(messageConsumerPluginMap, hasKey("blockingQueue"));
         assertThat(messageConsumerPluginMap, hasKey("kafka"));
@@ -114,9 +130,9 @@ public class PluginsDropwizardWebAppFTest {
         assertThat(serviceInjector.getInstance(MessageProducer.class), notNullValue());
 
         final TypeLiteral<Map<String, MessageProducerPlugin>> messageProducerPluginMapKey =
-                new TypeLiteral<Map<String, MessageProducerPlugin>>(){};
+            new TypeLiteral<Map<String, MessageProducerPlugin>>(){};
         final Map<String, MessageProducerPlugin> messageProducerPluginMap =
-                serviceInjector.getInstance(Key.get(messageProducerPluginMapKey));
+            serviceInjector.getInstance(Key.get(messageProducerPluginMapKey));
         assertThat(messageProducerPluginMap, aMapWithSize(3));
         assertThat(messageProducerPluginMap, hasKey("blockingQueue"));
         assertThat(messageProducerPluginMap, hasKey("kafka"));
@@ -128,9 +144,9 @@ public class PluginsDropwizardWebAppFTest {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
 
         final TypeLiteral<Map<String, ModelSerializer>> modelSerializerMapKey =
-                new TypeLiteral<Map<String, ModelSerializer>>(){};
+            new TypeLiteral<Map<String, ModelSerializer>>(){};
         final Map<String, ModelSerializer> modelSerializerMap =
-                serviceInjector.getInstance(Key.get(modelSerializerMapKey));
+            serviceInjector.getInstance(Key.get(modelSerializerMapKey));
         assertThat(modelSerializerMap, aMapWithSize(2));
         assertThat(modelSerializerMap, hasKey("pojo"));
         assertThat(modelSerializerMap, hasKey("protobuf"));
@@ -142,9 +158,9 @@ public class PluginsDropwizardWebAppFTest {
         assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
 
         final TypeLiteral<Map<String, TracerPlugin>> tracerPluginMapKey =
-                new TypeLiteral<Map<String, TracerPlugin>>(){};
+            new TypeLiteral<Map<String, TracerPlugin>>(){};
         final Map<String, TracerPlugin> tracerPluginMap =
-                serviceInjector.getInstance(Key.get(tracerPluginMapKey));
+            serviceInjector.getInstance(Key.get(tracerPluginMapKey));
         assertThat(tracerPluginMap, aMapWithSize(2));
         assertThat(tracerPluginMap, hasKey("lightstep"));
         assertThat(tracerPluginMap, hasKey("noop"));
@@ -155,9 +171,9 @@ public class PluginsDropwizardWebAppFTest {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
 
         final TypeLiteral<Map<String, TracerTag>> tracerTagMapKey =
-                new TypeLiteral<Map<String, TracerTag>>(){};
+            new TypeLiteral<Map<String, TracerTag>>(){};
         final Map<String, TracerTag> tracerTagMap =
-                serviceInjector.getInstance(Key.get(tracerTagMapKey));
+            serviceInjector.getInstance(Key.get(tracerTagMapKey));
         assertThat(tracerTagMap, aMapWithSize(2));
         assertThat(tracerTagMap, hasEntry(is("key1"),
             is(new TracerTag.Builder().setTag("key1").setValue("value").build())));
