@@ -1,6 +1,7 @@
 package net.spals.appbuilder.executor.core;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.*;
@@ -32,7 +33,7 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
 
     private static final Collector<CharSequence, ?, String> JOINING = Collectors.joining(",", "[", "]");
 
-    private final Cache<Key, ExecutorService> executorServices;
+    private Cache<Key, ExecutorService> executorServices;
     private final Tracer tracer;
 
     @Configuration("executorService.registry.shutdown")
@@ -42,10 +43,15 @@ class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
 
     @Inject
     DefaultExecutorServiceFactory(final Tracer tracer) {
+        this.tracer = tracer;
+    }
+
+    @PostConstruct
+    @VisibleForTesting
+    void setupCache() {
         this.executorServices = CacheBuilder.<Key, ExecutorService>newBuilder()
             .removalListener(new ExecutorServiceRemovelListener(shutdown, shutdownUnit))
             .build();
-        this.tracer = tracer;
     }
 
     @Override
