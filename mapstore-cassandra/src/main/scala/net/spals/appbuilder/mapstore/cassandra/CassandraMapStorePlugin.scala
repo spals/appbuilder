@@ -67,7 +67,10 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
     cluster.close()
   }
 
-  override def createTable(tableName: String, tableKey: MapStoreTableKey): Boolean = {
+  override def createTable(
+    tableName: String,
+    tableKey: MapStoreTableKey
+  ): Boolean = {
     val schemaBuilder = SchemaBuilder.createTable(tableName).ifNotExists()
       .addPartitionKey(tableKey.getHashField, loadDataType(tableKey.getHashFieldType))
     tableKey.getRangeField.asScala
@@ -87,8 +90,10 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
     session.execute(schemaBuilder.toString).wasApplied()
   }
 
-  override def deleteItem(tableName: String,
-                          key: MapStoreKey): Unit = {
+  override def deleteItem(
+    tableName: String,
+    key: MapStoreKey
+  ): Unit = {
     val keyClause = CassandraKeyClause(key)
     val queryBuilder = QueryBuilder.delete().from(tableName).where(keyClause.hashClause)
     keyClause.rangeClauses.foreach(queryBuilder.and(_))
@@ -102,8 +107,10 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
     results.map(rowMapper()).toList.asJava
   }
 
-  override def getItem(tableName: String,
-                       key: MapStoreKey): Optional[java.util.Map[String, AnyRef]] = {
+  override def getItem(
+    tableName: String,
+    key: MapStoreKey
+  ): Optional[java.util.Map[String, AnyRef]] = {
     val keyClause = CassandraKeyClause(key)
     val queryBuilder = QueryBuilder.select().all().from(tableName).where(keyClause.hashClause)
     keyClause.rangeClauses.foreach(queryBuilder.and(_))
@@ -112,9 +119,11 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
     Option(result).map(rowMapper()).asJava
   }
 
-  override def getItems(tableName: String,
-                        key: MapStoreKey,
-                        options: MapQueryOptions): java.util.List[java.util.Map[String, AnyRef]] = {
+  override def getItems(
+    tableName: String,
+    key: MapStoreKey,
+    options: MapQueryOptions
+  ): java.util.List[java.util.Map[String, AnyRef]] = {
     val keyClause = CassandraKeyClause(key)
     val queryBuilder = QueryBuilder.select().all().from(tableName).where(keyClause.hashClause)
     keyClause.rangeClauses.foreach(queryBuilder.and(_))
@@ -129,9 +138,11 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
     results.map(rowMapper()).toList.asJava
   }
 
-  override def putItem(tableName: String,
-                       key: MapStoreKey,
-                       payload: java.util.Map[String, AnyRef]): java.util.Map[String, AnyRef] = {
+  override def putItem(
+    tableName: String,
+    key: MapStoreKey,
+    payload: java.util.Map[String, AnyRef]
+  ): java.util.Map[String, AnyRef] = {
     stripKey(key, payload)
 
     val keyFields = key.getRangeField.asScala.map(rangeField => List(key.getHashField, rangeField))
@@ -146,9 +157,11 @@ private[cassandra] class CassandraMapStorePlugin @Inject() (
     getItem(tableName, key).get()
   }
 
-  override def updateItem(tableName: String,
-                          key: MapStoreKey,
-                          payload: java.util.Map[String, AnyRef]): java.util.Map[String, AnyRef] = {
+  override def updateItem(
+    tableName: String,
+    key: MapStoreKey,
+    payload: java.util.Map[String, AnyRef]
+  ): java.util.Map[String, AnyRef] = {
     val keyClause = CassandraKeyClause(key)
     val queryBuilder = QueryBuilder.update(tableName).where(keyClause.hashClause)
     keyClause.rangeClauses.foreach(queryBuilder.and(_))

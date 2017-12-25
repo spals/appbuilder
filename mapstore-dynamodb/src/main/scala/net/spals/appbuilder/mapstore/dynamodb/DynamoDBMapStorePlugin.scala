@@ -1,12 +1,12 @@
 package net.spals.appbuilder.mapstore.dynamodb
 
 import java.io.Closeable
-import java.util.Optional
+import java.util.{Collections, Optional}
 import javax.annotation.PreDestroy
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.document._
-import com.amazonaws.services.dynamodbv2.document.spec.{QuerySpec, ScanSpec}
+import com.amazonaws.services.dynamodbv2.document.spec.{QuerySpec, ScanSpec, UpdateTableSpec}
 import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.util.TableUtils
 import com.google.common.annotations.VisibleForTesting
@@ -38,8 +38,10 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
   @PreDestroy
   override def close() = dynamoDB.shutdown()
 
-  override def createTable(tableName: String,
-                           tableKey: MapStoreTableKey): Boolean = {
+  override def createTable(
+    tableName: String,
+    tableKey: MapStoreTableKey
+  ): Boolean = {
     // Add hash key information to the create table request
     val hashKeyAttrDef = new AttributeDefinition().withAttributeName(tableKey.getHashField)
       .withAttributeType(createAttributeType(tableKey.getHashFieldType))
@@ -78,8 +80,10 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     TableUtils.deleteTableIfExists(dynamoDBClient, deleteTableRequest)
   }
 
-  override def deleteItem(tableName: String,
-                          key: MapStoreKey): Unit = {
+  override def deleteItem(
+    tableName: String,
+    key: MapStoreKey
+  ): Unit = {
     val table = dynamoDB.getTable(tableName)
     val primaryKey = createPrimaryKey(key)
 
@@ -95,8 +99,10 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     table.scan(new ScanSpec).asScala.map(_.asMap()).toList.asJava
   }
 
-  override def getItem(tableName: String,
-                       key: MapStoreKey): Optional[java.util.Map[String, AnyRef]] = {
+  override def getItem(
+    tableName: String,
+    key: MapStoreKey
+  ): Optional[java.util.Map[String, AnyRef]] = {
     val table = dynamoDB.getTable(tableName)
     val primaryKey = createPrimaryKey(key)
 
@@ -109,9 +115,11 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     Option(getItemOutcome.getItem).map(_.asMap()).asJava
   }
 
-  override def getItems(tableName: String,
-                        key: MapStoreKey,
-                        options: MapQueryOptions): java.util.List[java.util.Map[String, AnyRef]] = {
+  override def getItems(
+    tableName: String,
+    key: MapStoreKey,
+    options: MapQueryOptions
+  ): java.util.List[java.util.Map[String, AnyRef]] = {
     val table = dynamoDB.getTable(tableName)
     val querySpec = new QuerySpec().withHashKey(key.getHashField, key.getHashValue)
     createRangeKeyCondition(key).foreach(rangeKeyCondition => querySpec.withRangeKeyCondition(rangeKeyCondition))
@@ -122,9 +130,11 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     table.query(querySpec).asScala.map(_.asMap()).toList.asJava
   }
 
-  override def putItem(tableName: String,
-                       key: MapStoreKey,
-                       payload: java.util.Map[String, AnyRef]): java.util.Map[String, AnyRef] = {
+  override def putItem(
+    tableName: String,
+    key: MapStoreKey,
+    payload: java.util.Map[String, AnyRef]
+  ): java.util.Map[String, AnyRef] = {
     val table = dynamoDB.getTable(tableName)
     val primaryKey = createPrimaryKey(key)
 
@@ -139,9 +149,11 @@ private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: Amazon
     Option(putItemOutcome.getItem).map(_.asMap()).getOrElse(item.asMap())
   }
 
-  override def updateItem(tableName: String,
-                          key: MapStoreKey,
-                          payload: java.util.Map[String, AnyRef]): java.util.Map[String, AnyRef] = {
+  override def updateItem(
+    tableName: String,
+    key: MapStoreKey,
+    payload: java.util.Map[String, AnyRef]
+  ): java.util.Map[String, AnyRef] = {
     val table = dynamoDB.getTable(tableName)
     val primaryKey = createPrimaryKey(key)
 

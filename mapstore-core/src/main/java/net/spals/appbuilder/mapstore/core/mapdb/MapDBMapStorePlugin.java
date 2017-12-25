@@ -42,15 +42,17 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
-    public boolean createTable(final String tableName,
-                               final MapStoreTableKey tableKey) {
-        final SerializerArrayTuple storeKeySerializer = createKeySerializer(tableKey.getHashFieldType(),
-                tableKey.getRangeFieldType());
+    public boolean createTable(
+        final String tableName,
+        final MapStoreTableKey tableKey
+    ) {
+        final SerializerArrayTuple tableKeySerializer = createKeySerializer(tableKey.getHashFieldType(),
+            tableKey.getRangeFieldType());
 
         mapDB.treeMap(tableName)
-                .keySerializer(storeKeySerializer)
-                .valueSerializer(Serializer.BYTE_ARRAY)
-                .createOrOpen();
+            .keySerializer(tableKeySerializer)
+            .valueSerializer(Serializer.BYTE_ARRAY)
+            .createOrOpen();
         return true;
     }
 
@@ -64,8 +66,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
-    public void deleteItem(final String tableName,
-                           final MapStoreKey key) {
+    public void deleteItem(
+        final String tableName,
+        final MapStoreKey key
+    ) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
 
@@ -83,8 +87,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
-    public Optional<Map<String, Object>> getItem(final String tableName,
-                                                 final MapStoreKey key) {
+    public Optional<Map<String, Object>> getItem(
+        final String tableName,
+        final MapStoreKey key
+    ) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
 
@@ -93,9 +99,11 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
-    public List<Map<String, Object>> getItems(final String tableName,
-                                              final MapStoreKey key,
-                                              final MapQueryOptions options) {
+    public List<Map<String, Object>> getItems(
+        final String tableName,
+        final MapStoreKey key,
+        final MapQueryOptions options
+    ) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         Collection<byte[]> valueArrays = Collections.emptyList();
         final MapRangeOperator.Standard op = Standard.fromName(key.getRangeKey().getOperator().toString())
@@ -140,9 +148,11 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
-    public Map<String, Object> putItem(final String tableName,
-                                       final MapStoreKey key,
-                                       final Map<String, Object> payload) {
+    public Map<String, Object> putItem(
+        final String tableName,
+        final MapStoreKey key,
+        final Map<String, Object> payload
+    ) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
         final Map<String, Object> returnValue = new TreeMap<>(payload);
@@ -160,9 +170,11 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @Override
-    public Map<String, Object> updateItem(final String tableName,
-                                          final MapStoreKey key,
-                                          final Map<String, Object> payload) {
+    public Map<String, Object> updateItem(
+        final String tableName,
+        final MapStoreKey key,
+        final Map<String, Object> payload
+    ) {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         final Object[] keyArray = convertSimpleKeyToArray(key);
         // As a precondition, the item is guaranteed to be present
@@ -192,8 +204,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @VisibleForTesting
-    SerializerArrayTuple createKeySerializer(final Class<?> hashFieldType,
-                                             final Optional<Class<? extends Comparable>> rangeFieldType) {
+    SerializerArrayTuple createKeySerializer(
+        final Class<?> hashFieldType,
+        final Optional<Class<? extends Comparable>> rangeFieldType
+    ) {
         final Serializer hashKeySerializer = SerializerUtils.serializerForClass(hashFieldType);
         final Optional<Serializer> rangeKeySerializer = rangeFieldType
                 .map(rangeType -> (Serializer) SerializerUtils.serializerForClass(rangeType));
@@ -203,8 +217,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @VisibleForTesting
-    BTreeMap<Object[], byte[]> getTable(final String tableName,
-                                        final MapStoreKey key) {
+    BTreeMap<Object[], byte[]> getTable(
+        final String tableName,
+        final MapStoreKey key
+    ) {
         final SerializerArrayTuple storeKeySerializer = createKeySerializer(key.getHashValue().getClass(),
                 key.getRangeField().flatMap(rangeField -> {
                     final Optional<Comparable<?>> rangeValue = Optional.ofNullable(key.getRangeKey().getValue());
@@ -218,7 +234,10 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     }
 
     @VisibleForTesting
-    Comparator<Map<String, Object>> valueComparator(final MapStoreKey key, final Order order) {
+    Comparator<Map<String, Object>> valueComparator(
+        final MapStoreKey key,
+        final Order order
+    ) {
         return (m1, m2) -> {
             // If there's no range key than order doesn't matter
             if (!key.getRangeField().isPresent()) {

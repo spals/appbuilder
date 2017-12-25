@@ -73,9 +73,7 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
 
         val collection = mongoDatabase.getCollection(tableName)
         val indexOptions = new IndexOptions().name("primary")
-        val indexName = collection.createIndex(hashIndex, indexOptions)
-
-        "primary".equals(indexName)
+        "primary".equals(collection.createIndex(hashIndex, indexOptions))
       }
     }
   }
