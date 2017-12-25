@@ -34,7 +34,7 @@ import scala.compat.java8.OptionConverters._
 private[cassandra] class CassandraMapStorePlugin @Inject() (
   @ApplicationName applicationName: String,
   cluster: Cluster
-) extends MapStorePlugin with Closeable {
+) extends MapStorePlugin {
 
   @annotations.Configuration("mapStore.cassandra.keyspace")
   @volatile

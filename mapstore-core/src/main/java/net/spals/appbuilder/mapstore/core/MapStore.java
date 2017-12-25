@@ -4,6 +4,7 @@ import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +14,7 @@ import java.util.Optional;
  *
  * @author tkral
  */
-public interface MapStore {
+public interface MapStore extends Closeable {
 
     /**
      * Creates a table with the given key.

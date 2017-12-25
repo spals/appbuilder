@@ -30,7 +30,7 @@ import scala.compat.java8.OptionConverters._
   */
 @AutoBindInMap(baseClass = classOf[MapStorePlugin], key = "dynamoDB")
 private[dynamodb] class DynamoDBMapStorePlugin @Inject() (dynamoDBClient: AmazonDynamoDB)
-  extends MapStorePlugin with Closeable {
+  extends MapStorePlugin {
   private val LOGGER = LoggerFactory.getLogger(classOf[DynamoDBMapStorePlugin])
 
   private val dynamoDB = new DynamoDB(dynamoDBClient)

@@ -19,6 +19,7 @@ import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArrayTuple;
 import org.mapdb.serializer.SerializerUtils;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -39,6 +40,12 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     @Inject
     MapDBMapStorePlugin(final DB mapDB) {
         this.mapDB = mapDB;
+    }
+
+    @Override
+    @PreDestroy
+    public void close() {
+        mapDB.close();
     }
 
     @Override

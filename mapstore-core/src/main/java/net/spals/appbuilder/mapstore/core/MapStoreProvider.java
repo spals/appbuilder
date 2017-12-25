@@ -59,6 +59,14 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
+        public void close() {
+            // Plugins should register their close() method
+            // in the pre-destroy lifecycle so we're sure that
+            // everything is properly torn down. Therefore, there's
+            // nothing to do here.
+        }
+
+        @Override
         public boolean createTable(
             final String tableName,
             final MapStoreTableKey tableKey
