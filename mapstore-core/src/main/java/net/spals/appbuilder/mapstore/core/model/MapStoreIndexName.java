@@ -2,6 +2,8 @@ package net.spals.appbuilder.mapstore.core.model;
 
 import com.google.auto.value.AutoValue;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * @author tkral
  */
@@ -13,6 +15,11 @@ public abstract class MapStoreIndexName {
         final String indexName
     ) {
         return new AutoValue_MapStoreIndexName(tableName, indexName);
+    }
+
+    public static MapStoreIndexName fromString(final String indexNameStr) {
+        final String[] parsedIndexNameStr = checkNotNull(indexNameStr).split("\\.", 2);
+        return new AutoValue_MapStoreIndexName(parsedIndexNameStr[0], parsedIndexNameStr[1]);
     }
 
     public abstract String getTableName();

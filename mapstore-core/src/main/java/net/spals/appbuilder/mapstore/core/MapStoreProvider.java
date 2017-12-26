@@ -158,7 +158,7 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkKeyField(
+        static void checkKeyField(
             final String keyField,
             final Object keyValue,
             final Map<String, Object> payload
@@ -169,7 +169,7 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkPutItem(final Map<String, Object> payload) {
+        static void checkPutItem(final Map<String, Object> payload) {
             // Null or empty values have special semantics in updateItem so we'll disallow them here.
             final Set<String> nullValueKeys = payload.entrySet().stream()
                     .filter(isNullOrEmptyEntry())
@@ -179,7 +179,7 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkSingleItemKey(final MapStoreKey key) {
+        static void checkSingleItemKey(final MapStoreKey key) {
             if (key.getRangeField().isPresent()) {
                 checkArgument(key.getRangeKey().getOperator() == Standard.EQUAL_TO,
                         "Illegal range operator found (%s). You must use EQUAL_TO with value", key.getRangeKey().getOperator());
@@ -190,7 +190,7 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkWriteItem(
+        static void checkWriteItem(
             final MapStoreKey key,
             final Map<String, Object> payload
         ) {

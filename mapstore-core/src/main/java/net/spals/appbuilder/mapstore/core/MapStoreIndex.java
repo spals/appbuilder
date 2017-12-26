@@ -5,6 +5,7 @@ import net.spals.appbuilder.mapstore.core.model.MapStoreIndexName;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +20,7 @@ import java.util.Optional;
  *
  * @author tkral
  */
-public interface MapStoreIndex {
+public interface MapStoreIndex extends Closeable {
 
     /**
      * Creates an index with the given key.
