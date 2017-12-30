@@ -6,6 +6,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.servlet.ServletScopes;
+import com.netflix.governator.guice.lazy.LazySingletonScope;
 import net.spals.appbuilder.annotations.service.*;
 import net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope;
 import net.spals.appbuilder.config.service.ServiceScan;
@@ -212,6 +213,7 @@ public abstract class AutoBindServicesModule extends AbstractModule {
     @VisibleForTesting
     Scope mapProviderScope(final ProviderScope providerScope) {
         switch (providerScope) {
+            case LAZY_SINGLETON: return LazySingletonScope.get();
             case NONE: return Scopes.NO_SCOPE;
             case REQUEST: return ServletScopes.REQUEST;
             case SESSION: return ServletScopes.SESSION;

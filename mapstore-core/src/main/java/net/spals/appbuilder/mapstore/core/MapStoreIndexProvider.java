@@ -15,12 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static net.spals.appbuilder.annotations.service.AutoBindProvider.ProviderScope.LAZY_SINGLETON;
 import static net.spals.appbuilder.mapstore.core.MapStoreProvider.DelegatingMapStore.checkSingleItemKey;
 
 /**
  * @author tkral
  */
-@AutoBindProvider
+@AutoBindProvider(LAZY_SINGLETON)
 class MapStoreIndexProvider implements Provider<MapStoreIndex> {
 
     @Configuration("mapStore.system")

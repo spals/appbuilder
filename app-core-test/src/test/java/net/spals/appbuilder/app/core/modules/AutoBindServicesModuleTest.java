@@ -5,6 +5,7 @@ import com.google.inject.*;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.servlet.ServletScopes;
+import com.netflix.governator.guice.lazy.LazySingletonScope;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.annotations.service.AutoBindProvider;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
@@ -50,6 +51,7 @@ public class AutoBindServicesModuleTest {
     Object[][] autoBindProvidersProvider() {
         return new Object[][] {
                 {MyProviderDefaultScope.class, Scopes.SINGLETON},
+                {MyProviderLazySingletonScope.class, LazySingletonScope.get()},
                 {MyProviderNoScope.class, Scopes.NO_SCOPE},
                 {MyProviderRequestScope.class, ServletScopes.REQUEST},
                 {MyProviderSessionScope.class, ServletScopes.SESSION},
@@ -198,6 +200,14 @@ public class AutoBindServicesModuleTest {
 
     @AutoBindProvider
     private class MyProviderDefaultScope implements Provider<String> {
+        @Override
+        public String get() {
+            return "";
+        }
+    }
+
+    @AutoBindProvider(LAZY_SINGLETON)
+    private class MyProviderLazySingletonScope implements Provider<String> {
         @Override
         public String get() {
             return "";
