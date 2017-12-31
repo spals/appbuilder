@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
+import net.spals.appbuilder.mapstore.core.mapdb.MapDBMapStoreIndexPlugin.MapDBUpdateIndexListener;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order;
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator;
@@ -15,6 +16,7 @@ import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHolder;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
+import org.mapdb.DB.TreeMapMaker;
 import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArrayTuple;
 import org.mapdb.serializer.SerializerUtils;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.spals.appbuilder.mapstore.core.MapStorePlugin.isNullOrEmptyEntry;
+import static net.spals.appbuilder.mapstore.core.mapdb.MapDBIndexMetadata.findIndexMetadata;
 
 /**
  * @author tkral
@@ -34,7 +37,8 @@ import static net.spals.appbuilder.mapstore.core.MapStorePlugin.isNullOrEmptyEnt
 @AutoBindInMap(baseClass = MapStorePlugin.class, key = "mapDB")
 class MapDBMapStorePlugin implements MapStorePlugin {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private final DB mapDB;
 
     @Inject
@@ -86,8 +90,8 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     @Override
     public List<Map<String, Object>> getAllItems(final String tableName) {
         final BTreeMap<?, byte[]> table = mapDB.treeMap(tableName)
-                .valueSerializer(Serializer.BYTE_ARRAY)
-                .open();
+            .valueSerializer(Serializer.BYTE_ARRAY)
+            .open();
         final Stream<Map<String, Object>> valueStream = table.values().stream().map(valueMapper());
         return valueStream.collect(Collectors.toList());
 
@@ -114,8 +118,8 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         final BTreeMap<Object[], byte[]> table = getTable(tableName, key);
         Collection<byte[]> valueArrays = Collections.emptyList();
         final MapRangeOperator.Standard op = Standard.fromName(key.getRangeKey().getOperator().toString())
-                .orElseThrow(() -> new IllegalArgumentException("MapDB cannot support the operator " +
-                        key.getRangeKey().getOperator()));
+            .orElseThrow(() -> new IllegalArgumentException("MapDB cannot support the operator " +
+                key.getRangeKey().getOperator()));
 
         switch (op) {
             case ALL:
@@ -130,28 +134,28 @@ class MapDBMapStorePlugin implements MapStorePlugin {
             case EQUAL_TO:
                 final Object[] equalToKeyArray = convertSimpleKeyToArray(key);
                 valueArrays = Optional.ofNullable(table.get(equalToKeyArray))
-                        .map(value -> Collections.singletonList(value))
-                        .orElseGet(() -> Collections.emptyList());
+                    .map(value -> Collections.singletonList(value))
+                    .orElseGet(() -> Collections.emptyList());
                 break;
             case GREATER_THAN:
             case GREATER_THAN_OR_EQUAL_TO:
                 final Object[] greaterThanKey = convertSimpleKeyToArray(key);
                 valueArrays = table.tailMap(greaterThanKey,
-                        key.getRangeKey().getOperator() == Standard.GREATER_THAN_OR_EQUAL_TO).values();
+                    key.getRangeKey().getOperator() == Standard.GREATER_THAN_OR_EQUAL_TO).values();
                 break;
             case LESS_THAN:
             case LESS_THAN_OR_EQUAL_TO:
                 final Object[] lessThanKey = convertSimpleKeyToArray(key);
                 valueArrays = table.headMap(lessThanKey,
-                        key.getRangeKey().getOperator() == Standard.LESS_THAN_OR_EQUAL_TO).values();
+                    key.getRangeKey().getOperator() == Standard.LESS_THAN_OR_EQUAL_TO).values();
                 break;
         }
 
         final Stream<Map<String, Object>> valueStream = valueArrays.stream()
-                .map(valueMapper())
-                .sorted(valueComparator(key, options.getOrder()));
+            .map(valueMapper())
+            .sorted(valueComparator(key, options.getOrder()));
         return options.getLimit().map(limit -> valueStream.limit(limit).collect(Collectors.toList()))
-                .orElseGet(() -> valueStream.collect(Collectors.toList()));
+            .orElseGet(() -> valueStream.collect(Collectors.toList()));
     }
 
     @Override
@@ -168,7 +172,7 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         key.getRangeField().ifPresent(rangeField -> returnValue.putIfAbsent(rangeField, key.getRangeKey().getValue()));
 
         try {
-            table.put(keyArray, objectMapper.writeValueAsBytes(returnValue));
+            table.put(keyArray, OBJECT_MAPPER.writeValueAsBytes(returnValue));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -196,7 +200,7 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         });
 
         try {
-            table.put(keyArray, objectMapper.writeValueAsBytes(returnValue));
+            table.put(keyArray, OBJECT_MAPPER.writeValueAsBytes(returnValue));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -207,20 +211,20 @@ class MapDBMapStorePlugin implements MapStorePlugin {
     @VisibleForTesting
     Object[] convertSimpleKeyToArray(final MapStoreKey key) {
         return key.getRangeField().map(rangeField -> new Object[]{key.getHashValue(), key.getRangeKey().getValue()})
-                .orElseGet(() -> new Object[]{key.getHashValue()});
+            .orElseGet(() -> new Object[]{key.getHashValue()});
     }
 
     @VisibleForTesting
-    SerializerArrayTuple createKeySerializer(
+    static SerializerArrayTuple createKeySerializer(
         final Class<?> hashFieldType,
         final Optional<Class<? extends Comparable>> rangeFieldType
     ) {
         final Serializer hashKeySerializer = SerializerUtils.serializerForClass(hashFieldType);
         final Optional<Serializer> rangeKeySerializer = rangeFieldType
-                .map(rangeType -> (Serializer) SerializerUtils.serializerForClass(rangeType));
+            .map(rangeType -> (Serializer) SerializerUtils.serializerForClass(rangeType));
         return rangeKeySerializer
-                .map(rangeKeySer -> new SerializerArrayTuple(hashKeySerializer, rangeKeySer))
-                .orElseGet(() -> new SerializerArrayTuple(hashKeySerializer));
+            .map(rangeKeySer -> new SerializerArrayTuple(hashKeySerializer, rangeKeySer))
+            .orElseGet(() -> new SerializerArrayTuple(hashKeySerializer));
     }
 
     @VisibleForTesting
@@ -228,16 +232,30 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         final String tableName,
         final MapStoreKey key
     ) {
+        final TreeMapMaker<Object[], byte[]> tableMaker = getTableMaker(tableName, key);
+        final Set<MapDBIndexMetadata> indexMetadatas = findIndexMetadata(mapDB, tableName);
+
+        indexMetadatas.forEach(indexMetadata ->
+            tableMaker.modificationListener(new MapDBUpdateIndexListener(mapDB, indexMetadata))
+        );
+
+        return tableMaker.open();
+    }
+
+    @VisibleForTesting
+    TreeMapMaker<Object[], byte[]> getTableMaker(
+        final String tableName,
+        final MapStoreKey key
+    ) {
         final SerializerArrayTuple storeKeySerializer = createKeySerializer(key.getHashValue().getClass(),
-                key.getRangeField().flatMap(rangeField -> {
-                    final Optional<Comparable<?>> rangeValue = Optional.ofNullable(key.getRangeKey().getValue());
-                    return rangeValue.map(rValue -> rValue.getClass());
-                }));
+            key.getRangeField().flatMap(rangeField -> {
+                final Optional<Comparable<?>> rangeValue = Optional.ofNullable(key.getRangeKey().getValue());
+                return rangeValue.map(rValue -> rValue.getClass());
+            }));
 
         return mapDB.treeMap(tableName)
-                .keySerializer(storeKeySerializer)
-                .valueSerializer(Serializer.BYTE_ARRAY)
-                .open();
+            .keySerializer(storeKeySerializer)
+            .valueSerializer(Serializer.BYTE_ARRAY);
     }
 
     @VisibleForTesting
@@ -254,16 +272,16 @@ class MapDBMapStorePlugin implements MapStorePlugin {
             // Otherwise, sort by the range field values
             final String rangeField = key.getRangeField().get();
             return order == Order.ASC ?
-                    ((Comparable) m1.get(rangeField)).compareTo(m2.get(rangeField)) :
-                    ((Comparable) m2.get(rangeField)).compareTo(m1.get(rangeField));
+                ((Comparable) m1.get(rangeField)).compareTo(m2.get(rangeField)) :
+                ((Comparable) m2.get(rangeField)).compareTo(m1.get(rangeField));
         };
     }
 
     @VisibleForTesting
-    Function<byte[], Map<String, Object>> valueMapper() {
+    static Function<byte[], Map<String, Object>> valueMapper() {
         return value -> {
             try {
-                return objectMapper.readValue(value, new TypeReference<Map<String, Object>>(){});
+                return OBJECT_MAPPER.readValue(value, new TypeReference<Map<String, Object>>(){});
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
