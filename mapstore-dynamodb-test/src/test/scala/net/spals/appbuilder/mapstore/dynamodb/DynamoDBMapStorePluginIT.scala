@@ -37,14 +37,18 @@ class DynamoDBMapStorePluginIT {
     dynamoDBClientProvider.get()
   }
 
-  private lazy val mapStorePlugin = new DynamoDBMapStorePlugin(dynamoDBClient)
+  private lazy val mapStorePlugin = {
+    val plugin = new DynamoDBMapStorePlugin(dynamoDBClient)
+    plugin.synchronousDDL = true
+    plugin
+  }
 
-  private val hashTableName = "hashTable"
+  private val hashTableName = "DynamoDBMapStorePluginIT_hashTable"
   private val hashTableKey = new MapStoreTableKey.Builder()
     .setHash("myHashField", classOf[String])
     .build
 
-  private val rangeTableName = "rangeTable"
+  private val rangeTableName = "DynamoDBMapStorePluginIT_rangeTable"
   private val rangeTableKey = new MapStoreTableKey.Builder()
     .setHash("myHashField", classOf[String])
     .setRange("myRangeField", classOf[String])
@@ -59,9 +63,11 @@ class DynamoDBMapStorePluginIT {
     dynamoDBTracer.reset()
   }
 
-  @AfterClass(alwaysRun = true) def dropTables() {
+  @AfterClass(alwaysRun = true) def tearDownClass() {
     mapStorePlugin.dropTable(hashTableName)
     mapStorePlugin.dropTable(rangeTableName)
+
+    mapStorePlugin.close()
   }
 
   @Test def testCreateTableIdempotent() {
@@ -80,7 +86,10 @@ class DynamoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
+  @Test(
+    dataProvider = "emptyGetProvider",
+    groups = Array("DynamoDBMapStorePluginIT.empty")
+  )
   def testEmptyGetItem(
     tableName: String,
     storeKey: MapStoreKey
@@ -89,7 +98,10 @@ class DynamoDBMapStorePluginIT {
     assertThat(dynamoDBTracer.finishedSpans(), contains[MockSpan](dynamoDBSpan(dynamoDBEndpoint, "POST")))
   }
 
-  @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
+  @Test(
+    dataProvider = "emptyGetProvider",
+    groups = Array("DynamoDBMapStorePluginIT.empty")
+  )
   def testEmptyGetItems(
     tableName: String,
     storeKey: MapStoreKey
@@ -128,7 +140,11 @@ class DynamoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "putItemProvider", groups = Array("put"), dependsOnGroups = Array("empty"))
+  @Test(
+    dataProvider = "putItemProvider",
+    groups = Array("DynamoDBMapStorePluginIT.put"),
+    dependsOnGroups = Array("DynamoDBMapStorePluginIT.empty")
+  )
   def testPutItem(
     tableName: String,
     storeKey: MapStoreKey,
@@ -150,7 +166,11 @@ class DynamoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "updateItemProvider", groups = Array("update"), dependsOnGroups = Array("put"))
+  @Test(
+    dataProvider = "updateItemProvider",
+    groups = Array("DynamoDBMapStorePluginIT.update"),
+    dependsOnGroups = Array("DynamoDBMapStorePluginIT.put")
+  )
   def testUpdateItem(
     payload: Map[String, AnyRef],
     expectedResult: Map[String, AnyRef]
@@ -164,7 +184,10 @@ class DynamoDBMapStorePluginIT {
       dynamoDBSpan(dynamoDBEndpoint, "POST"), dynamoDBSpan(dynamoDBEndpoint, "POST")))
   }
 
-  @Test(groups = Array("get"), dependsOnGroups = Array("put", "update"))
+  @Test(
+    groups = Array("DynamoDBMapStorePluginIT.get"),
+    dependsOnGroups = Array("DynamoDBMapStorePluginIT.put", "DynamoDBMapStorePluginIT.update")
+  )
   def testGetAllItems() {
     assertThat(mapStorePlugin.getAllItems(rangeTableName),
       contains[java.util.Map[String, AnyRef]](result(1).asJava, result(2).asJava, result(3).asJava, result(4).asJava))
@@ -204,7 +227,11 @@ class DynamoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "getItemsProvider", groups = Array("get"), dependsOnGroups = Array("put", "update"))
+  @Test(
+    dataProvider = "getItemsProvider",
+    groups = Array("DynamoDBMapStorePluginIT.get"),
+    dependsOnGroups = Array("DynamoDBMapStorePluginIT.put", "DynamoDBMapStorePluginIT.update")
+  )
   def testGetItems(
     storeKey: MapStoreKey,
     expectedResults: List[Map[String, AnyRef]]
@@ -214,7 +241,10 @@ class DynamoDBMapStorePluginIT {
     assertThat(dynamoDBTracer.finishedSpans(), contains[MockSpan](dynamoDBSpan(dynamoDBEndpoint, "POST")))
   }
 
-  @Test(groups = Array("delete"), dependsOnGroups = Array("get"))
+  @Test(
+    groups = Array("DynamoDBMapStorePluginIT.delete"),
+    dependsOnGroups = Array("DynamoDBMapStorePluginIT.get")
+  )
   def testDeleteItem() {
     val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
       .setRange("myRangeField", range_equalTo[String]("myRangeValue4")).build
@@ -230,29 +260,5 @@ class DynamoDBMapStorePluginIT {
 
   def result(i: Int): Map[String, AnyRef] = {
     Map("myHashField" -> "myHashValue", "myRangeField" -> s"myRangeValue$i", "key" -> "value")
-  }
-}
-
-private object DynamoDBSpanMatcher {
-
-  def dynamoDBSpan(url: String, method: String): DynamoDBSpanMatcher =
-    DynamoDBSpanMatcher(url, method)
-}
-
-private case class DynamoDBSpanMatcher(url: String, method: String) extends TypeSafeMatcher[MockSpan] {
-
-  override def matchesSafely(mockSpan: MockSpan): Boolean = {
-    hasEntry[String, AnyRef]("component", "java-aws-sdk").matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("http.method", method).matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("http.url", url).matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
-      "AmazonDynamoDBv2".equals(mockSpan.operationName())
-  }
-
-  override def describeTo(description: Description): Unit = {
-    description.appendText("a DynamoDB span tagged with method ")
-    description.appendText(method)
-    description.appendText(" and url ")
-    description.appendText(url)
   }
 }

@@ -1,10 +1,9 @@
 package net.spals.appbuilder.mapstore.dynamodb
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
+import net.spals.appbuilder.mapstore.dynamodb.DynamoDBMapStoreUtil.createAttributeType
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.is
-import org.mockito.Mockito.mock
 import org.testng.annotations.{DataProvider, Test}
 
 /**
@@ -12,7 +11,7 @@ import org.testng.annotations.{DataProvider, Test}
   *
   * @author tkral
   */
-class DynamoDBMapStorePluginTest {
+class DynamoDBMapStoreUtilTest {
 
   @DataProvider def createAttributeTypeProvider(): Array[Array[AnyRef]] = {
     Array(
@@ -42,7 +41,6 @@ class DynamoDBMapStorePluginTest {
 
   @Test(dataProvider = "createAttributeTypeProvider")
   def testCreateAttributeType(fieldType: Class[_], expectedAttributeType: ScalarAttributeType) {
-    val dynamoDBMapStorePlugin = new DynamoDBMapStorePlugin(mock(classOf[AmazonDynamoDB]))
-    assertThat(dynamoDBMapStorePlugin.createAttributeType(fieldType), is(expectedAttributeType))
+    assertThat(createAttributeType(fieldType), is(expectedAttributeType))
   }
 }
