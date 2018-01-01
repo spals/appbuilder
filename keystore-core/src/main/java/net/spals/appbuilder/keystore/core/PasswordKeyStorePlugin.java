@@ -5,7 +5,6 @@ import com.google.inject.Inject;
 import com.netflix.governator.annotations.Configuration;
 import com.typesafe.config.Config;
 import net.spals.appbuilder.annotations.service.AutoBindInMap;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jasypt.encryption.pbe.PBEByteEncryptor;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
@@ -21,6 +20,15 @@ import javax.validation.ValidationException;
  * The {@link PasswordKeyStorePlugin} is a very simple
  * {@link KeyStorePlugin} implementation which requires
  * minimal setup but possesses the highest risk.
+ * <p>
+ * Note that this implementation uses the default JVM
+ * security provider. This means that it will work out-of-the-box
+ * without extra work on the part of the application developer
+ * (e.g. installing the Java Cryptography Extension). But
+ * this also means that this provides only low end security.
+ * <p>
+ * Applications which have more serious security concerns
+ * should consider using a different implementation.
  *
  * @author tkral
  */
@@ -60,14 +68,12 @@ class PasswordKeyStorePlugin implements KeyStorePlugin {
 
         final PooledPBEByteEncryptor pooledPBEByteEncryptor =
             new PooledPBEByteEncryptor();
-        pooledPBEByteEncryptor.setProvider(new BouncyCastleProvider());
         pooledPBEByteEncryptor.setPasswordCharArray(password.toCharArray());
         pooledPBEByteEncryptor.setPoolSize(Runtime.getRuntime().availableProcessors());
         this.byteEncryptor = pooledPBEByteEncryptor;
 
         final PooledPBEStringEncryptor pooledStringEncryptor =
             new PooledPBEStringEncryptor();
-        pooledStringEncryptor.setProvider(new BouncyCastleProvider());
         pooledStringEncryptor.setPasswordCharArray(password.toCharArray());
         pooledStringEncryptor.setPoolSize(Runtime.getRuntime().availableProcessors());
         this.stringEncryptor = pooledStringEncryptor;
