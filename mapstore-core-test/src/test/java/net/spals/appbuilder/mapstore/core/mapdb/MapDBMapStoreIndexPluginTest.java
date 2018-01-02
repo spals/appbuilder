@@ -110,7 +110,7 @@ public class MapDBMapStoreIndexPluginTest {
         assertThat(indexItem.get(), is(ImmutableMap.of("tableHashField", "table", "indexHashField", "index")));
     }
 
-    @Test(enabled = false)
+    @Test
     public void testGetItem() {
         final DB mapDB = DBMaker.memoryDB().make();
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(mapDB);
@@ -128,7 +128,7 @@ public class MapDBMapStoreIndexPluginTest {
         assertThat(indexItem.get(), is(ImmutableMap.of("tableHashField", "table", "indexHashField", "index")));
     }
 
-    @Test(enabled = false)
+    @Test
     public void testUpdateItem() {
         final DB mapDB = DBMaker.memoryDB().make();
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(mapDB);
@@ -147,7 +147,7 @@ public class MapDBMapStoreIndexPluginTest {
         assertThat(indexItem.get(), is(ImmutableMap.of("tableHashField", "table", "indexHashField", "index", "key", "value")));
     }
 
-    @Test(enabled = false)
+    @Test
     public void testDeleteItem() {
         final DB mapDB = DBMaker.memoryDB().make();
         final MapStorePlugin storePlugin = new MapDBMapStorePlugin(mapDB);

@@ -17,12 +17,16 @@ import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHold
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DB.TreeMapMaker;
+import org.mapdb.MapModificationListener;
 import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArrayTuple;
 import org.mapdb.serializer.SerializerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,7 +40,7 @@ import static net.spals.appbuilder.mapstore.core.mapdb.MapDBIndexMetadata.findIn
  */
 @AutoBindInMap(baseClass = MapStorePlugin.class, key = "mapDB")
 class MapDBMapStorePlugin implements MapStorePlugin {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(MapDBMapStorePlugin.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final DB mapDB;
@@ -208,6 +212,33 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         return returnValue;
     }
 
+    void attachTableIndexes(
+        final String tableName,
+        final BTreeMap<Object[], byte[]> table,
+        final Set<MapDBIndexMetadata> indexMetadatas
+    ) {
+        if (indexMetadatas.isEmpty()) {
+            return;
+        }
+
+        // Attach indexes to the table. Unfortunately, the map maker doesn't honor
+        // modification listeners added after the table is created so we need to use
+        // reflection to force them in.
+        final Field listenerField;
+        try {
+            final MapModificationListener<Object[], byte[]>[] indexListeners =
+                indexMetadatas.stream().map(indexMetadata -> new MapDBUpdateIndexListener(mapDB, indexMetadata))
+                    .toArray(MapDBUpdateIndexListener[]::new);
+
+            listenerField = BTreeMap.class.getDeclaredField("modificationListeners");
+            listenerField.setAccessible(true);
+            listenerField.set(table, indexListeners);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            LOGGER.error("Unable to attach index listeners to MapDB table " + tableName, e);
+            throw new RuntimeException("Unable to attach index listeners to MapDB table " + tableName, e);
+        }
+    }
+
     @VisibleForTesting
     Object[] convertSimpleKeyToArray(final MapStoreKey key) {
         return key.getRangeField().map(rangeField -> new Object[]{key.getHashValue(), key.getRangeKey().getValue()})
@@ -233,13 +264,11 @@ class MapDBMapStorePlugin implements MapStorePlugin {
         final MapStoreKey key
     ) {
         final TreeMapMaker<Object[], byte[]> tableMaker = getTableMaker(tableName, key);
+        final BTreeMap<Object[], byte[]> table = tableMaker.open();
+
         final Set<MapDBIndexMetadata> indexMetadatas = findIndexMetadata(mapDB, tableName);
-
-        indexMetadatas.forEach(indexMetadata ->
-            tableMaker.modificationListener(new MapDBUpdateIndexListener(mapDB, indexMetadata))
-        );
-
-        return tableMaker.open();
+        attachTableIndexes(tableName, table, indexMetadatas);
+        return table;
     }
 
     @VisibleForTesting
