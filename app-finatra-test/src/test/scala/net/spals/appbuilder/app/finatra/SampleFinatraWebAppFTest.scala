@@ -10,7 +10,7 @@ import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomService, Samp
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
-import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
+import net.spals.appbuilder.mapstore.core.{MapStore, MapStoreIndex, MapStoreIndexPlugin, MapStorePlugin}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageConsumerCallback, MessageProducer}
@@ -118,6 +118,16 @@ class SampleFinatraWebAppFTest {
     val mapStorePluginMap = serviceInjector.getInstance(Key.get(mapStorePluginMapKey))
     assertThat(mapStorePluginMap, Matchers.aMapWithSize[String, MapStorePlugin](1))
     assertThat(mapStorePluginMap, hasKey("mapDB"))
+  }
+
+  @Test def testMapStoreIndexInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MapStoreIndex]), notNullValue())
+
+    val mapStoreIndexPluginMapKey = new TypeLiteral[java.util.Map[String, MapStoreIndexPlugin]](){}
+    val mapStoreIndexPluginMap = serviceInjector.getInstance(Key.get(mapStoreIndexPluginMapKey))
+    assertThat(mapStoreIndexPluginMap, Matchers.aMapWithSize[String, MapStoreIndexPlugin](1))
+    assertThat(mapStoreIndexPluginMap, hasKey("mapDB"))
   }
 
   @Test def testMessageConsumerInjection() {
