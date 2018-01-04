@@ -10,16 +10,15 @@ import com.mongodb.MongoClient
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model._
 import net.spals.appbuilder.annotations.service.AutoBindInMap
-import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import net.spals.appbuilder.mapstore.core.MapStorePlugin.stripKey
 import net.spals.appbuilder.mapstore.core.model.MapQueryOptions.Order
 import net.spals.appbuilder.mapstore.core.model.MapRangeOperator.{Extended, Standard}
 import net.spals.appbuilder.mapstore.core.model.MultiValueMapRangeKey.ListValueHolder
 import net.spals.appbuilder.mapstore.core.model.TwoValueMapRangeKey.TwoValueHolder
 import net.spals.appbuilder.mapstore.core.model.{MapQueryOptions, MapStoreKey, MapStoreTableKey}
+import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
 import org.bson.Document
 import org.bson.conversions.Bson
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.OptionConverters._
