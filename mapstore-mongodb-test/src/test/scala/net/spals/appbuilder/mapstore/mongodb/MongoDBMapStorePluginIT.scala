@@ -27,7 +27,6 @@ import scala.collection.JavaConverters._
 class MongoDBMapStorePluginIT {
   private val LOGGER = LoggerFactory.getLogger(classOf[MongoDBMapStorePluginIT])
 
-  private val mongoDBEndpoint = s"http://${System.getenv("MONGODB_IP")}:${System.getenv("MONGODB_PORT")}"
   private val mongoDBTracer = new MockTracer()
   private lazy val mongoClient = {
     val mongoClientProvider = new MongoClientProvider(mongoDBTracer)
@@ -65,7 +64,7 @@ class MongoDBMapStorePluginIT {
     mongoDBTracer.reset()
   }
 
-  @AfterClass(alwaysRun = true) def dropTables() {
+  @AfterClass(alwaysRun = true) def tearDownClass() {
     mapStorePlugin.dropTable(hashTableName)
     mapStorePlugin.dropTable(rangeTableName)
     mapStorePlugin.close()
@@ -87,7 +86,10 @@ class MongoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
+  @Test(
+    dataProvider = "emptyGetProvider",
+    groups = Array("MongoDBMapStorePluginIT.empty")
+  )
   def testEmptyGetItem(
     tableName: String,
     storeKey: MapStoreKey
@@ -96,7 +98,10 @@ class MongoDBMapStorePluginIT {
     assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
-  @Test(dataProvider = "emptyGetProvider", groups = Array("empty"))
+  @Test(
+    dataProvider = "emptyGetProvider",
+    groups = Array("MongoDBMapStorePluginIT.empty")
+  )
   def testEmptyGetItems(
     tableName: String,
     storeKey: MapStoreKey
@@ -135,7 +140,11 @@ class MongoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "putItemProvider", groups = Array("put"), dependsOnGroups = Array("empty"))
+  @Test(
+    dataProvider = "putItemProvider",
+    groups = Array("MongoDBMapStorePluginIT.put"),
+    dependsOnGroups = Array("MongoDBMapStorePluginIT.empty")
+  )
   def testPutItem(
     tableName: String,
     storeKey: MapStoreKey,
@@ -162,7 +171,11 @@ class MongoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "updateItemProvider", groups = Array("update"), dependsOnGroups = Array("put"))
+  @Test(
+    dataProvider = "updateItemProvider",
+    groups = Array("MongoDBMapStorePluginIT.update"),
+    dependsOnGroups = Array("MongoDBMapStorePluginIT.put")
+  )
   def testUpdateItem(
     payload: Map[String, AnyRef],
     expectedResult: Document
@@ -178,7 +191,10 @@ class MongoDBMapStorePluginIT {
       mongoDBSpan("find")))
   }
 
-  @Test(groups = Array("get"), dependsOnGroups = Array("put", "update"))
+  @Test(
+    groups = Array("MongoDBMapStorePluginIT.get"),
+    dependsOnGroups = Array("MongoDBMapStorePluginIT.put", "MongoDBMapStorePluginIT.update")
+  )
   def testGetAllItems() {
     assertThat(mapStorePlugin.getAllItems(rangeTableName).asInstanceOf[java.util.List[Document]],
       // getAllItems isn't ordered on range key
@@ -219,7 +235,11 @@ class MongoDBMapStorePluginIT {
     )
   }
 
-  @Test(dataProvider = "getItemsProvider", groups = Array("get"), dependsOnGroups = Array("put", "update"))
+  @Test(
+    dataProvider = "getItemsProvider",
+    groups = Array("MongoDBMapStorePluginIT.get"),
+    dependsOnGroups = Array("MongoDBMapStorePluginIT.put", "MongoDBMapStorePluginIT.update")
+  )
   def testGetItems(
     storeKey: MapStoreKey,
     expectedResults: List[Document]
@@ -229,7 +249,10 @@ class MongoDBMapStorePluginIT {
     assertThat(mongoDBTracer.finishedSpans(), contains[MockSpan](mongoDBSpan("find")))
   }
 
-  @Test(groups = Array("delete"), dependsOnGroups = Array("get"))
+  @Test(
+    groups = Array("MongoDBMapStorePluginIT.delete"),
+    dependsOnGroups = Array("MongoDBMapStorePluginIT.get")
+  )
   def testDeleteItem() {
     val storeKey = new MapStoreKey.Builder().setHash("myHashField", "myHashValue")
       .setRange("myRangeField", range_equalTo[String]("myRangeValue4")).build
@@ -244,28 +267,5 @@ class MongoDBMapStorePluginIT {
   private def result(i: Int): Document = {
     new Document(Map("myHashField" -> "myHashValue",
       "myRangeField" -> s"myRangeValue$i", "key" -> "value").toMap[String, AnyRef].asJava)
-  }
-}
-
-private object MongoDBSpanMatcher {
-
-  def mongoDBSpan(operation: String): MongoDBSpanMatcher =
-    MongoDBSpanMatcher(operation)
-}
-
-private case class MongoDBSpanMatcher(operation: String) extends TypeSafeMatcher[MockSpan] {
-
-  override def matchesSafely(mockSpan: MockSpan): Boolean = {
-    hasEntry[String, AnyRef]("component", "java-mongo").matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef](is("db.statement"), containsString(operation).asInstanceOf[Matcher[AnyRef]])
-        .matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("db.type", "mongo").matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
-      operation.equals(mockSpan.operationName())
-  }
-
-  override def describeTo(description: Description): Unit = {
-    description.appendText("a MongoDB span tagged with operation ")
-    description.appendText(operation)
   }
 }

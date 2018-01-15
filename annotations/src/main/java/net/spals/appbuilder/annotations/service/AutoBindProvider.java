@@ -21,6 +21,7 @@ public @interface AutoBindProvider {
     Class<? extends Annotation> bindingAnnotation() default AutoBindProvider.class;
 
     enum ProviderScope {
+        LAZY_SINGLETON,
         NONE,
         REQUEST,
         SESSION,

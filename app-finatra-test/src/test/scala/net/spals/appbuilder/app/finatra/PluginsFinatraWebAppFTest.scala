@@ -7,7 +7,7 @@ import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
-import net.spals.appbuilder.mapstore.core.{MapStore, MapStorePlugin}
+import net.spals.appbuilder.mapstore.core.{MapStore, MapStoreIndex, MapStoreIndexPlugin, MapStorePlugin}
 import net.spals.appbuilder.message.core.consumer.MessageConsumerPlugin
 import net.spals.appbuilder.message.core.producer.MessageProducerPlugin
 import net.spals.appbuilder.message.core.{MessageConsumer, MessageProducer}
@@ -71,6 +71,18 @@ class PluginsFinatraWebAppFTest {
     assertThat(mapStorePluginMap, hasKey("dynamoDB"))
     assertThat(mapStorePluginMap, hasKey("mapDB"))
     assertThat(mapStorePluginMap, hasKey("mongoDB"))
+  }
+
+  @Test def testMapStoreIndexInjection() {
+    val serviceInjector = pluginsApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[MapStoreIndex]), notNullValue())
+
+    val mapStoreIndexPluginMapKey = new TypeLiteral[java.util.Map[String, MapStoreIndexPlugin]](){}
+    val mapStoreIndexPluginMap = serviceInjector.getInstance(Key.get(mapStoreIndexPluginMapKey))
+    assertThat(mapStoreIndexPluginMap, Matchers.aMapWithSize[String, MapStoreIndexPlugin](3))
+    assertThat(mapStoreIndexPluginMap, hasKey("dynamoDB"))
+    assertThat(mapStoreIndexPluginMap, hasKey("mapDB"))
+    assertThat(mapStoreIndexPluginMap, hasKey("mongoDB"))
   }
 
   @Test def testCassandraMapStoreInjection() {

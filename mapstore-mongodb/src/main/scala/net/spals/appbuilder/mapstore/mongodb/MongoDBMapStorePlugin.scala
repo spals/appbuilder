@@ -45,7 +45,7 @@ import scala.compat.java8.OptionConverters._
 private[mongodb] class MongoDBMapStorePlugin @Inject() (
   mongoClient: MongoClient,
   mongoDatabase: MongoDatabase
-) extends MapStorePlugin with Closeable {
+) extends MapStorePlugin {
 
   private val ID_FIELD_NAME = "_id"
 
@@ -72,9 +72,7 @@ private[mongodb] class MongoDBMapStorePlugin @Inject() (
 
         val collection = mongoDatabase.getCollection(tableName)
         val indexOptions = new IndexOptions().name("primary")
-        val indexName = collection.createIndex(hashIndex, indexOptions)
-
-        "primary".equals(indexName)
+        "primary".equals(collection.createIndex(hashIndex, indexOptions))
       }
     }
   }

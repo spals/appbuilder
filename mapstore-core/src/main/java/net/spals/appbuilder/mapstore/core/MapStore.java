@@ -4,27 +4,17 @@ import net.spals.appbuilder.mapstore.core.model.MapQueryOptions;
 import net.spals.appbuilder.mapstore.core.model.MapStoreKey;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * A NoSQL storage service which holds
- * data in maps.
+ * A NoSQL storage service which holds data in maps.
  *
  * @author tkral
  */
-public interface MapStore {
-
-    /**
-     * Creates a secondary index for the given table
-     * with the given key.
-     *
-     * Note that the table must already exist.
-     *
-     * @return true iff the creation was successful
-     */
-//    boolean createIndex(String tableName, String indexName, MapStoreTableKey indexKey);
+public interface MapStore extends Closeable {
 
     /**
      * Creates a table with the given key.
@@ -35,14 +25,10 @@ public interface MapStore {
      *
      * @return true iff the table exists after execution
      */
-    boolean createTable(String tableName, MapStoreTableKey tableKey);
-
-    /**
-     * Drops a secondary index for the given table.
-     *
-     * @return true iff the drop was successful
-     */
-//    boolean dropIndex(String tableName, String indexName);
+    boolean createTable(
+        String tableName,
+        MapStoreTableKey tableKey
+    );
 
     /**
      * Drops a table.
@@ -58,7 +44,10 @@ public interface MapStore {
      * This should be idempotent if the item
      * does not exist.
      */
-    void deleteItem(String tableName, MapStoreKey key);
+    void deleteItem(
+        String tableName,
+        MapStoreKey key
+    );
 
     /**
      * Retrieves all items from the given table
@@ -73,20 +62,31 @@ public interface MapStore {
      * Returns {@link Optional#empty()} if no
      * item exists with the given key.
      */
-    Optional<Map<String, Object>> getItem(String tableName, MapStoreKey key);
+    Optional<Map<String, Object>> getItem(
+        String tableName,
+        MapStoreKey key
+    );
 
     /**
      * Queries all items from the given table
      * which match the given {@link MapStoreKey}
      * range key operator.
      */
-    List<Map<String, Object>> getItems(String tableName, MapStoreKey key, MapQueryOptions options);
+    List<Map<String, Object>> getItems(
+        String tableName,
+        MapStoreKey key,
+        MapQueryOptions options
+    );
 
     /**
      * Adds an item to the given table
      * under the given key.
      */
-    Map<String, Object> putItem(String tableName, MapStoreKey key, Map<String, Object> payload);
+    Map<String, Object> putItem(
+        String tableName,
+        MapStoreKey key,
+        Map<String, Object> payload
+    );
 
     /**
      * Updates an item in the given table
@@ -96,5 +96,9 @@ public interface MapStore {
      * this will fallback to {@link #putItem(String, MapStoreKey, Map)}
      * semantics.
      */
-    Map<String, Object> updateItem(String tableName, MapStoreKey key, Map<String, Object> payload);
+    Map<String, Object> updateItem(
+        String tableName,
+        MapStoreKey key,
+        Map<String, Object> payload
+    );
 }

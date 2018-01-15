@@ -11,7 +11,6 @@ import net.spals.appbuilder.mapstore.core.model.ZeroValueMapRangeKey.all
 import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers._
-import org.hamcrest.{Description, TypeSafeMatcher}
 import org.testng.annotations._
 
 import scala.collection.JavaConverters._
@@ -251,33 +250,5 @@ class CassandraMapStorePluginIT {
 
   private def result(i: Int): Map[String, AnyRef] = {
     Map("myhashfield" -> "myHashValue", "myrangefield" -> s"myRangeValue$i", "key" -> "value")
-  }
-}
-
-private object CassandraSpanMatcher {
-
-  def cassandraSpan(dbInstance: String, dbStatementOp: String): CassandraSpanMatcher =
-    CassandraSpanMatcher(dbInstance, dbStatementOp)
-}
-
-private case class CassandraSpanMatcher(
-  dbInstance: String,
-  dbStatementOp: String
-) extends TypeSafeMatcher[MockSpan] {
-
-  override def matchesSafely(mockSpan: MockSpan): Boolean = {
-    hasEntry[String, AnyRef]("component", "java-cassandra").matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("db.instance", dbInstance).matches(mockSpan.tags()) &&
-      hasEntry[String, String](is("db.statement"), startsWith(dbStatementOp)).matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("db.type", "cassandra").matches(mockSpan.tags()) &&
-      hasEntry[String, AnyRef]("span.kind", "client").matches(mockSpan.tags()) &&
-      hasKey[String]("peer.hostname").matches(mockSpan.tags()) &&
-      hasKey[String]("peer.port").matches(mockSpan.tags()) &&
-      "execute".equals(mockSpan.operationName())
-  }
-
-  override def describeTo(description: Description): Unit = {
-    description.appendText("a Cassandra span tagged with db instance ")
-    description.appendText(dbInstance)
   }
 }

@@ -59,8 +59,18 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
-        public boolean createTable(final String tableName,
-                                   final MapStoreTableKey tableKey) {
+        public void close() {
+            // Plugins should register their close() method
+            // in the pre-destroy lifecycle so we're sure that
+            // everything is properly torn down. Therefore, there's
+            // nothing to do here.
+        }
+
+        @Override
+        public boolean createTable(
+            final String tableName,
+            final MapStoreTableKey tableKey
+        ) {
             return pluginDelegate.createTable(tableName, tableKey);
         }
 
@@ -70,8 +80,10 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
-        public void deleteItem(final String tableName,
-                               final MapStoreKey key) {
+        public void deleteItem(
+            final String tableName,
+            final MapStoreKey key
+        ) {
             checkSingleItemKey(key);
             pluginDelegate.deleteItem(tableName, key);
         }
@@ -82,8 +94,10 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
-        public Optional<Map<String, Object>> getItem(final String tableName,
-                                                     final MapStoreKey key) {
+        public Optional<Map<String, Object>> getItem(
+            final String tableName,
+            final MapStoreKey key
+        ) {
             final Optional<SyntacticSugar> sugarOp = SyntacticSugar.fromName(key.getRangeKey().getOperator().toString());
             if (sugarOp.isPresent()) {
                 switch (sugarOp.get()) {
@@ -99,9 +113,11 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
-        public List<Map<String, Object>> getItems(final String tableName,
-                                                  final MapStoreKey key,
-                                                  final MapQueryOptions options) {
+        public List<Map<String, Object>> getItems(
+            final String tableName,
+            final MapStoreKey key,
+            final MapQueryOptions options
+        ) {
             final Optional<SyntacticSugar> sugarOp = SyntacticSugar.fromName(key.getRangeKey().getOperator().toString());
             if (sugarOp.isPresent()) {
                 switch (sugarOp.get()) {
@@ -114,18 +130,22 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @Override
-        public Map<String, Object> putItem(final String tableName,
-                                           final MapStoreKey key,
-                                           final Map<String, Object> payload) {
+        public Map<String, Object> putItem(
+            final String tableName,
+            final MapStoreKey key,
+            final Map<String, Object> payload
+        ) {
             checkWriteItem(key, payload);
             checkPutItem(payload);
             return pluginDelegate.putItem(tableName, key, payload);
         }
 
         @Override
-        public Map<String, Object> updateItem(final String tableName,
-                                              final MapStoreKey key,
-                                              final Map<String, Object> payload) {
+        public Map<String, Object> updateItem(
+            final String tableName,
+            final MapStoreKey key,
+            final Map<String, Object> payload
+        ) {
             checkWriteItem(key, payload);
 
             final Optional<Map<String, Object>> item = getItem(tableName, key);
@@ -138,14 +158,18 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkKeyField(final String keyField, final Object keyValue, final Map<String, Object> payload) {
+        static void checkKeyField(
+            final String keyField,
+            final Object keyValue,
+            final Map<String, Object> payload
+        ) {
             checkArgument(!payload.containsKey(keyField) || keyValue.equals(payload.get(keyField)),
                     "Mismatched key value (%s) and payload field value (%s)",
                     keyValue, payload.get(keyField));
         }
 
         @VisibleForTesting
-        void checkPutItem(final Map<String, Object> payload) {
+        static void checkPutItem(final Map<String, Object> payload) {
             // Null or empty values have special semantics in updateItem so we'll disallow them here.
             final Set<String> nullValueKeys = payload.entrySet().stream()
                     .filter(isNullOrEmptyEntry())
@@ -155,7 +179,7 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkSingleItemKey(final MapStoreKey key) {
+        static void checkSingleItemKey(final MapStoreKey key) {
             if (key.getRangeField().isPresent()) {
                 checkArgument(key.getRangeKey().getOperator() == Standard.EQUAL_TO,
                         "Illegal range operator found (%s). You must use EQUAL_TO with value", key.getRangeKey().getOperator());
@@ -166,7 +190,10 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         @VisibleForTesting
-        void checkWriteItem(final MapStoreKey key, final Map<String, Object> payload) {
+        static void checkWriteItem(
+            final MapStoreKey key,
+            final Map<String, Object> payload
+        ) {
             checkArgument(!payload.isEmpty(), "Cannot write item with empty payload");
             // Ensure that the hash value matches what's in the payload (or is absent)
             checkKeyField(key.getHashField(), key.getHashValue(), payload);
@@ -177,7 +204,10 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         // Run max syntactic sugar operation
-        Optional<Map<String, Object>> getMaxItem(final String tableName, final MapStoreKey key) {
+        Optional<Map<String, Object>> getMaxItem(
+            final String tableName,
+            final MapStoreKey key
+        ) {
             checkArgument(key.getRangeKey().getOperator() == SyntacticSugar.MAX);
 
             // The max operator is equivalent to grabbing all range keys, sorting
@@ -192,7 +222,10 @@ class MapStoreProvider implements Provider<MapStore> {
         }
 
         // Run min syntactic sugar operation
-        Optional<Map<String, Object>> getMinItem(final String tableName, final MapStoreKey key) {
+        Optional<Map<String, Object>> getMinItem(
+            final String tableName,
+            final MapStoreKey key
+        ) {
             checkArgument(key.getRangeKey().getOperator() == SyntacticSugar.MIN);
 
             // The min operator is equivalent to grabbing all range keys, sorting

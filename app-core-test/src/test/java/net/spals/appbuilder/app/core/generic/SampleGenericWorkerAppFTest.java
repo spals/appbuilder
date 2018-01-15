@@ -18,6 +18,8 @@ import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import net.spals.appbuilder.keystore.core.KeyStore;
 import net.spals.appbuilder.keystore.core.KeyStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
+import net.spals.appbuilder.mapstore.core.MapStoreIndex;
+import net.spals.appbuilder.mapstore.core.MapStoreIndexPlugin;
 import net.spals.appbuilder.mapstore.core.MapStorePlugin;
 import net.spals.appbuilder.message.core.MessageConsumer;
 import net.spals.appbuilder.message.core.MessageConsumerCallback;
@@ -145,6 +147,19 @@ public class SampleGenericWorkerAppFTest {
             serviceInjector.getInstance(Key.get(mapStorePluginMapKey));
         assertThat(mapStorePluginMap, aMapWithSize(1));
         assertThat(mapStorePluginMap, hasKey("mapDB"));
+    }
+
+    @Test
+    public void testMapStoreIndexInjection() {
+        final Injector serviceInjector = sampleApp.getServiceInjector();
+        assertThat(serviceInjector.getInstance(MapStoreIndex.class), notNullValue());
+
+        final TypeLiteral<Map<String, MapStoreIndexPlugin>> mapStoreIndexPluginMapKey =
+            new TypeLiteral<Map<String, MapStoreIndexPlugin>>(){};
+        final Map<String, MapStoreIndexPlugin> mapStoreIndexPluginMap =
+            serviceInjector.getInstance(Key.get(mapStoreIndexPluginMapKey));
+        assertThat(mapStoreIndexPluginMap, aMapWithSize(1));
+        assertThat(mapStoreIndexPluginMap, hasKey("mapDB"));
     }
 
     @Test
