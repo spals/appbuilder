@@ -3,7 +3,6 @@ package net.spals.appbuilder.app.core.jaxrs;
 import com.google.common.base.Joiner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import io.swagger.config.ScannerFactory;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.AcceptHeaderApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
@@ -49,9 +48,8 @@ public abstract class JaxRsDocModule extends AbstractModule {
         // Automatically create and register a Swagger scanner
         final BeanConfig swaggerConfig = new BeanConfig();
         swaggerConfig.setResourcePackage(Joiner.on(',').join(getServiceScan().getServicePackages()));
+        swaggerConfig.setTitle(getApplicationName() + " API");
+        // Turn on automatic scanning. This should be the last value set in the config.
         swaggerConfig.setScan();
-        swaggerConfig.setTitle(getApplicationName());
-
-        ScannerFactory.setScanner(swaggerConfig);
     }
 }
