@@ -32,13 +32,16 @@ public abstract class JaxRsWebApp implements App {
     public static class Builder extends JaxRsWebApp_Builder implements WebAppBuilder<JaxRsWebApp> {
 
         private final GenericWorkerApp.Builder appDelegateBuilder;
+        private final JaxRsDocModule.Builder docModuleBuilder =
+            new JaxRsDocModule.Builder();
         private final JaxRsMonitorModule.Builder monitorModuleBuilder =
-                new JaxRsMonitorModule.Builder();
+            new JaxRsMonitorModule.Builder();
         private final JaxRsWebServerModule.Builder webServerModuleBuilder =
-                new JaxRsWebServerModule.Builder();
+            new JaxRsWebServerModule.Builder();
 
         public Builder(final String name, final Logger logger) {
             this.appDelegateBuilder = new GenericWorkerApp.Builder(name, logger);
+            docModuleBuilder.setApplicationName(name);
         }
 
         public Builder addBootstrapModule(final BootstrapModule bootstrapModule) {
@@ -60,7 +63,8 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public Builder disableWebServerAutoBinding() {
-            webServerModuleBuilder.setActive(false);
+            docModuleBuilder.setWebServerAutoBindingEnabled(false);
+            webServerModuleBuilder.setWebServerAutoBindingEnabled(false);
             return this;
         }
 
@@ -86,6 +90,7 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public Builder setConfigurable(final Configurable<?> configurable) {
+            docModuleBuilder.setConfigurable(configurable);
             monitorModuleBuilder.setConfigurable(configurable);
             webServerModuleBuilder.setConfigurable(configurable);
             return super.setConfigurable(configurable);
@@ -106,11 +111,13 @@ public abstract class JaxRsWebApp implements App {
         @Override
         public Builder setServiceScan(final ServiceScan serviceScan) {
             appDelegateBuilder.setServiceScan(serviceScan);
+            docModuleBuilder.setServiceScan(serviceScan);
             return this;
         }
 
         @Override
         public JaxRsWebApp build() {
+            appDelegateBuilder.addModule(docModuleBuilder.build());
             appDelegateBuilder.addModule(monitorModuleBuilder.build());
 
             webServerModuleBuilder.setServiceGraph(appDelegateBuilder.getServiceGraph());
