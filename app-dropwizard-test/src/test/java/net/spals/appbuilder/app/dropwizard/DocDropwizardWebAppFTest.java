@@ -58,5 +58,6 @@ public class DocDropwizardWebAppFTest {
         assertThat(json, hasKey("paths"));
         final Map<String, Object> paths = (Map<String, Object>)json.get("paths");
         assertThat(paths, hasKey("/doc/get"));
+        assertThat(paths, hasKey("/doc/get/{id}"));
     }
 }
