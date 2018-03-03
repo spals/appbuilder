@@ -8,7 +8,7 @@ import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
 
 /**
-  * A [[FinatraWebApp]] which uses all various service plugins.
+  * A [[FinatraWebApp]] which uses request tracing.
   *
   * @author tkral
   */

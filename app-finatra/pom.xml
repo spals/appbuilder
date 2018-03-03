@@ -19,6 +19,10 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.xiaodongw</groupId>
+            <artifactId>swagger-finatra_${scala.version}</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.netflix.governator</groupId>
             <artifactId>governator</artifactId>
         </dependency>

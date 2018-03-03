@@ -4,6 +4,7 @@ import java.io.StringWriter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
+import com.github.xiaodongw.swagger.finatra.{FinatraSwagger, SwaggerController, WebjarsController}
 import com.google.inject.{Injector, Module}
 import com.netflix.governator.guice.ModuleTransformer
 import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings
@@ -16,8 +17,10 @@ import com.twitter.inject.annotations.Lifecycle
 import com.twitter.inject.requestscope.FinagleRequestScopeFilter
 import com.twitter.util.StorageUnit
 import com.typesafe.config._
+import io.swagger.models.Info
 import net.spals.appbuilder.app.core.modules.{AutoBindConfigModule, AutoBindServiceGraphModule, AutoBindServicesModule}
 import net.spals.appbuilder.app.finatra.bootstrap.FinatraBootstrapModule
+import net.spals.appbuilder.app.finatra.doc.FinatraWebAppSwagger
 import net.spals.appbuilder.app.finatra.modules.{AutoBindConfigFlagsModule, FinatraMonitorModule, FinatraWebServerModule}
 import net.spals.appbuilder.app.{core => spals}
 import net.spals.appbuilder.config.service.ServiceScan
@@ -76,6 +79,10 @@ trait FinatraWebApp extends HttpServer
 
     monitorModule.runMonitoringAutoBind(router)
     webServerModule.runWebServerAutoBind(router)
+
+    // Register documentation endpoints
+    FinatraWebAppSwagger.info(new Info().title(s"${getClass.getSimpleName} API"))
+    router.add(new SwaggerController(swagger = FinatraWebAppSwagger))
   }
 
   override def modules = {
