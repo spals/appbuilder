@@ -34,13 +34,13 @@ import static net.spals.appbuilder.graph.model.ServiceGraphVertex.createGraphVer
 public abstract class JaxRsWebServerModule extends AbstractModule implements InjectionListener<Object>, TypeListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(JaxRsWebServerModule.class);
 
-    public abstract boolean isActive();
+    public abstract boolean isWebServerAutoBindingEnabled();
     public abstract Configurable<?> getConfigurable();
     public abstract ServiceGraph getServiceGraph();
 
     public static class Builder extends JaxRsWebServerModule_Builder {
         public Builder() {
-            setActive(true);
+            setWebServerAutoBindingEnabled(true);
         }
     }
 
@@ -69,7 +69,7 @@ public abstract class JaxRsWebServerModule extends AbstractModule implements Inj
     @Override
     public <I> void hear(final TypeLiteral<I> typeLiteral,
                          final TypeEncounter<I> typeEncounter) {
-        if (isActive()) {
+        if (isWebServerAutoBindingEnabled()) {
             // Add a dummy JAXRS WEBSERVER vertex to the service graph to show how WebServer components
             // relate to one another
             if (!getServiceGraph().containsVertex(theWebServerVertex)) {

@@ -81,6 +81,8 @@
         <opentracing.version>0.30.0</opentracing.version>
         <protobuf.version>3.3.0</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
+        <swagger.version>1.5.18</swagger.version>
+        <swagger.finatra.version>0.7.2</swagger.finatra.version>
         <typesafe.config.version>1.3.1</typesafe.config.version>
         <!-- NOTE: Must match what's available in governator.version -->
         <validation-api.version>1.1.0.Final</validation-api.version>
@@ -184,6 +186,11 @@
                 <groupId>com.github.jlmauduy</groupId>
                 <artifactId>ascii-graphs_${scala.version}</artifactId>
                 <version>${ascii-graphs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.xiaodongw</groupId>
+                <artifactId>swagger-finatra_${scala.version}</artifactId>
+                <version>${swagger.finatra.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.lightstep.tracer</groupId>
@@ -352,6 +359,29 @@
                     <exclusion>
                         <groupId>org.mongodb</groupId>
                         <artifactId>mongodb-driver-async</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-jaxrs</artifactId>
+                <version>${swagger.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.ws.rs</groupId>
+                        <artifactId>jsr311-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.reflections</groupId>
+                        <artifactId>reflections</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

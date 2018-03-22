@@ -5,13 +5,13 @@ import com.google.inject.name.Named;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 
 /**
- * An auto-bound service for {@link SampleDropwizardWebApp}
+ * An auto-bound singleton service for {@link SampleDropwizardWebApp}
  *
  * @author tkral
  */
 @AutoBindSingleton
-public class SampleDropwizardCustomService {
+public class SampleDropwizardCustomSingleton {
 
     @Inject
-    SampleDropwizardCustomService(@Named("AutoBoundModule") final String autoBoundModuleName) {  }
+    SampleDropwizardCustomSingleton(@Named("AutoBoundModule") final String autoBoundModuleName) {  }
 }
