@@ -5,9 +5,9 @@ import com.google.inject.name.Named
 import net.spals.appbuilder.annotations.service.AutoBindSingleton
 
 /**
-  * An auto-bound service for [[SampleFinatraWebApp]]
+  * An auto-bound singleton service for [[SampleFinatraWebApp]]
   *
   * @author tkral
   */
 @AutoBindSingleton
-private[finatra] class SampleFinatraCustomService @Inject() (@Named("AutoBoundModule") autoBoundModuleName: String) { }
+private[finatra] class SampleFinatraCustomSingleton @Inject()(@Named("AutoBoundModule") autoBoundModuleName: String) { }

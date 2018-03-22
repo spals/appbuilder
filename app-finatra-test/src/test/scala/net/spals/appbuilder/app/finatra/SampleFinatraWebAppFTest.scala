@@ -6,7 +6,7 @@ import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
 import io.opentracing.{NoopTracer, Tracer}
 import net.spals.appbuilder.app.finatra.sample.web.{SampleFinatraController, SampleFinatraExceptionMapper, SampleFinatraFilter}
-import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomService, SampleFinatraWebApp}
+import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomSet, SampleFinatraCustomSingleton, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
@@ -17,7 +17,7 @@ import net.spals.appbuilder.message.core.{MessageConsumer, MessageConsumerCallba
 import net.spals.appbuilder.model.core.ModelSerializer
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.{hasKey, instanceOf, is, notNullValue}
+import org.hamcrest.Matchers.{hasKey, hasSize, instanceOf, is, notNullValue}
 import org.mockito.ArgumentMatchers.{any, isA}
 import org.mockito.Mockito.verify
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
@@ -80,9 +80,16 @@ class SampleFinatraWebAppFTest {
       is(expectedBindValue))
   }
 
-  @Test def testCustomServiceInjection() {
+  @Test def testCustomSetInjection() {
     val serviceInjector = sampleApp.getServiceInjector
-    assertThat(serviceInjector.getInstance(classOf[SampleFinatraCustomService]), notNullValue())
+    val serviceSet = serviceInjector.getInstance(Key.get(new TypeLiteral[java.util.Set[SampleFinatraCustomSet]](){}))
+    assertThat(serviceSet, notNullValue())
+    assertThat(serviceSet, hasSize[SampleFinatraCustomSet](1))
+  }
+
+  @Test def testCustomSingletonInjection() {
+    val serviceInjector = sampleApp.getServiceInjector
+    assertThat(serviceInjector.getInstance(classOf[SampleFinatraCustomSingleton]), notNullValue())
   }
 
   @Test def testExecutorInjection() {

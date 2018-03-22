@@ -9,7 +9,8 @@ import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.NoopTracer;
 import io.opentracing.Tracer;
-import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomService;
+import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomSet;
+import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardCustomSingleton;
 import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
@@ -97,9 +98,18 @@ public class SampleDropwizardWebAppFTest {
     }
 
     @Test
-    public void testCustomServiceInjection() {
+    public void testCustomSetInjection() {
         final Injector serviceInjector = webAppDelegate.getServiceInjector();
-        assertThat(serviceInjector.getInstance(SampleDropwizardCustomService.class), notNullValue());
+        final Set<SampleDropwizardCustomSet> serviceSet =
+            serviceInjector.getInstance(Key.get(new TypeLiteral<Set<SampleDropwizardCustomSet>>(){}));
+        assertThat(serviceSet, notNullValue());
+        assertThat(serviceSet, hasSize(1));
+    }
+
+    @Test
+    public void testCustomSingletonInjection() {
+        final Injector serviceInjector = webAppDelegate.getServiceInjector();
+        assertThat(serviceInjector.getInstance(SampleDropwizardCustomSingleton.class), notNullValue());
     }
 
     @Test
