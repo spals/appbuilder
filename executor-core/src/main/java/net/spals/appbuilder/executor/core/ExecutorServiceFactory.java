@@ -1,11 +1,12 @@
 package net.spals.appbuilder.executor.core;
 
-import org.inferred.freebuilder.FreeBuilder;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.inferred.freebuilder.FreeBuilder;
 
 /**
  * @author tkral
@@ -43,6 +44,7 @@ public interface ExecutorServiceFactory {
     void stop(Key key);
 
     @FreeBuilder
+    @JsonDeserialize(builder = Key.Builder.class)
     interface Key {
 
         Class<?> getParentClass();
@@ -50,6 +52,9 @@ public interface ExecutorServiceFactory {
         Set<String> getTags();
 
         class Builder extends ExecutorServiceFactory_Key_Builder {
+
+            public Builder() {
+            }
 
             public Builder(final Class<?> parentClass) {
                 setParentClass(parentClass);
