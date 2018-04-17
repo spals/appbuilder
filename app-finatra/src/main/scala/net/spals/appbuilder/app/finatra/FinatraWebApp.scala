@@ -8,6 +8,7 @@ import com.github.xiaodongw.swagger.finatra.{FinatraSwagger, SwaggerController, 
 import com.google.inject.{Injector, Module}
 import com.netflix.governator.guice.ModuleTransformer
 import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings
+import com.twitter.finagle.http.filter.Cors
 import com.twitter.finagle.{http => finaglehttp}
 import com.twitter.finatra.http.HttpServer
 import com.twitter.finatra.http.filters.CommonFilters
@@ -74,6 +75,7 @@ trait FinatraWebApp extends HttpServer
   override protected def configureHttp(router: HttpRouter): Unit = {
     // Add pre-routing filters before anything else
     Option(addCommonFilters.get()).filter(b => b).foreach(router.filter[CommonFilters])
+    Option(addCorsFilter.get()).filter(b => b).foreach(router.filter[Cors.HttpFilter])
     Option(addRequestScopeFilter.get()).filter(b => b).foreach(
       router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
 
@@ -118,6 +120,7 @@ trait FinatraWebApp extends HttpServer
   // ========== Spals AppBuilder ==========
 
   private val addCommonFilters = new AtomicBoolean(true)
+  private val addCorsFilter = new AtomicBoolean(false)
   private val addRequestScopeFilter = new AtomicBoolean(false)
 
   // Alternative configuration outside of Flags
@@ -152,6 +155,11 @@ trait FinatraWebApp extends HttpServer
 
   override def enableBindingOverrides(): FinatraWebApp = {
     moduleTransformers += new OverrideAllDuplicateBindings
+    this
+  }
+
+  override def enableCors(): FinatraWebApp = {
+    addCorsFilter.set(true)
     this
   }
 

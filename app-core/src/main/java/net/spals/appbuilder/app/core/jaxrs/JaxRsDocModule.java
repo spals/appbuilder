@@ -46,7 +46,6 @@ public abstract class JaxRsDocModule extends AbstractModule {
         LOGGER.info("Registering documentation API via Swagger");
         // Automatically register Swagger API documentation endpoints
         getConfigurable().register(AcceptHeaderApiListingResource.class);
-        getConfigurable().register(SwaggerDynamicFeature.class);
         getConfigurable().register(SwaggerSerializers.class);
 
         // Automatically create and register a Swagger scanner
@@ -55,23 +54,5 @@ public abstract class JaxRsDocModule extends AbstractModule {
         swaggerConfig.setTitle(getApplicationName() + " API");
         // Turn on automatic scanning. This should be the last value set in the config.
         swaggerConfig.setScan();
-    }
-
-    /**
-     * A Jax-Rs {@link DynamicFeature} which enables CORS for the Swagger endpoint.
-     *
-     * @author tkral
-     */
-    static class SwaggerDynamicFeature implements DynamicFeature {
-
-        @Override
-        public void configure(
-            final ResourceInfo resourceInfo,
-            final FeatureContext featureContext
-        ) {
-            if (resourceInfo.getResourceClass().equals(AcceptHeaderApiListingResource.class)) {
-                featureContext.register(JaxRsCorsFilter.class);
-            }
-        }
     }
 }

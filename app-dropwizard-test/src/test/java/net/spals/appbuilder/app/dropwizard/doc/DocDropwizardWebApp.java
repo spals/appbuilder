@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A minimally viable {@link DropwizardWebApp}
+ * A {@link DropwizardWebApp} which tests API documentation.
  *
  * @author tkral
  */
