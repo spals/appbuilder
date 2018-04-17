@@ -29,8 +29,7 @@ class DynamoDBMapStoreIndexPluginIT {
   private val dynamoDBTracer = new MockTracer()
   private lazy val dynamoDBClient = {
     val dynamoDBClientProvider = new DynamoDBClientProvider(dynamoDBTracer)
-    dynamoDBClientProvider.awsAccessKeyId = "DUMMY"
-    dynamoDBClientProvider.awsSecretKey = "DUMMY"
+    dynamoDBClientProvider.credentialsProviderClassName = "com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider"
     dynamoDBClientProvider.endpoint = dynamoDBEndpoint
 
     LOGGER.info(s"Connecting to dynamoDB instance at ${dynamoDBClientProvider.endpoint}")
