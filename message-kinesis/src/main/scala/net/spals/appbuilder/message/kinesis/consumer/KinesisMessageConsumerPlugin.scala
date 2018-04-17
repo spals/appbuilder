@@ -3,7 +3,7 @@ package net.spals.appbuilder.message.kinesis.consumer
 import java.util.UUID
 import javax.validation.constraints.{Min, NotNull}
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials, BasicSessionCredentials}
+import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.{IRecordProcessor, IRecordProcessorFactory}
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.google.inject.Inject
@@ -35,15 +35,8 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
   extends MessageConsumerPlugin {
 
   @NotNull
-  @Configuration("messageConsumer.kinesis.awsAccessKeyId")
-  private var awsAccessKeyId: String = null
-
-  @NotNull
-  @Configuration("messageConsumer.kinesis.awsSecretKey")
-  private var awsSecretKey: String = null
-
-  @Configuration("messageConsumer.kinesis.awsSessionToken")
-  private var awsSessionToken: String = null
+  @Configuration("messageConsumer.kinesis.credentialsProvider")
+  private var credentialsProviderClassName: String = null
 
   @NotNull
   @Configuration("messageConsumer.kinesis.endpoint")
@@ -57,14 +50,15 @@ private[consumer] class KinesisMessageConsumerPlugin @Inject()
     val kinesisConsumerConfig = KinesisConsumerConfig(consumerConfig)
     val consumerCallbacks = loadCallbacksForTag(consumerConfig.getTag, consumerCallbackSet).asScala.toMap
 
-    val awsCredentials = Option(awsSessionToken)
-      .map(sessionToken => new BasicSessionCredentials(awsAccessKeyId, awsSecretKey, sessionToken))
-      .getOrElse(new BasicAWSCredentials(awsAccessKeyId, awsSecretKey))
     val workerId = s"${kinesisConsumerConfig.getWorkerId}:${UUID.randomUUID()}"
 
     val worker = new Worker.Builder()
-      .config(new KinesisClientLibConfiguration(applicationName, kinesisConsumerConfig.getStreamName,
-        new AWSStaticCredentialsProvider(awsCredentials), workerId))
+      .config(new KinesisClientLibConfiguration(
+        applicationName,
+        kinesisConsumerConfig.getStreamName,
+        Class.forName(credentialsProviderClassName).newInstance.asInstanceOf[AWSCredentialsProvider],
+        workerId
+      ))
       .recordProcessorFactory(new IRecordProcessorFactory() {
         override def createProcessor(): IRecordProcessor =
           kinesisConsumerRecordProcessorFactory.createRecordProcessor(consumerCallbacks, consumerConfig, modelSerializer)

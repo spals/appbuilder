@@ -2,7 +2,7 @@ package net.spals.appbuilder.message.kinesis.producer
 
 import javax.validation.constraints.NotNull
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials, BasicSessionCredentials}
+import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.producer.{KinesisProducer, KinesisProducerConfiguration}
 import com.google.inject.Provider
@@ -21,27 +21,16 @@ import scala.util.Try
 private[producer] class KinesisProducerProvider() extends Provider[KinesisProducer] {
 
   @NotNull
-  @Configuration("messageProducer.kinesis.awsAccessKeyId")
-  private var awsAccessKeyId: String = null
-
-  @NotNull
-  @Configuration("messageProducer.kinesis.awsSecretKey")
-  private var awsSecretKey: String = null
-
-  @Configuration("messageProducer.kinesis.awsSessionToken")
-  private var awsSessionToken: String = null
+  @Configuration("messageProducer.kinesis.credentialsProvider")
+  private var credentialsProviderClassName: String = null
 
   @NotNull
   @Configuration("messageProducer.kinesis.endpoint")
   private var endpoint: String = null
 
   override def get(): KinesisProducer = {
-    val awsCredentials = Option(awsSessionToken)
-      .map(sessionToken => new BasicSessionCredentials(awsAccessKeyId, awsSecretKey, sessionToken))
-      .getOrElse(new BasicAWSCredentials(awsAccessKeyId, awsSecretKey))
-
     val config = new KinesisProducerConfiguration()
-      .setCredentialsProvider(new AWSStaticCredentialsProvider(awsCredentials))
+      .setCredentialsProvider(Class.forName(credentialsProviderClassName).newInstance.asInstanceOf[AWSCredentialsProvider])
 
     endpoint match {
       case httpEndpoint if httpEndpoint.startsWith("http://") =>
