@@ -4,7 +4,7 @@ import java.util.Optional
 import java.util.concurrent.ExecutorService
 import javax.validation.constraints.{Min, NotNull}
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.client.builder.ExecutorFactory
 import com.amazonaws.regions.Regions
@@ -40,12 +40,8 @@ case class S3EncryptionHolder(value: Optional[AmazonS3Encryption])
 private[s3] class S3EncryptionHolderProvider extends Provider[S3EncryptionHolder] {
 
   @NotNull
-  @Configuration("fileStore.s3.awsAccessKeyId")
-  private[s3] var awsAccessKeyId: String = null
-
-  @NotNull
-  @Configuration("fileStore.s3.awsSecretKey")
-  private[s3] var awsSecretKey: String = null
+  @Configuration("fileStore.s3.credentialsProvider")
+  private[s3] var credentialsProviderClassName: String = null
 
   @NotNull
   @Configuration("fileStore.s3.endpoint")
@@ -56,10 +52,9 @@ private[s3] class S3EncryptionHolderProvider extends Provider[S3EncryptionHolder
 
   override def get(): S3EncryptionHolder = {
     val s3Encryption = Option(encryptionKey).map(key => {
-      val awsCredentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
 
       val s3EncryptionBuilder = AmazonS3EncryptionClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+        .withCredentials(Class.forName(credentialsProviderClassName).newInstance.asInstanceOf[AWSCredentialsProvider])
         .withEncryptionMaterials(new KMSEncryptionMaterialsProvider(key))
 
       endpoint match {
