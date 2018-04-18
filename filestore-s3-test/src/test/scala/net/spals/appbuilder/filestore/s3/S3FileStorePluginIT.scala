@@ -40,8 +40,7 @@ class S3FileStorePluginIT {
     System.setProperty(DISABLE_PUT_OBJECT_MD5_VALIDATION_PROPERTY, "true")
 
     val s3ClientProvider = new S3ClientProvider(s3Tracer)
-    s3ClientProvider.awsAccessKeyId = "DUMMY"
-    s3ClientProvider.awsSecretKey = "DUMMY"
+    s3ClientProvider.credentialsProviderClassName = "com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider"
     s3ClientProvider.endpoint = s3Endpoint
 
     LOGGER.info(s"Connecting to S3 instance at ${s3ClientProvider.endpoint}")

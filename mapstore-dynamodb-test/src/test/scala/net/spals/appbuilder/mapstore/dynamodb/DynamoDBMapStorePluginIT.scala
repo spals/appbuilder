@@ -11,7 +11,6 @@ import net.spals.appbuilder.mapstore.core.model.{MapStoreKey, MapStoreTableKey}
 import net.spals.appbuilder.mapstore.dynamodb.DynamoDBSpanMatcher.dynamoDBSpan
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers._
-import org.hamcrest.{Description, TypeSafeMatcher}
 import org.slf4j.LoggerFactory
 import org.testng.annotations._
 
@@ -29,8 +28,7 @@ class DynamoDBMapStorePluginIT {
   private val dynamoDBTracer = new MockTracer()
   private lazy val dynamoDBClient = {
     val dynamoDBClientProvider = new DynamoDBClientProvider(dynamoDBTracer)
-    dynamoDBClientProvider.awsAccessKeyId = "DUMMY"
-    dynamoDBClientProvider.awsSecretKey = "DUMMY"
+    dynamoDBClientProvider.credentialsProviderClassName = "com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider"
     dynamoDBClientProvider.endpoint = dynamoDBEndpoint
 
     LOGGER.info(s"Connecting to dynamoDB instance at ${dynamoDBClientProvider.endpoint}")
