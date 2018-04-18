@@ -8,7 +8,8 @@ import com.github.xiaodongw.swagger.finatra.{FinatraSwagger, SwaggerController, 
 import com.google.inject.{Injector, Module}
 import com.netflix.governator.guice.ModuleTransformer
 import com.netflix.governator.guice.transformer.OverrideAllDuplicateBindings
-import com.twitter.finagle.http.filter.Cors
+import com.twitter.finagle.http.filter.{Cors, CorsFilter}
+import com.twitter.finagle.http.filter.Cors.Policy
 import com.twitter.finagle.{http => finaglehttp}
 import com.twitter.finatra.http.HttpServer
 import com.twitter.finatra.http.filters.CommonFilters
@@ -75,7 +76,15 @@ trait FinatraWebApp extends HttpServer
   override protected def configureHttp(router: HttpRouter): Unit = {
     // Add pre-routing filters before anything else
     Option(addCommonFilters.get()).filter(b => b).foreach(router.filter[CommonFilters])
-    Option(addCorsFilter.get()).filter(b => b).foreach(router.filter[Cors.HttpFilter])
+    Option(addCorsFilter.get()).filter(b => b).foreach(_ => {
+      router.filter(
+        CorsFilter(
+          headers = "origin,content-type,accept,authorization",
+          methods = "GET, POST, PUT, DELETE, OPTIONS, HEAD"
+        ),
+        beforeRouting = true
+      )
+    })
     Option(addRequestScopeFilter.get()).filter(b => b).foreach(
       router.filter[FinagleRequestScopeFilter[finaglehttp.Request, finaglehttp.Response]])
 
