@@ -51,12 +51,13 @@
         <dropwizard.version>1.1.0</dropwizard.version>
         <finatra.version>2.10.0</finatra.version>
         <governator.version>1.15.10</governator.version>
+        <grpc.version>1.11.0</grpc.version>
         <!--
         Downgrade guava.version to allow for better backwards compatibility
         with embedded applications. Specifically, the checkState signature
         auto-generated in FreeBuilder *_Builder classes.
         -->
-        <guava.version>19.0</guava.version>
+        <guava.version>20.0</guava.version>
         <!-- NOTE: Must match what's available in governator.version -->
         <hibernate.version>5.3.4.Final</hibernate.version>
         <jasypt.version>1.9.2</jasypt.version>
@@ -96,6 +97,8 @@
         <module>app-dropwizard-test</module>
         <module>app-finatra</module>
         <module>app-finatra-test</module>
+        <module>app-grpc</module>
+        <module>app-grpc-test</module>
         <module>app-mock</module>
         <module>app-mock-test</module>
         <module>bom</module>
@@ -297,6 +300,21 @@
                 <artifactId>dropwizard-testing</artifactId>
                 <version>${dropwizard.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing</groupId>
@@ -545,6 +563,17 @@
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-app-finatra-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-grpc-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
