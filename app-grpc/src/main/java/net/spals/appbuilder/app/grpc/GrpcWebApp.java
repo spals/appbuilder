@@ -2,6 +2,7 @@ package net.spals.appbuilder.app.grpc;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
 import io.grpc.Server;
@@ -10,6 +11,7 @@ import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
 import net.spals.appbuilder.app.core.generic.GenericWorkerApp;
 import net.spals.appbuilder.config.service.ServiceScan;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,6 +68,11 @@ public abstract class GrpcWebApp implements App {
         }
 
         return this;
+    }
+
+    @VisibleForTesting
+    Server getServerDelegate() {
+        return serverDelegateRef.get();
     }
 
     // ========== Grpc Server ==========
@@ -234,10 +242,26 @@ public abstract class GrpcWebApp implements App {
             webServerModuleBuilder.setServiceGraph(appDelegateBuilder.getServiceGraph());
             appDelegateBuilder.addModule(webServerModuleBuilder.build());
 
-            grpcWebApp.appDelegateRef.set(appDelegateBuilder.build());
+            final GenericWorkerApp appDelegate = appDelegateBuilder.build();
+            grpcWebApp.appDelegateRef.set(appDelegate);
+
+            // Automatically register a managed cached thread pool, if possible
+            registerServerExecutor(appDelegate.getServiceInjector());
             grpcWebApp.serverDelegateRef.set(serverDelegateBuilder.build());
 
             return grpcWebApp;
+        }
+
+        private void registerServerExecutor(final Injector serviceInjector) {
+            final Key<ExecutorServiceFactory> executorServiceBindingKey = Key.get(ExecutorServiceFactory.class);
+            Optional.ofNullable(serviceInjector.getExistingBinding(executorServiceBindingKey))
+                .map(binding -> serviceInjector.getInstance(binding.getKey()))
+                .map(executorServiceFactory -> {
+                    final ExecutorServiceFactory.Key grpcExecutorKey =
+                        new ExecutorServiceFactory.Key.Builder(serverDelegateBuilder.getClass()).build();
+                    return executorServiceFactory.createCachedThreadPool(grpcExecutorKey);
+                })
+                .ifPresent(executor -> serverDelegateBuilder.executor(executor));
         }
     }
 }

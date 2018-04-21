@@ -41,13 +41,13 @@ public abstract class GrpcWebServerModule extends AbstractModule implements Inje
 
     @Override
     protected void configure() {
-        final Matcher typeMatcher = rawTypeThat(subclassesOf(ServerServiceDefinition.class))
+        final Matcher typeMatcher = rawTypeThat(subclassesOf(BindableService.class))
+            .or(rawTypeThat(subclassesOf(ServerServiceDefinition.class)))
             .or(rawTypeThat(subclassesOf(ServerInterceptor.class)))
             .or(rawTypeThat(subclassesOf(ServerTransportFilter.class)))
             .or(rawTypeThat(subclassesOf(HandlerRegistry.class)))
             .or(rawTypeThat(subclassesOf(DecompressorRegistry.class)))
-            .or(rawTypeThat(subclassesOf(CompressorRegistry.class)))
-            .or(rawTypeThat(subclassesOf(ExecutorServiceFactory.class)));
+            .or(rawTypeThat(subclassesOf(CompressorRegistry.class)));
         bindListener(typeMatcher, this);
     }
 
@@ -79,7 +79,9 @@ public abstract class GrpcWebServerModule extends AbstractModule implements Inje
     }
 
     void registerComponent(final Object wsComponent) {
-        if (wsComponent instanceof ServerServiceDefinition) {
+        if (wsComponent instanceof BindableService) {
+            getServerBuilder().addService((BindableService) wsComponent);
+        } else if (wsComponent instanceof ServerServiceDefinition) {
             getServerBuilder().addService((ServerServiceDefinition) wsComponent);
         } else if (wsComponent instanceof ServerInterceptor) {
             getServerBuilder().intercept((ServerInterceptor) wsComponent);
@@ -91,12 +93,6 @@ public abstract class GrpcWebServerModule extends AbstractModule implements Inje
             getServerBuilder().decompressorRegistry((DecompressorRegistry) wsComponent);
         } else if (wsComponent instanceof CompressorRegistry) {
             getServerBuilder().compressorRegistry((CompressorRegistry) wsComponent);
-        } else if (wsComponent instanceof ExecutorServiceFactory) {
-            final ExecutorServiceFactory.Key grpcExecutorKey =
-                new ExecutorServiceFactory.Key.Builder(getServerBuilder().getClass()).build();
-            final Executor grpcExecutor = ((ExecutorServiceFactory) wsComponent).createCachedThreadPool(grpcExecutorKey);
-            // Automatically register a managed cached thread pool
-            getServerBuilder().executor(grpcExecutor);
         } else {
             throw new UnsupportedOperationException("Error exists in AppBuilder framework. " +
                 "Encountered web server of type " + wsComponent.getClass().getName() + " for auto-binding, " +

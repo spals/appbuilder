@@ -4,16 +4,14 @@ import io.grpc.ServerBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A {@link GrpcWebApp} which creates an in-process
- * gRPC {@link io.grpc.Server} and delegates its
- * configuration step for testing purposes.
+ * A test support class for starting and stopping
+ * a {@link GrpcWebApp} at the start and end of a test class.
  *
  * @author tkral
  */
-public class GrpcTestSupport /*extends GrpcWebApp*/ {
+public class GrpcTestSupport {
 
     private final GrpcWebApp grpcWebApp;
 
