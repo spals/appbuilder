@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.notNullValue;
 public class MinimalGrpcWebAppFTest {
 
     private final GrpcWebApp minimalApp = new MinimalGrpcWebApp();
-    private final GrpcTestSupport testServerWrapper = new GrpcTestSupport(minimalApp);
+    private final GrpcTestSupport testServerWrapper = GrpcTestSupport.embeddedGrpc(minimalApp);
 
     @BeforeClass
     void classSetup() {

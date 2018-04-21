@@ -11,10 +11,13 @@ import io.opentracing.Tracer;
 import net.spals.appbuilder.app.grpc.sample.SampleGrpcCustomSet;
 import net.spals.appbuilder.app.grpc.sample.SampleGrpcCustomSingleton;
 import net.spals.appbuilder.app.grpc.sample.SampleGrpcWebApp;
-import net.spals.appbuilder.app.grpc.sample.web.SampleGrpcService;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
+import net.spals.appbuilder.grpc.sample.SampleRequest;
+import net.spals.appbuilder.grpc.sample.SampleResponse;
+import net.spals.appbuilder.grpc.sample.SampleRouteServiceGrpc;
+import net.spals.appbuilder.grpc.sample.SampleRouteServiceGrpc.SampleRouteServiceBlockingStub;
 import net.spals.appbuilder.keystore.core.KeyStore;
 import net.spals.appbuilder.keystore.core.KeyStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
@@ -46,7 +49,7 @@ import static org.hamcrest.Matchers.*;
 public class SampleGrpcWebAppFTest {
 
     private final GrpcWebApp sampleApp = new SampleGrpcWebApp();
-    private final GrpcTestSupport testServerWrapper = new GrpcTestSupport(sampleApp);
+    private final GrpcTestSupport testServerWrapper = GrpcTestSupport.embeddedGrpc(sampleApp);
 
     @BeforeClass
     void classSetup() {

@@ -25,8 +25,8 @@ public class SampleGrpcService extends SampleRouteServiceGrpc.SampleRouteService
     ) {
         responseObserver.onNext(
             SampleResponse.newBuilder()
-                .setIntField(request.getIntField())
-                .setStringField(request.getStringField())
+                .setIntField(request.getIntField() + request.getIntField())
+                .setStringField(request.getStringField() + request.getStringField())
                 .build()
         );
         responseObserver.onCompleted();

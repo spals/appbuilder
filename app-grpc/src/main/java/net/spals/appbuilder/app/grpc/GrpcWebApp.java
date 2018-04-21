@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,6 +37,7 @@ public abstract class GrpcWebApp implements App {
 
     private final AtomicBoolean isConfigured = new AtomicBoolean(false);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final AtomicBoolean isStarted = new AtomicBoolean(false);
 
     @VisibleForTesting
     final GrpcWebApp.Builder grpcWebAppBuilder;
@@ -75,6 +75,10 @@ public abstract class GrpcWebApp implements App {
         return serverDelegateRef.get();
     }
 
+    public boolean isRunning() {
+        return isRunning.get();
+    }
+
     // ========== Grpc Server ==========
 
     public final void awaitTermination() throws InterruptedException {
@@ -95,9 +99,10 @@ public abstract class GrpcWebApp implements App {
     }
 
     public synchronized final void start() throws IOException {
-        if (!isRunning.getAndSet(true)) {
+        if (!isStarted.getAndSet(true)) {
             runConfigure().serverDelegateRef.get().start();
             getLogger().info("gRPC Server started (listening on " + getPort() + ")");
+            isRunning.set(true);
             Runtime.getRuntime().addShutdownHook(
                 new Thread(() -> {
                     // Use stderr here since the logger may has been reset by its JVM shutdown hook.
