@@ -237,4 +237,17 @@ public class SampleGrpcWebAppFTest {
         final Injector serviceInjector = sampleApp.getServiceInjector();
         assertThat(serviceInjector.getInstance(Tracer.class), instanceOf(NoopTracer.class));
     }
+
+    @Test
+    public void testServiceRequestInGrpc() {
+        final SampleRouteServiceGrpc.SampleRouteServiceBlockingStub stub =
+            SampleRouteServiceGrpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final SampleRequest request = SampleRequest.newBuilder()
+            .setIntField(1).setStringField("myString").build();
+        final SampleResponse response = stub.getSample(request);
+
+        assertThat(response.getIntField(), is(2));
+        assertThat(response.getStringField(), is("myStringmyString"));
+    }
 }
