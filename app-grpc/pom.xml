@@ -23,6 +23,10 @@
             <artifactId>grpc-netty</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.spals.appbuilder</groupId>
             <artifactId>spals-appbuilder-app-core</artifactId>
         </dependency>
@@ -31,8 +35,8 @@
             <artifactId>spals-appbuilder-executor-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.spals.appbuilder</groupId>
-            <artifactId>spals-appbuilder-message-core</artifactId>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-netty-http</artifactId>
         </dependency>
     </dependencies>
 

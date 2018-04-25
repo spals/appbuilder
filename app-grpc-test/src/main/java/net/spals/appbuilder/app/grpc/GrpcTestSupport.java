@@ -49,11 +49,11 @@ public class GrpcTestSupport {
 
     private GrpcTestSupport(
         final GrpcWebApp grpcWebApp,
-        final ServerBuilder<?> serverBuilder,
+        final ServerBuilder<?> grpcExternalServerBuilder,
         final Channel channel
     ) {
         this.grpcWebApp = grpcWebApp;
-        this.grpcWebApp.grpcWebAppBuilder.setServerBuilder(serverBuilder);
+        this.grpcWebApp.grpcWebAppBuilder.setGrpcExternalServerBuilder(grpcExternalServerBuilder);
         this.channel = channel;
     }
 

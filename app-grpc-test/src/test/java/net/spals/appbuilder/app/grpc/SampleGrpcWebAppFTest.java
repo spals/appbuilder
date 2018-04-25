@@ -8,16 +8,10 @@ import com.typesafe.config.Config;
 import io.grpc.Server;
 import io.opentracing.NoopTracer;
 import io.opentracing.Tracer;
-import net.spals.appbuilder.app.grpc.sample.SampleGrpcCustomSet;
-import net.spals.appbuilder.app.grpc.sample.SampleGrpcCustomSingleton;
-import net.spals.appbuilder.app.grpc.sample.SampleGrpcWebApp;
+import net.spals.appbuilder.app.grpc.sample.*;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
-import net.spals.appbuilder.grpc.sample.SampleRequest;
-import net.spals.appbuilder.grpc.sample.SampleResponse;
-import net.spals.appbuilder.grpc.sample.SampleRouteServiceGrpc;
-import net.spals.appbuilder.grpc.sample.SampleRouteServiceGrpc.SampleRouteServiceBlockingStub;
 import net.spals.appbuilder.keystore.core.KeyStore;
 import net.spals.appbuilder.keystore.core.KeyStorePlugin;
 import net.spals.appbuilder.mapstore.core.MapStore;
@@ -49,7 +43,7 @@ import static org.hamcrest.Matchers.*;
 public class SampleGrpcWebAppFTest {
 
     private final GrpcWebApp sampleApp = new SampleGrpcWebApp();
-    private final GrpcTestSupport testServerWrapper = GrpcTestSupport.embeddedGrpc(sampleApp);
+    private final GrpcTestSupport testServerWrapper = GrpcTestSupport.nettyGrpc(sampleApp);
 
     @BeforeClass
     void classSetup() {
@@ -133,12 +127,12 @@ public class SampleGrpcWebAppFTest {
 
     @Test
     public void testGrpcServiceInjection() {
-        final Server serverDelegate = sampleApp.getServerDelegate();
-        assertThat(serverDelegate.getServices(),
+        final Server grpcExternalServer = sampleApp.getGrpcExternalServer();
+        assertThat(grpcExternalServer.getServices(),
             hasItem(
                 hasProperty(
                     "serviceDescriptor",
-                    hasProperty("name", is("SampleRouteService"))
+                    hasProperty("name", is("SampleService"))
                 )
             )
         );
@@ -240,8 +234,8 @@ public class SampleGrpcWebAppFTest {
 
     @Test
     public void testServiceRequestInGrpc() {
-        final SampleRouteServiceGrpc.SampleRouteServiceBlockingStub stub =
-            SampleRouteServiceGrpc.newBlockingStub(testServerWrapper.getChannel());
+        final SampleServiceGrpc.SampleServiceBlockingStub stub =
+            SampleServiceGrpc.newBlockingStub(testServerWrapper.getChannel());
 
         final SampleRequest request = SampleRequest.newBuilder()
             .setIntField(1).setStringField("myString").build();

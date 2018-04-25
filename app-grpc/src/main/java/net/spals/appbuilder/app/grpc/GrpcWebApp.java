@@ -7,17 +7,22 @@ import com.google.inject.Module;
 import com.typesafe.config.Config;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.inprocess.InProcessServerBuilder;
 import net.spals.appbuilder.app.core.App;
 import net.spals.appbuilder.app.core.WebAppBuilder;
 import net.spals.appbuilder.app.core.generic.GenericWorkerApp;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.graph.model.ServiceGraphFormat;
+import org.glassfish.jersey.netty.httpserver.NettyHttpContainerProvider;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +38,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class GrpcWebApp implements App {
 
     private final AtomicReference<App> appDelegateRef = new AtomicReference<>();
-    private final AtomicReference<Server> serverDelegateRef = new AtomicReference<>();
+    private final AtomicReference<Server> grpcExternalServerRef = new AtomicReference<>();
+
+    private final AtomicReference<Optional<Server>> grpcInternalServerRef =
+        new AtomicReference<>(Optional.empty());
+    private final AtomicReference<Optional<ResourceConfig>> restResourceConfigRef =
+        new AtomicReference<>(Optional.empty());
+    private final AtomicReference<Optional<io.netty.channel.Channel>> restServerRef =
+        new AtomicReference<>(Optional.empty());
 
     private final AtomicBoolean isConfigured = new AtomicBoolean(false);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -42,19 +54,11 @@ public abstract class GrpcWebApp implements App {
     @VisibleForTesting
     final GrpcWebApp.Builder grpcWebAppBuilder;
 
-    protected GrpcWebApp(final int port) {
-        this(Optional.empty(), ServerBuilder.forPort(port));
-    }
-
-    protected GrpcWebApp(final Logger logger, final int port) {
-        this(Optional.of(logger), ServerBuilder.forPort(port));
-    }
-
-    private GrpcWebApp(final Optional<Logger> loggerOpt, final ServerBuilder<?> serverBuilder) {
+    protected GrpcWebApp(final int grpcPort) {
         grpcWebAppBuilder = new GrpcWebApp.Builder(
             getClass().getSimpleName() /* name */,
-            loggerOpt.orElseGet(() -> LoggerFactory.getLogger(getClass().getSimpleName())),
-            serverBuilder,
+            LoggerFactory.getLogger(getClass()),
+            ServerBuilder.forPort(grpcPort),
             this
         );
     }
@@ -71,8 +75,8 @@ public abstract class GrpcWebApp implements App {
     }
 
     @VisibleForTesting
-    Server getServerDelegate() {
-        return serverDelegateRef.get();
+    Server getGrpcExternalServer() {
+        return grpcExternalServerRef.get();
     }
 
     public boolean isRunning() {
@@ -82,33 +86,68 @@ public abstract class GrpcWebApp implements App {
     // ========== Grpc Server ==========
 
     public final void awaitTermination() throws InterruptedException {
-        runConfigure().serverDelegateRef.get().awaitTermination();
+        runConfigure().grpcExternalServerRef.get().awaitTermination();
     }
 
-    public final int getPort() {
-        return runConfigure().serverDelegateRef.get().getPort();
+    public final int getGrpcPort() {
+        return runConfigure().grpcExternalServerRef.get().getPort();
+    }
+
+    public final int getRestPort() {
+        // By convention, the rest post is one off from the grpc port
+        return getGrpcPort() + 1;
     }
 
     @VisibleForTesting
-    final void shutdown() {
-        runConfigure().serverDelegateRef.get().shutdown();
+    synchronized final void shutdown() {
+        if (isRunning.getAndSet(false)) {
+            isStarted.set(false);
+            restServerRef.get().ifPresent(restServer -> restServer.close());
+
+            grpcInternalServerRef.get().ifPresent(grpcInternalServer -> grpcInternalServer.shutdown());
+            runConfigure().grpcExternalServerRef.get().shutdown();
+        }
     }
 
-    final void shutdownNow() {
-        runConfigure().serverDelegateRef.get().shutdownNow();
+    @VisibleForTesting
+    synchronized final void shutdownNow() {
+        if (isRunning.getAndSet(false)) {
+            isStarted.set(false);
+
+            restServerRef.get().ifPresent(restServer -> restServer.close());
+            grpcInternalServerRef.get().ifPresent(grpcInternalServer -> grpcInternalServer.shutdownNow());
+            runConfigure().grpcExternalServerRef.get().shutdownNow();
+        }
     }
 
     public synchronized final void start() throws IOException {
         if (!isStarted.getAndSet(true)) {
-            runConfigure().serverDelegateRef.get().start();
-            getLogger().info("gRPC Server started (listening on " + getPort() + ")");
+            final Server grpcExternalServer = runConfigure().grpcExternalServerRef.get();
+            grpcExternalServer.start();
+            getLogger().info("gRPC external server started (listening on " + getGrpcPort() + ")");
+
+            if (grpcInternalServerRef.get().isPresent()) {
+                grpcInternalServerRef.get().get().start();
+                getLogger().info("gRPC internal server started");
+            }
+
+            restResourceConfigRef.get().ifPresent(resourceConfig -> {
+                final int restPort = getRestPort();
+                final URI baseUri = UriBuilder.fromUri("http://localhost/").port(restPort).build();
+                final io.netty.channel.Channel restServer =
+                    NettyHttpContainerProvider.createHttp2Server(baseUri, resourceConfig,null);
+                getLogger().info("RESTful external server started (listening on " + restPort + ")");
+                restServerRef.set(Optional.of(restServer));
+            });
+
             isRunning.set(true);
             Runtime.getRuntime().addShutdownHook(
                 new Thread(() -> {
                     // Use stderr here since the logger may has been reset by its JVM shutdown hook.
-                    System.err.println("*** shutting down gRPC server due to JVM shutdown");
-                    serverDelegateRef.get().shutdown();
+                    System.err.println("*** shutting down gRPC web app due to JVM shutdown");
+                    shutdown();
                     System.err.println("*** gRPC server shut down");
+
                 })
             );
         }
@@ -139,7 +178,6 @@ public abstract class GrpcWebApp implements App {
     public static class Builder implements WebAppBuilder<GrpcWebApp> {
 
         private final GenericWorkerApp.Builder appDelegateBuilder;
-        private ServerBuilder<?> serverDelegateBuilder;
 
         private final GrpcWebApp grpcWebApp;
 
@@ -149,11 +187,12 @@ public abstract class GrpcWebApp implements App {
         private Builder(
             final String name,
             final Logger logger,
-            final ServerBuilder<?> serverBuilder,
+            final ServerBuilder<?> grpcExternalServerBuilder,
             final GrpcWebApp grpcWebApp
         ) {
             appDelegateBuilder = new GenericWorkerApp.Builder(name, logger);
-            setServerBuilder(serverBuilder);
+            webServerModuleBuilder.setApplicationName(name);
+            setGrpcExternalServerBuilder(grpcExternalServerBuilder);
 
             this.grpcWebApp = grpcWebApp;
         }
@@ -168,7 +207,7 @@ public abstract class GrpcWebApp implements App {
          * {@link ServerBuilder#directExecutor()}
          */
         public Builder directExecutor() {
-            serverDelegateBuilder.directExecutor();
+            webServerModuleBuilder.getGrpcExternalServerBuilder().directExecutor();
             return this;
         }
 
@@ -195,6 +234,14 @@ public abstract class GrpcWebApp implements App {
             throw new UnsupportedOperationException("Coming soon.");
         }
 
+        public Builder enableRestServer() {
+            webServerModuleBuilder.enableRestServer(
+                InProcessServerBuilder.forName(appDelegateBuilder.getName()),
+                new ResourceConfig()
+            );
+            return this;
+        }
+
         @Override
         public Builder enableServiceGraph(final ServiceGraphFormat graphFormat) {
             appDelegateBuilder.enableServiceGraph(graphFormat);
@@ -205,14 +252,13 @@ public abstract class GrpcWebApp implements App {
          * {@link ServerBuilder#handshakeTimeout(long, TimeUnit)}
          */
         public Builder handshakeTimeout(final long timeout, final TimeUnit unit) {
-            serverDelegateBuilder.handshakeTimeout(timeout, unit);
+            webServerModuleBuilder.getGrpcExternalServerBuilder().handshakeTimeout(timeout, unit);
             return this;
         }
 
         @VisibleForTesting
-        Builder setServerBuilder(final ServerBuilder<?> serverBuilder) {
-            serverDelegateBuilder = serverBuilder;
-            webServerModuleBuilder.setServerBuilder(serverBuilder);
+        Builder setGrpcExternalServerBuilder(final ServerBuilder<?> grpcExternalServerBuilder) {
+            webServerModuleBuilder.setGrpcExternalServerBuilder(grpcExternalServerBuilder);
             return this;
         }
 
@@ -231,6 +277,7 @@ public abstract class GrpcWebApp implements App {
         @Override
         public Builder setServiceScan(final ServiceScan serviceScan) {
             appDelegateBuilder.setServiceScan(serviceScan);
+            webServerModuleBuilder.setServiceScan(serviceScan);
             return this;
         }
 
@@ -238,35 +285,47 @@ public abstract class GrpcWebApp implements App {
          * {@link ServerBuilder#useTransportSecurity(File, File)}
          */
         public Builder useTransportSecurity(final File certChain, final File privateKey) {
-            serverDelegateBuilder.useTransportSecurity(certChain, privateKey);
+            webServerModuleBuilder.getGrpcExternalServerBuilder().useTransportSecurity(certChain, privateKey);
             return this;
         }
 
         @Override
         public GrpcWebApp build() {
             webServerModuleBuilder.setServiceGraph(appDelegateBuilder.getServiceGraph());
-            appDelegateBuilder.addModule(webServerModuleBuilder.build());
+            final GrpcWebServerModule webServerModule = webServerModuleBuilder.build();
+            appDelegateBuilder.addModule(webServerModule);
 
             final GenericWorkerApp appDelegate = appDelegateBuilder.build();
             grpcWebApp.appDelegateRef.set(appDelegate);
 
             // Automatically register a managed cached thread pool, if possible
-            registerServerExecutor(appDelegate.getServiceInjector());
-            grpcWebApp.serverDelegateRef.set(serverDelegateBuilder.build());
+            registerGrpcServerExecutor(appDelegate.getServiceInjector());
+            // Build the external gRPC server
+            final Server grpcExternalServer = webServerModule.getGrpcExternalServerBuilder().build();
+            grpcWebApp.grpcExternalServerRef.set(grpcExternalServer);
+            // If necessary, build the internal gRPC server
+            grpcWebApp.grpcInternalServerRef.set(
+                webServerModule.getGrpcInternalServerBuilder().map(grpcInternalServerBuilder -> grpcInternalServerBuilder.build())
+            );
+            grpcWebApp.restResourceConfigRef.set(webServerModule.getRestResourceConfig());
 
             return grpcWebApp;
         }
 
-        private void registerServerExecutor(final Injector serviceInjector) {
+        private void registerGrpcServerExecutor(final Injector serviceInjector) {
             final Key<ExecutorServiceFactory> executorServiceBindingKey = Key.get(ExecutorServiceFactory.class);
             Optional.ofNullable(serviceInjector.getExistingBinding(executorServiceBindingKey))
                 .map(binding -> serviceInjector.getInstance(binding.getKey()))
                 .map(executorServiceFactory -> {
                     final ExecutorServiceFactory.Key grpcExecutorKey =
-                        new ExecutorServiceFactory.Key.Builder(serverDelegateBuilder.getClass()).build();
+                        new ExecutorServiceFactory.Key.Builder(webServerModuleBuilder.getGrpcExternalServerBuilder().getClass()).build();
                     return executorServiceFactory.createCachedThreadPool(grpcExecutorKey);
                 })
-                .ifPresent(executor -> serverDelegateBuilder.executor(executor));
+                .ifPresent(executor -> {
+                    webServerModuleBuilder.getGrpcExternalServerBuilder().executor(executor);
+                    webServerModuleBuilder.getGrpcInternalServerBuilder().ifPresent(grpcInternalServerBuilder ->
+                        grpcInternalServerBuilder.executor(executor));
+                });
         }
     }
 }

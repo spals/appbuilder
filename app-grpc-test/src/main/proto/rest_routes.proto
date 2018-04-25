@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+// Should be included in the service packages scanned by ServiceScan
+option java_package = "net.spals.appbuilder.app.grpc.rest";
+option java_outer_classname = "RestServerProto";
+
+import "google/api/annotations.proto";
+
+service RestService {
+    rpc GetRest(RestGetRequest) returns (RestGetResponse) {
+        option (google.api.http).get = "/rest/{id}";
+    }
+}
+
+message RestGetRequest {
+    int32 id = 1;
+}
+
+message RestGetResponse {
+    int32 id = 1;
+}

@@ -3,9 +3,9 @@ package net.spals.appbuilder.app.grpc.sample.web;
 import com.google.inject.Inject;
 import io.grpc.stub.StreamObserver;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
-import net.spals.appbuilder.grpc.sample.SampleRequest;
-import net.spals.appbuilder.grpc.sample.SampleResponse;
-import net.spals.appbuilder.grpc.sample.SampleRouteServiceGrpc;
+import net.spals.appbuilder.app.grpc.sample.SampleRequest;
+import net.spals.appbuilder.app.grpc.sample.SampleResponse;
+import net.spals.appbuilder.app.grpc.sample.SampleServiceGrpc;
 
 /**
  * A sample gRPC service.
@@ -13,7 +13,7 @@ import net.spals.appbuilder.grpc.sample.SampleRouteServiceGrpc;
  * @author tkral
  */
 @AutoBindSingleton
-public class SampleGrpcService extends SampleRouteServiceGrpc.SampleRouteServiceImplBase {
+public class SampleGrpcService extends SampleServiceGrpc.SampleServiceImplBase {
 
     @Inject
     SampleGrpcService() { }

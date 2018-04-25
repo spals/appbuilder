@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.spals.appbuilder.app.grpc.sample";
+option java_outer_classname = "SampleServerProto";
+
+import "google/api/annotations.proto";
+
+service SampleService {
+    rpc GetSample(SampleRequest) returns (SampleResponse) {  }
+}
+
+message SampleRequest {
+    int32 intField = 1;
+    string stringField = 2;
+}
+
+message SampleResponse {
+    int32 intField = 1;
+    string stringField = 2;
+}

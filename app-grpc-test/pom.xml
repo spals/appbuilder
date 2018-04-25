@@ -15,8 +15,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.xorlev.grpc-jersey</groupId>
+            <artifactId>jersey-rpc-support</artifactId>
         </dependency>
         <dependency>
             <groupId>eu.codearte.catch-exception</groupId>
@@ -83,24 +91,41 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar-maven-plugin</artifactId>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.0</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <outputDirectory>target/generated-sources</outputDirectory>
+                    <clearOutputDirectory>false</clearOutputDirectory>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>generate-protobuf-java</id>
+                        <id>1</id>
                         <goals>
-                            <goal>run</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>2</id>
+                        <goals>
+                            <goal>compile-custom</goal>
                         </goals>
                         <configuration>
-                            <outputTargets>
-                                <outputTarget>
-                                    <type>java</type>
-                                </outputTarget>
-                                <outputTarget>
-                                    <type>grpc-java</type>
-                                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}</pluginArtifact>
-                                </outputTarget>
-                            </outputTargets>
+                            <pluginId>grpc-java</pluginId>
+                            <pluginArtifact>
+                                io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}
+                            </pluginArtifact>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>3</id>
+                        <goals>
+                            <goal>compile-custom</goal>
+                        </goals>
+                        <configuration>
+                            <pluginId>grpc-jersey</pluginId>
+                            <pluginArtifact>com.xorlev.grpc-jersey:protoc-gen-jersey:0.3.2:exe:${os.detected.classifier}</pluginArtifact>
                         </configuration>
                     </execution>
                 </executions>
