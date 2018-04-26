@@ -11,7 +11,10 @@ import org.inferred.freebuilder.FreeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.container.DynamicFeature;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Configurable;
+import javax.ws.rs.core.FeatureContext;
 
 /**
  * A Guice {@link Module} which automatically creates

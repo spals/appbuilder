@@ -32,6 +32,8 @@ public abstract class JaxRsWebApp implements App {
     public static class Builder extends JaxRsWebApp_Builder implements WebAppBuilder<JaxRsWebApp> {
 
         private final GenericWorkerApp.Builder appDelegateBuilder;
+        private final JaxRsCorsModule.Builder corsModuleBuilder =
+            new JaxRsCorsModule.Builder();
         private final JaxRsDocModule.Builder docModuleBuilder =
             new JaxRsDocModule.Builder();
         private final JaxRsMonitorModule.Builder monitorModuleBuilder =
@@ -75,6 +77,12 @@ public abstract class JaxRsWebApp implements App {
         }
 
         @Override
+        public Builder enableCors() {
+            corsModuleBuilder.setCorsEnabled(true);
+            return this;
+        }
+
+        @Override
         public Builder enableRequestScoping() {
             // TODO: Potential error here. If .enableRequestScoping() is called before .setFilterRegistration(...)
             getFilterRegistration().apply(GuiceFilter.class.getName(), new GuiceFilter())
@@ -90,6 +98,7 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public Builder setConfigurable(final Configurable<?> configurable) {
+            corsModuleBuilder.setConfigurable(configurable);
             docModuleBuilder.setConfigurable(configurable);
             monitorModuleBuilder.setConfigurable(configurable);
             webServerModuleBuilder.setConfigurable(configurable);
@@ -117,6 +126,7 @@ public abstract class JaxRsWebApp implements App {
 
         @Override
         public JaxRsWebApp build() {
+            appDelegateBuilder.addModule(corsModuleBuilder.build());
             appDelegateBuilder.addModule(docModuleBuilder.build());
             appDelegateBuilder.addModule(monitorModuleBuilder.build());
 
