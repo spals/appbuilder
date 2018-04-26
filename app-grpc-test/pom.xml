@@ -93,7 +93,6 @@
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.5.0</version>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                     <outputDirectory>target/generated-sources</outputDirectory>
@@ -101,13 +100,13 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>1</id>
+                        <id>generate-protobuf-java</id>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>2</id>
+                        <id>generate-protobuf-grpc-java</id>
                         <goals>
                             <goal>compile-custom</goal>
                         </goals>
@@ -119,13 +118,13 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>3</id>
+                        <id>generate-protobuf-grpc-jersey</id>
                         <goals>
                             <goal>compile-custom</goal>
                         </goals>
                         <configuration>
                             <pluginId>grpc-jersey</pluginId>
-                            <pluginArtifact>com.xorlev.grpc-jersey:protoc-gen-jersey:0.3.2:exe:${os.detected.classifier}</pluginArtifact>
+                            <pluginArtifact>com.xorlev.grpc-jersey:protoc-gen-jersey:${grpc.jersey.version}:exe:${os.detected.classifier}</pluginArtifact>
                         </configuration>
                     </execution>
                 </executions>
