@@ -6,6 +6,8 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,6 +19,8 @@ import java.net.ServerSocket;
  * @author tkral
  */
 public class GrpcTestSupport {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcTestSupport.class);
 
     private final Channel channel;
     private final GrpcWebApp grpcWebApp;
@@ -64,6 +68,7 @@ public class GrpcTestSupport {
     public void before() {
         try {
             grpcWebApp.start();
+            LOGGER.info("Started test gRPC server on port " + grpcWebApp.getGrpcPort());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

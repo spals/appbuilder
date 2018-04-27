@@ -7,16 +7,50 @@ option java_outer_classname = "RestServerProto";
 
 import "google/api/annotations.proto";
 
-service RestService {
-    rpc GetRest(RestGetRequest) returns (RestGetResponse) {
-        option (google.api.http).get = "/rest/{id}";
+service UserService {
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
+        option (google.api.http).delete = "/users/{id}";
+    }
+
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http).get = "/users/{id}";
+    }
+
+    rpc PostUser(PostUserRequest) returns (PostUserResponse) {
+        option (google.api.http) = {
+            post: "/users/",
+            body: "*";
+        };
     }
 }
 
-message RestGetRequest {
-    int32 id = 1;
+message DeleteUserRequest {
+    string id = 1;
 }
 
-message RestGetResponse {
-    int32 id = 1;
+message DeleteUserResponse {
+    string id = 1;
+}
+
+message GetUserRequest {
+    string id = 1;
+}
+
+message GetUserResponse {
+    string id = 1;
+    string name = 2;
+}
+
+message PostUserRequest {
+    string name = 1;
+}
+
+message PostUserResponse {
+    string id = 1;
+    string name = 2;
+}
+
+message UserRecord {
+    string id = 1;
+    string name = 2;
 }
