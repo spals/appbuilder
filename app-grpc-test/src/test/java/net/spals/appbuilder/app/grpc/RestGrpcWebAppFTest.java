@@ -3,6 +3,7 @@ package net.spals.appbuilder.app.grpc;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableMap;
 import net.spals.appbuilder.app.grpc.rest.*;
+import net.spals.appbuilder.app.grpc.rest.UserServiceV2Grpc.UserServiceV2BlockingStub;
 import net.spals.appbuilder.app.grpc.rest.UserServiceV3Grpc.UserServiceV3BlockingStub;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
@@ -39,8 +40,10 @@ public class RestGrpcWebAppFTest {
         .withConfig(new ClientConfig().register(JacksonJsonProvider.class))
         .build();
 
-    private String grpcUserId;
-    private String restUserId;
+    private String grpcV2UserId;
+    private String restV2UserId;
+    private String grpcV3UserId;
+    private String restV3UserId;
 
     @BeforeClass
     void classSetup() {
@@ -59,7 +62,46 @@ public class RestGrpcWebAppFTest {
     }
 
     @Test
-    public void testGrpcPostRequest() {
+    public void testGrpcPostRequestV2() {
+        final UserServiceV2BlockingStub stub =
+            UserServiceV2Grpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final PostUserRequestV2 request = PostUserRequestV2.newBuilder()
+            .setName("Tim").build();
+        final PostUserResponseV2 response = stub.postUserV2(request);
+
+        assertThat(response.getId(), notNullValue());
+        assertThat(response.getName(), is("Tim"));
+        grpcV2UserId = response.getId();
+    }
+
+    @Test(dependsOnMethods = "testGrpcPostRequestV2")
+    public void testGrpcGetRequestV2() {
+        final UserServiceV2BlockingStub stub =
+            UserServiceV2Grpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final GetUserRequestV2 request = GetUserRequestV2.newBuilder()
+            .setId(grpcV2UserId).build();
+        final GetUserResponseV2 response = stub.getUserV2(request);
+
+        assertThat(response.getId(), is(grpcV2UserId));
+        assertThat(response.getName(), is("Tim"));
+    }
+
+    @Test(dependsOnMethods = "testGrpcGetRequestV2")
+    public void testGrpcDeleteRequestV2() {
+        final UserServiceV2BlockingStub stub =
+            UserServiceV2Grpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final DeleteUserRequestV2 request = DeleteUserRequestV2.newBuilder()
+            .setId(grpcV2UserId).build();
+        final DeleteUserResponseV2 response = stub.deleteUserV2(request);
+
+        assertThat(response.getId(), is(grpcV2UserId));
+    }
+
+    @Test
+    public void testGrpcPostRequestV3() {
         final UserServiceV3BlockingStub stub =
             UserServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 
@@ -69,36 +111,72 @@ public class RestGrpcWebAppFTest {
 
         assertThat(response.getId(), notNullValue());
         assertThat(response.getName(), is("Tim"));
-        grpcUserId = response.getId();
+        grpcV3UserId = response.getId();
     }
 
-    @Test(dependsOnMethods = "testGrpcPostRequest")
-    public void testGrpcGetRequest() {
+    @Test(dependsOnMethods = "testGrpcPostRequestV3")
+    public void testGrpcGetRequestV3() {
         final UserServiceV3BlockingStub stub =
             UserServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 
         final GetUserRequestV3 request = GetUserRequestV3.newBuilder()
-            .setId(grpcUserId).build();
+            .setId(grpcV3UserId).build();
         final GetUserResponseV3 response = stub.getUserV3(request);
 
-        assertThat(response.getId(), is(grpcUserId));
+        assertThat(response.getId(), is(grpcV3UserId));
         assertThat(response.getName(), is("Tim"));
     }
 
-    @Test(dependsOnMethods = "testGrpcGetRequest")
-    public void testGrpcDeleteRequest() {
+    @Test(dependsOnMethods = "testGrpcGetRequestV3")
+    public void testGrpcDeleteRequestV3() {
         final UserServiceV3BlockingStub stub =
             UserServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 
         final DeleteUserRequestV3 request = DeleteUserRequestV3.newBuilder()
-            .setId(grpcUserId).build();
+            .setId(grpcV3UserId).build();
         final DeleteUserResponseV3 response = stub.deleteUserV3(request);
 
-        assertThat(response.getId(), is(grpcUserId));
+        assertThat(response.getId(), is(grpcV3UserId));
     }
 
     @Test
-    public void testRestPostRequest() {
+    public void testRestPostRequestV2() {
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v2/users";
+        final WebTarget restTarget = restClient.target(target);
+        final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(ImmutableMap.of("name", "Tim")));
+
+        assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
+        assertThat(json, hasEntry(is("id"), notNullValue()));
+        restV2UserId = json.get("id").toString();
+    }
+
+    @Test(dependsOnMethods = "testRestPostRequestV2")
+    public void testRestGetRequestV2() {
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v2/users/" + restV2UserId;
+        final WebTarget restTarget = restClient.target(target);
+        final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
+
+        assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
+        assertThat(json, hasEntry(is("id"), is(restV2UserId)));
+        assertThat(json, hasEntry(is("name"), is("Tim")));
+    }
+
+    @Test(dependsOnMethods = "testRestGetRequestV2")
+    public void testRestDeleteRequestV2() {
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v2/users/" + restV2UserId;
+        final WebTarget restTarget = restClient.target(target);
+        final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).delete();
+
+        assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
+        assertThat(json, hasEntry(is("id"), is(restV2UserId)));
+    }
+
+    @Test
+    public void testRestPostRequestV3() {
         final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users";
         final WebTarget restTarget = restClient.target(target);
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE)
@@ -107,29 +185,29 @@ public class RestGrpcWebAppFTest {
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), notNullValue()));
-        restUserId = json.get("id").toString();
+        restV3UserId = json.get("id").toString();
     }
 
-    @Test(dependsOnMethods = "testRestPostRequest")
-    public void testRestGetRequest() {
-        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users/" + restUserId;
+    @Test(dependsOnMethods = "testRestPostRequestV3")
+    public void testRestGetRequestV3() {
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users/" + restV3UserId;
         final WebTarget restTarget = restClient.target(target);
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
-        assertThat(json, hasEntry(is("id"), is(restUserId)));
+        assertThat(json, hasEntry(is("id"), is(restV3UserId)));
         assertThat(json, hasEntry(is("name"), is("Tim")));
     }
 
-    @Test(dependsOnMethods = "testRestGetRequest")
-    public void testRestDeleteRequest() {
-        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users/" + restUserId;
+    @Test(dependsOnMethods = "testRestGetRequestV3")
+    public void testRestDeleteRequestV3() {
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users/" + restV3UserId;
         final WebTarget restTarget = restClient.target(target);
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).delete();
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
-        assertThat(json, hasEntry(is("id"), is(restUserId)));
+        assertThat(json, hasEntry(is("id"), is(restV3UserId)));
     }
 }
