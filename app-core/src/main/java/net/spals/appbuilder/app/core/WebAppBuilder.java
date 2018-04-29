@@ -28,6 +28,19 @@ public interface WebAppBuilder<A extends App> extends WorkerAppBuilder<A> {
     WebAppBuilder<A> disableWebServerAutoBinding();
 
     /**
+     * Allow a web server to use Cross-Origin Resource
+     * Sharing.
+     *
+     * By default, this is disabled as a security measure.
+     * But web applications may turn it on to support
+     * specific use cases.
+     *
+     * Note that this will enable CORS for *all* API
+     * endpoints.
+     */
+    WebAppBuilder<A> enableCors();
+
+    /**
      * Allow bound services to be scoped per web
      * server request.
      *

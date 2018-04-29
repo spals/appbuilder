@@ -7,8 +7,10 @@ import com.twitter.finagle.http.Status.Ok
 import com.twitter.finatra.http.EmbeddedHttpServer
 import net.spals.appbuilder.app.examples.finatra.doc.DocFinatraWebApp
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.{hasEntry, hasKey, is}
+import org.hamcrest.Matchers.{hasEntry, hasKey, is, not}
 import org.testng.annotations.{AfterClass, BeforeClass, Test}
+
+import scala.collection.JavaConverters._
 
 /**
   * Functional tests for API documentation in a [[FinatraWebApp]]
@@ -48,5 +50,17 @@ class DocFinatraWebAppFTest {
     val paths = json.get("paths").asInstanceOf[java.util.Map[String, AnyRef]]
     assertThat(paths, hasKey("/doc/get"))
     assertThat(paths, hasKey("/doc/get/{id}"))
+  }
+
+  @Test def testCorsDisabled() {
+    val docResponse = testServerWrapper.httpGet("/doc/get")
+    assertThat(docResponse.statusCode, is(Ok.code))
+
+    val headerMap = docResponse.headerMap.asJava
+    // Ensure that CORS is disabled on other endpoints outside of Swagger.
+    assertThat(headerMap, not(hasKey("Access-Control-Allow-Origin")))
+    assertThat(headerMap, not(hasKey("Access-Control-Allow-Credentials")))
+    assertThat(headerMap, not(hasKey("Access-Control-Allow-Headers")))
+    assertThat(headerMap, not(hasKey("Access-Control-Allow-Methods")))
   }
 }

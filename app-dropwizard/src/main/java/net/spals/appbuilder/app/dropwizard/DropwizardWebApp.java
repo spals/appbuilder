@@ -96,6 +96,12 @@ public abstract class DropwizardWebApp implements App {
         }
 
         @Override
+        public Builder enableCors() {
+            appDelegateBuilder.enableCors();
+            return this;
+        }
+
+        @Override
         public Builder enableRequestScoping() {
             appDelegateBuilder.enableRequestScoping();
             return this;

@@ -49,6 +49,13 @@ public class DocDropwizardWebAppFTest {
         final Response docResponse = webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
 
         assertThat(docResponse.getStatus(), is(OK.getStatusCode()));
+        assertThat(docResponse.getStringHeaders(), hasEntry(is("Access-Control-Allow-Origin"), contains("*")));
+        assertThat(docResponse.getStringHeaders(), hasEntry(is("Access-Control-Allow-Credentials"), contains("true")));
+        assertThat(docResponse.getStringHeaders(),
+            hasEntry(is("Access-Control-Allow-Headers"), contains("origin, content-type, accept, authorization")));
+        assertThat(docResponse.getStringHeaders(),
+            hasEntry(is("Access-Control-Allow-Methods"), contains("GET, POST, PUT, DELETE, OPTIONS, HEAD")));
+
         final Map<String, Object> json = docResponse.readEntity(new GenericType<Map<String, Object>>() {});
 
         assertThat(json, hasKey("info"));
@@ -59,5 +66,19 @@ public class DocDropwizardWebAppFTest {
         final Map<String, Object> paths = (Map<String, Object>)json.get("paths");
         assertThat(paths, hasKey("/doc/get"));
         assertThat(paths, hasKey("/doc/get/{id}"));
+    }
+
+    @Test
+    public void testCorsDisabled() {
+        final String target = "http://localhost:" + testServerWrapper.getLocalPort() + "/doc/get";
+        final WebTarget webTarget = webClient.target(target);
+        final Response docResponse = webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
+
+        assertThat(docResponse.getStatus(), is(OK.getStatusCode()));
+        // Ensure that CORS is disabled on other endpoints outside of Swagger.
+        assertThat(docResponse.getStringHeaders(), not(hasKey("Access-Control-Allow-Origin")));
+        assertThat(docResponse.getStringHeaders(), not(hasKey("Access-Control-Allow-Credentials")));
+        assertThat(docResponse.getStringHeaders(), not(hasKey("Access-Control-Allow-Headers")));
+        assertThat(docResponse.getStringHeaders(), not(hasKey("Access-Control-Allow-Methods")));
     }
 }

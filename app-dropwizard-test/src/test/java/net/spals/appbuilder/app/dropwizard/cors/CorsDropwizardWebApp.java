@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.examples.dropwizard.doc;
+package net.spals.appbuilder.app.dropwizard.cors;
 
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
@@ -10,15 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link DropwizardWebApp} which tests API documentation.
+ * A {@link DropwizardWebApp} which tests CORS registration.
  *
  * @author tkral
  */
-public class DocDropwizardWebApp extends Application<Configuration> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DocDropwizardWebApp.class);
+public class CorsDropwizardWebApp extends Application<Configuration> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CorsDropwizardWebApp.class);
 
     public static void main(final String[] args) throws Throwable {
-        new DocDropwizardWebApp().run("server");
+        new CorsDropwizardWebApp().run("server");
     }
 
     private DropwizardWebApp.Builder webAppDelegateBuilder;
@@ -26,8 +26,9 @@ public class DocDropwizardWebApp extends Application<Configuration> {
     @Override
     public void initialize(final Bootstrap<Configuration> bootstrap) {
         webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
+            .enableCors()
             .setServiceScan(new ServiceScan.Builder()
-                .addServicePackages("net.spals.appbuilder.app.examples.dropwizard.doc")
+                .addServicePackages("net.spals.appbuilder.app.dropwizard.cors")
                 .build());
     }
 
