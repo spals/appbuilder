@@ -12,6 +12,7 @@ import io.grpc.*;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.AbstractStub;
+import net.spals.appbuilder.app.core.jaxrs.JaxRsCorsModule;
 import net.spals.appbuilder.config.service.ServiceScan;
 import net.spals.appbuilder.graph.model.IServiceGraphVertex;
 import net.spals.appbuilder.graph.model.ServiceDAGVertex;
@@ -27,7 +28,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.matcher.Matchers.subclassesOf;
@@ -48,6 +48,7 @@ public abstract class GrpcWebServerModule extends AbstractModule implements Inje
     public abstract ServiceScan getServiceScan();
 
     public abstract boolean isRestServerEnabled();
+    public abstract boolean isCorsEnabled();
     public abstract Optional<InProcessServerBuilder> getGrpcInternalServerBuilder();
     public abstract Optional<ResourceConfig> getRestResourceConfig();
 
@@ -91,6 +92,10 @@ public abstract class GrpcWebServerModule extends AbstractModule implements Inje
                     return restCtor.map(rCtor -> Collections.singleton(rCtor).stream())
                         .orElseGet(() -> Stream.empty());
                 }).forEach(restCtor -> putRestResourceConstructors(restCtor.getParameterTypes()[0], restCtor));
+
+                if (isCorsEnabled() && getRestResourceConfig().isPresent()) {
+                    getRestResourceConfig().get().register(JaxRsCorsModule.JaxRsCorsFilter.class);
+                }
             }
 
             return super.build();

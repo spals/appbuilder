@@ -232,6 +232,12 @@ public abstract class GrpcWebApp implements App {
         }
 
         @Override
+        public Builder enableCors() {
+            webServerModuleBuilder.setCorsEnabled(true);
+            return this;
+        }
+
+        @Override
         public Builder enableRequestScoping() {
             throw new UnsupportedOperationException("Coming soon.");
         }
