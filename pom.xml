@@ -77,6 +77,7 @@
         <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
         <mongodb-driver.version>3.5.0</mongodb-driver.version>
+        <netty.version>4.1.22.Final</netty.version>
         <opentracing.aws.version>0.0.2</opentracing.aws.version>
         <opentracing.cassandra.version>0.0.2</opentracing.cassandra.version>
         <opentracing.concurrent.version>0.0.2</opentracing.concurrent.version>
@@ -329,6 +330,11 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-stub</artifactId>
                 <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing</groupId>
