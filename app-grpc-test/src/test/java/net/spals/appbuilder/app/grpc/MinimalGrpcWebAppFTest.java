@@ -5,7 +5,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import io.opentracing.Tracer;
-import net.spals.appbuilder.app.grpc.minimal.MinimalGrpcWebApp;
+import net.spals.appbuilder.app.examples.grpc.minimal.MinimalGrpcWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;

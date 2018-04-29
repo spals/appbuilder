@@ -2,9 +2,9 @@ package net.spals.appbuilder.app.grpc;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableMap;
-import net.spals.appbuilder.app.grpc.rest.*;
-import net.spals.appbuilder.app.grpc.rest.UserServiceV2Grpc.UserServiceV2BlockingStub;
-import net.spals.appbuilder.app.grpc.rest.UserServiceV3Grpc.UserServiceV3BlockingStub;
+import net.spals.appbuilder.app.examples.grpc.rest.*;
+import net.spals.appbuilder.app.examples.grpc.rest.UserServiceV2Grpc.UserServiceV2BlockingStub;
+import net.spals.appbuilder.app.examples.grpc.rest.UserServiceV3Grpc.UserServiceV3BlockingStub;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import org.glassfish.jersey.client.ClientConfig;

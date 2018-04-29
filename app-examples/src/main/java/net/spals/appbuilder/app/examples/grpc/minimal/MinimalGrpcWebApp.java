@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.grpc.minimal;
+package net.spals.appbuilder.app.examples.grpc.minimal;
 
 import net.spals.appbuilder.app.grpc.GrpcWebApp;
 

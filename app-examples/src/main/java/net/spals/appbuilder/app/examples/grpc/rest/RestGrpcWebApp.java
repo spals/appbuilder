@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.grpc.rest;
+package net.spals.appbuilder.app.examples.grpc.rest;
 
 import net.spals.appbuilder.app.grpc.GrpcWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
@@ -34,7 +34,7 @@ public class RestGrpcWebApp extends GrpcWebApp {
             .setServiceScan(new ServiceScan.Builder()
                 // Service packages should include any java_package used in the
                 // gRPC protobuf file.
-                .addServicePackages("net.spals.appbuilder.app.grpc.rest")
+                .addServicePackages("net.spals.appbuilder.app.examples.grpc.rest")
                 .addDefaultServices(MapStore.class)
                 .build());
     }

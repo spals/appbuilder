@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.grpc.sample;
+package net.spals.appbuilder.app.examples.grpc.sample;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;

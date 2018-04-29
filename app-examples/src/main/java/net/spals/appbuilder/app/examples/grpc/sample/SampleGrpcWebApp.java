@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.grpc.sample;
+package net.spals.appbuilder.app.examples.grpc.sample;
 
 import net.spals.appbuilder.app.grpc.GrpcWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
@@ -34,12 +34,12 @@ public class SampleGrpcWebApp extends GrpcWebApp {
     }
 
     @Override
-    protected void configure(final GrpcWebApp.Builder grpcWebAppBuilder) {
+    protected void configure(final Builder grpcWebAppBuilder) {
         grpcWebAppBuilder
             .enableServiceGraph(ServiceGraphFormat.TEXT)
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
-                .addServicePackages("net.spals.appbuilder.app.grpc.sample")
+                .addServicePackages("net.spals.appbuilder.app.examples.grpc.sample")
                 .addDefaultServices(FileStore.class)
                 .addDefaultServices(KeyStore.class)
                 .addDefaultServices(MapStore.class)

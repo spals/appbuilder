@@ -1,11 +1,11 @@
-package net.spals.appbuilder.app.grpc.sample.web;
+package net.spals.appbuilder.app.examples.grpc.sample.web;
 
 import com.google.inject.Inject;
 import io.grpc.stub.StreamObserver;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
-import net.spals.appbuilder.app.grpc.sample.SampleRequestV2;
-import net.spals.appbuilder.app.grpc.sample.SampleResponseV2;
-import net.spals.appbuilder.app.grpc.sample.SampleServiceV2Grpc;
+import net.spals.appbuilder.app.examples.grpc.sample.SampleRequestV2;
+import net.spals.appbuilder.app.examples.grpc.sample.SampleResponseV2;
+import net.spals.appbuilder.app.examples.grpc.sample.SampleServiceV2Grpc;
 
 /**
  * A sample gRPC service using proto2.

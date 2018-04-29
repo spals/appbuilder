@@ -2,7 +2,7 @@ syntax = "proto2";
 
 option java_multiple_files = true;
 // Should be included in the service packages scanned by ServiceScan
-option java_package = "net.spals.appbuilder.app.grpc.rest";
+option java_package = "net.spals.appbuilder.app.examples.grpc.rest";
 option java_outer_classname = "RestServerV2Proto";
 
 import "google/api/annotations.proto";

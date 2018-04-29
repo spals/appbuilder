@@ -8,7 +8,7 @@ import com.typesafe.config.Config;
 import io.grpc.Server;
 import io.opentracing.NoopTracer;
 import io.opentracing.Tracer;
-import net.spals.appbuilder.app.grpc.sample.*;
+import net.spals.appbuilder.app.examples.grpc.sample.*;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
