@@ -45,7 +45,7 @@ class MinimalFinatraWebAppFTest {
   }
 
   @Test def testFinatraWebAppName() {
-    assertThat(minimalApp.getName, is("net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp"))
+    assertThat(minimalApp.getName, is("net.spals.appbuilder.app.examples.finatra.minimal.MinimalFinatraWebApp"))
   }
 
   @DataProvider def defaultServiceConfigProvider(): Array[Array[AnyRef]] = {
