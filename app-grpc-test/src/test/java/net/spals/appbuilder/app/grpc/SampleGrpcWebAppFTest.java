@@ -132,6 +132,14 @@ public class SampleGrpcWebAppFTest {
             hasItem(
                 hasProperty(
                     "serviceDescriptor",
+                    hasProperty("name", is("SampleServiceV2"))
+                )
+            )
+        );
+        assertThat(grpcExternalServer.getServices(),
+            hasItem(
+                hasProperty(
+                    "serviceDescriptor",
                     hasProperty("name", is("SampleServiceV3"))
                 )
             )
@@ -233,7 +241,20 @@ public class SampleGrpcWebAppFTest {
     }
 
     @Test
-    public void testServiceRequestV3InGrpc() {
+    public void testServiceRequestInGrpcV2() {
+        final SampleServiceV2Grpc.SampleServiceV2BlockingStub stub =
+            SampleServiceV2Grpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final SampleRequestV2 request = SampleRequestV2.newBuilder()
+            .setIntField(1).setStringField("myString").build();
+        final SampleResponseV2 response = stub.getSampleV2(request);
+
+        assertThat(response.getIntField(), is(2));
+        assertThat(response.getStringField(), is("myStringmyString"));
+    }
+
+    @Test
+    public void testServiceRequestInGrpcV3() {
         final SampleServiceV3Grpc.SampleServiceV3BlockingStub stub =
             SampleServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 

@@ -8,7 +8,7 @@ import net.spals.appbuilder.app.grpc.sample.SampleResponseV3;
 import net.spals.appbuilder.app.grpc.sample.SampleServiceV3Grpc;
 
 /**
- * A sample gRPC service.
+ * A sample gRPC service using proto3.
  *
  * @author tkral
  */
