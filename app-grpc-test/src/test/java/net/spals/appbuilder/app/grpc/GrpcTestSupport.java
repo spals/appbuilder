@@ -39,6 +39,7 @@ public class GrpcTestSupport {
             socket.setReuseAddress(true);
             final int port = socket.getLocalPort();
 
+            LOGGER.info("Found port " + port + " for test gRPC server.");
             return new GrpcTestSupport(
                 grpcWebApp,
                 NettyServerBuilder.forPort(port),

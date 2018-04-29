@@ -94,8 +94,10 @@ public abstract class GrpcWebApp implements App {
     }
 
     public final int getRestPort() {
-        // By convention, the rest post is one off from the grpc port
-        return getGrpcPort() + 1;
+        // By convention, the rest post is 10 off from the grpc port.
+        // We add 10 here to give tests enough room to allocate free ports.
+        // Otherwise, we were constantly running into port conflicts
+        return getGrpcPort() + 10;
     }
 
     @VisibleForTesting
