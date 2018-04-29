@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.doc;
+package net.spals.appbuilder.app.examples.dropwizard.doc;
 
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A minimally viable {@link DropwizardWebApp}
+ * with API documentation.
  *
  * @author tkral
  */
@@ -27,7 +28,7 @@ public class DocDropwizardWebApp extends Application<Configuration> {
     public void initialize(final Bootstrap<Configuration> bootstrap) {
         webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
             .setServiceScan(new ServiceScan.Builder()
-                .addServicePackages("net.spals.appbuilder.app.dropwizard.doc")
+                .addServicePackages("net.spals.appbuilder.app.examples.dropwizard.doc")
                 .build());
     }
 

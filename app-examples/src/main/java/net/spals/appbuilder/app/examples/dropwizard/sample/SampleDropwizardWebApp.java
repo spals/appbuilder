@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.sample;
+package net.spals.appbuilder.app.examples.dropwizard.sample;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.Application;
@@ -48,7 +48,7 @@ public class SampleDropwizardWebApp extends Application<Configuration> {
             .enableServiceGraph(ServiceGraphFormat.ASCII)
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
-                .addServicePackages("net.spals.appbuilder.app.dropwizard.sample")
+                .addServicePackages("net.spals.appbuilder.app.examples.dropwizard.sample")
                 .addDefaultServices(FileStore.class)
                 .addDefaultServices(KeyStore.class)
                 .addDefaultServices(MapStore.class)

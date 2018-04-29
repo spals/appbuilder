@@ -98,6 +98,7 @@
         <module>app-core-test</module>
         <module>app-dropwizard</module>
         <module>app-dropwizard-test</module>
+        <module>app-examples</module>
         <module>app-finatra</module>
         <module>app-finatra-test</module>
         <module>app-grpc</module>
@@ -343,7 +344,6 @@
                 <groupId>io.opentracing</groupId>
                 <artifactId>opentracing-mock</artifactId>
                 <version>${opentracing.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentracing</groupId>
@@ -446,6 +446,11 @@
                 <artifactId>spals-appbuilder-app-core-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-app-examples</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>

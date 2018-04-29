@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.plugins;
+package net.spals.appbuilder.app.examples.dropwizard.plugins;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.Application;
@@ -48,7 +48,7 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
             .enableServiceGraph(ServiceGraphFormat.TEXT)
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()
-                .addServicePackages("net.spals.appbuilder.app.dropwizard.plugins")
+                .addServicePackages("net.spals.appbuilder.app.examples.dropwizard.plugins")
                 .addServicePlugins("net.spals.appbuilder.filestore.s3", FileStore.class)
                 .addDefaultServices(KeyStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", MapStore.class)

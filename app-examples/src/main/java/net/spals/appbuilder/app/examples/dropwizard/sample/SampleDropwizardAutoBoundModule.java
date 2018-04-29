@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.sample;
+package net.spals.appbuilder.app.examples.dropwizard.sample;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;

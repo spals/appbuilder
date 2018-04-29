@@ -9,7 +9,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.NoopTracer;
 import io.opentracing.Tracer;
-import net.spals.appbuilder.app.dropwizard.plugins.PluginsDropwizardWebApp;
+import net.spals.appbuilder.app.examples.dropwizard.plugins.PluginsDropwizardWebApp;
 import net.spals.appbuilder.filestore.core.FileStore;
 import net.spals.appbuilder.filestore.core.FileStorePlugin;
 import net.spals.appbuilder.keystore.core.KeyStore;

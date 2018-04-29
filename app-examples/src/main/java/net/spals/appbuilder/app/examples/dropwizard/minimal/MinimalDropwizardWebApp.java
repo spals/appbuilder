@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.minimal;
+package net.spals.appbuilder.app.examples.dropwizard.minimal;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.Application;
@@ -6,7 +6,6 @@ import io.dropwizard.Configuration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
-import net.spals.appbuilder.app.dropwizard.sample.SampleDropwizardWebApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

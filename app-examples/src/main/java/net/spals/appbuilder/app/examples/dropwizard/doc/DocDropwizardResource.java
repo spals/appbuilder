@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.doc;
+package net.spals.appbuilder.app.examples.dropwizard.doc;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -10,7 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 /**
- * A sample web resource.
+ * A Dropwizard web resource with API documentation.
  *
  * @author tkral
  */

@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.tracing;
+package net.spals.appbuilder.app.examples.dropwizard.tracing;
 
 import io.opentracing.contrib.jaxrs2.server.Traced;
 import io.swagger.annotations.Api;

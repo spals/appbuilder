@@ -10,7 +10,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.Tracer;
-import net.spals.appbuilder.app.dropwizard.minimal.MinimalDropwizardWebApp;
+import net.spals.appbuilder.app.examples.dropwizard.minimal.MinimalDropwizardWebApp;
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;

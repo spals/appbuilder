@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.sample;
+package net.spals.appbuilder.app.examples.dropwizard.sample;
 
 /**
  * A multi service definition for {@link SampleDropwizardWebApp}

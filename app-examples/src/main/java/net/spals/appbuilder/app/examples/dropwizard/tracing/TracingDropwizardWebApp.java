@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.tracing;
+package net.spals.appbuilder.app.examples.dropwizard.tracing;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.Application;
@@ -9,16 +9,12 @@ import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import net.spals.appbuilder.app.dropwizard.DropwizardWebApp;
 import net.spals.appbuilder.config.service.ServiceScan;
-import net.spals.appbuilder.filestore.core.FileStore;
-import net.spals.appbuilder.mapstore.core.MapStore;
-import net.spals.appbuilder.message.core.MessageConsumer;
-import net.spals.appbuilder.message.core.MessageProducer;
-import net.spals.appbuilder.model.core.ModelSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A minimally viable {@link DropwizardWebApp}
+ * with API request tracing enabled
  *
  * @author tkral
  */
@@ -41,8 +37,10 @@ public class TracingDropwizardWebApp extends Application<Configuration> {
     public void initialize(final Bootstrap<Configuration> bootstrap) {
         this.webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
                 .setServiceScan(new ServiceScan.Builder()
-                        .addServicePackages("net.spals.appbuilder.app.dropwizard.tracing")
+                        .addServicePackages("net.spals.appbuilder.app.examples.dropwizard.tracing")
                         .build())
+                // We'll explicitly bind a mock tracer for testing purposes. But normally
+                // this only requires a dependency on a monitor plugin (e.g. monitor-lightstep).
                 .addModule(binder -> binder.bind(Tracer.class).toInstance(mockTracer))
                 // Allow the mock tracer to override the real tracer instance
                 .enableBindingOverrides();
