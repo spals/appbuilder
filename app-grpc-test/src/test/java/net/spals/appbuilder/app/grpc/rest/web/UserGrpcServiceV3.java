@@ -21,25 +21,25 @@ import java.util.stream.Collectors;
  * @author tkral
  */
 @AutoBindSingleton
-public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
+public class UserGrpcServiceV3 extends UserServiceV3Grpc.UserServiceV3ImplBase {
 
     private final MapStore mapStore;
 
     @Inject
-    UserGrpcService(final MapStore mapStore) {
+    UserGrpcServiceV3(final MapStore mapStore) {
         this.mapStore = mapStore;
     }
 
     @Override
-    public void deleteUser(
-        final DeleteUserRequest request,
-        final StreamObserver<DeleteUserResponse> responseObserver
+    public void deleteUserV3(
+        final DeleteUserRequestV3 request,
+        final StreamObserver<DeleteUserResponseV3> responseObserver
     ) {
         final MapStoreKey userRecordKey = createUserRecordKey(request.getId());
         mapStore.deleteItem("users", userRecordKey);
 
         responseObserver.onNext(
-            DeleteUserResponse.newBuilder()
+            DeleteUserResponseV3.newBuilder()
                 .setId(request.getId())
                 .build()
         );
@@ -47,19 +47,19 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
     }
 
     @Override
-    public void getUser(
-        final GetUserRequest request,
-        final StreamObserver<GetUserResponse> responseObserver
+    public void getUserV3(
+        final GetUserRequestV3 request,
+        final StreamObserver<GetUserResponseV3> responseObserver
     ) {
         final MapStoreKey userRecordKey = createUserRecordKey(request.getId());
         final Optional<Map<String, Object>> userRecordMap = mapStore.getItem("users", userRecordKey);
 
-        final GetUserResponse.Builder responseBuilder = GetUserResponse.newBuilder();
+        final GetUserResponseV3.Builder responseBuilder = GetUserResponseV3.newBuilder();
         userRecordMap.ifPresent(map -> {
             map.entrySet().stream()
-                .filter(entry -> GetUserResponse.getDescriptor().findFieldByName(entry.getKey()) != null)
+                .filter(entry -> GetUserResponseV3.getDescriptor().findFieldByName(entry.getKey()) != null)
                 .forEach(entry -> {
-                    final FieldDescriptor fieldDescriptor = GetUserResponse.getDescriptor().findFieldByName(entry.getKey());
+                    final FieldDescriptor fieldDescriptor = GetUserResponseV3.getDescriptor().findFieldByName(entry.getKey());
                     responseBuilder.setField(fieldDescriptor, entry.getValue());
                 });
         });
@@ -69,14 +69,14 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
     }
 
     @Override
-    public void postUser(
-        final PostUserRequest request,
-        final StreamObserver<PostUserResponse> responseObserver
+    public void postUserV3(
+        final PostUserRequestV3 request,
+        final StreamObserver<PostUserResponseV3> responseObserver
     ) {
         final String userId = UUID.randomUUID().toString();
 
         final MapStoreKey userRecordKey = createUserRecordKey(userId);
-        final UserRecord userRecord = UserRecord.newBuilder()
+        final UserRecordV3 userRecord = UserRecordV3.newBuilder()
             .setId(userId)
             .setName(request.getName())
             .build();
@@ -86,7 +86,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         mapStore.putItem("users", userRecordKey, userRecordMap);
 
         responseObserver.onNext(
-            PostUserResponse.newBuilder()
+            PostUserResponseV3.newBuilder()
                 .setId(userId)
                 .setName(request.getName())
                 .build()

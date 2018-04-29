@@ -3,7 +3,7 @@ package net.spals.appbuilder.app.grpc;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableMap;
 import net.spals.appbuilder.app.grpc.rest.*;
-import net.spals.appbuilder.app.grpc.rest.UserServiceGrpc.UserServiceBlockingStub;
+import net.spals.appbuilder.app.grpc.rest.UserServiceV3Grpc.UserServiceV3BlockingStub;
 import net.spals.appbuilder.mapstore.core.MapStore;
 import net.spals.appbuilder.mapstore.core.model.MapStoreTableKey;
 import org.glassfish.jersey.client.ClientConfig;
@@ -20,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -61,12 +60,12 @@ public class RestGrpcWebAppFTest {
 
     @Test
     public void testGrpcPostRequest() {
-        final UserServiceBlockingStub stub =
-            UserServiceGrpc.newBlockingStub(testServerWrapper.getChannel());
+        final UserServiceV3BlockingStub stub =
+            UserServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 
-        final PostUserRequest request = PostUserRequest.newBuilder()
+        final PostUserRequestV3 request = PostUserRequestV3.newBuilder()
             .setName("Tim").build();
-        final PostUserResponse response = stub.postUser(request);
+        final PostUserResponseV3 response = stub.postUserV3(request);
 
         assertThat(response.getId(), notNullValue());
         assertThat(response.getName(), is("Tim"));
@@ -75,12 +74,12 @@ public class RestGrpcWebAppFTest {
 
     @Test(dependsOnMethods = "testGrpcPostRequest")
     public void testGrpcGetRequest() {
-        final UserServiceBlockingStub stub =
-            UserServiceGrpc.newBlockingStub(testServerWrapper.getChannel());
+        final UserServiceV3BlockingStub stub =
+            UserServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 
-        final GetUserRequest request = GetUserRequest.newBuilder()
+        final GetUserRequestV3 request = GetUserRequestV3.newBuilder()
             .setId(grpcUserId).build();
-        final GetUserResponse response = stub.getUser(request);
+        final GetUserResponseV3 response = stub.getUserV3(request);
 
         assertThat(response.getId(), is(grpcUserId));
         assertThat(response.getName(), is("Tim"));
@@ -88,19 +87,19 @@ public class RestGrpcWebAppFTest {
 
     @Test(dependsOnMethods = "testGrpcGetRequest")
     public void testGrpcDeleteRequest() {
-        final UserServiceBlockingStub stub =
-            UserServiceGrpc.newBlockingStub(testServerWrapper.getChannel());
+        final UserServiceV3BlockingStub stub =
+            UserServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
 
-        final DeleteUserRequest request = DeleteUserRequest.newBuilder()
+        final DeleteUserRequestV3 request = DeleteUserRequestV3.newBuilder()
             .setId(grpcUserId).build();
-        final DeleteUserResponse response = stub.deleteUser(request);
+        final DeleteUserResponseV3 response = stub.deleteUserV3(request);
 
         assertThat(response.getId(), is(grpcUserId));
     }
 
     @Test
     public void testRestPostRequest() {
-        final String target = "http://localhost:" + restApp.getRestPort() + "/users";
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users";
         final WebTarget restTarget = restClient.target(target);
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(ImmutableMap.of("name", "Tim")));
@@ -111,18 +110,9 @@ public class RestGrpcWebAppFTest {
         restUserId = json.get("id").toString();
     }
 
-//    @Test
-//    public void testRestGetRequestMissingData() {
-//        final String target = "http://localhost:" + restApp.getRestPort() + "/users/deadbeef";
-//        final WebTarget restTarget = restClient.target(target);
-//        final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
-//
-//        assertThat(restResponse.getStatus(), is(NOT_FOUND.getStatusCode()));
-//    }
-
     @Test(dependsOnMethods = "testRestPostRequest")
     public void testRestGetRequest() {
-        final String target = "http://localhost:" + restApp.getRestPort() + "/users/" + restUserId;
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users/" + restUserId;
         final WebTarget restTarget = restClient.target(target);
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
 
@@ -134,7 +124,7 @@ public class RestGrpcWebAppFTest {
 
     @Test(dependsOnMethods = "testRestGetRequest")
     public void testRestDeleteRequest() {
-        final String target = "http://localhost:" + restApp.getRestPort() + "/users/" + restUserId;
+        final String target = "http://localhost:" + restApp.getRestPort() + "/v3/users/" + restUserId;
         final WebTarget restTarget = restClient.target(target);
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).delete();
 
