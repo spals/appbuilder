@@ -1,7 +1,6 @@
-package net.spals.appbuilder.app.finatra.tracing
+package net.spals.appbuilder.app.examples.finatra.tracing
 
-import com.google.inject.Binder
-import com.google.inject.Module
+import com.google.inject.{Binder, Module}
 import io.opentracing.Tracer
 import io.opentracing.mock.MockTracer
 import net.spals.appbuilder.app.finatra.FinatraWebApp
@@ -14,12 +13,12 @@ import net.spals.appbuilder.config.service.ServiceScan
   */
 object TracingFinatraWebAppMain extends TracingFinatraWebApp
 
-private[finatra] class TracingFinatraWebApp extends FinatraWebApp {
+class TracingFinatraWebApp extends FinatraWebApp {
 
   val mockTracer = new MockTracer()
 
   setServiceScan(new ServiceScan.Builder()
-    .addServicePackages("net.spals.appbuilder.app.finatra.tracing")
+    .addServicePackages("net.spals.appbuilder.app.examples.finatra.tracing")
     .build())
   addModule(new Module {
     override def configure(binder: Binder): Unit =

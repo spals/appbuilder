@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.doc
+package net.spals.appbuilder.app.examples.finatra.doc
 
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
@@ -10,10 +10,10 @@ import net.spals.appbuilder.config.service.ServiceScan
   */
 object DocFinatraWebAppMain extends DocFinatraWebApp
 
-private[finatra] class DocFinatraWebApp extends FinatraWebApp {
+class DocFinatraWebApp extends FinatraWebApp {
 
   setServiceScan(new ServiceScan.Builder()
-    .addServicePackages("net.spals.appbuilder.app.finatra.doc")
+    .addServicePackages("net.spals.appbuilder.app.examples.finatra.doc")
     .build())
   build()
 

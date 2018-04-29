@@ -1,5 +1,6 @@
-package net.spals.appbuilder.app.finatra.sample.web
+package net.spals.appbuilder.app.examples.finatra.sample.web
 
+import com.google.common.annotations.VisibleForTesting
 import com.google.inject.Inject
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finatra.http.exceptions.ExceptionMapper
@@ -12,7 +13,8 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton
   * @author tkral
   */
 @AutoBindSingleton
-private[finatra] class SampleFinatraExceptionMapper @Inject() (
+@VisibleForTesting
+/*private[finatra]*/ class SampleFinatraExceptionMapper @Inject() (
   response: ResponseBuilder
 ) extends ExceptionMapper[Throwable] {
 

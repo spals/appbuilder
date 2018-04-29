@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.sample
+package net.spals.appbuilder.app.examples.finatra.sample
 
 import com.google.inject.Inject
 import com.google.inject.name.Names

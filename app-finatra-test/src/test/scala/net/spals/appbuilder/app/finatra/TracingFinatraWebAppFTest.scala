@@ -3,7 +3,7 @@ package net.spals.appbuilder.app.finatra
 import com.google.inject.Stage
 import com.twitter.finatra.http.EmbeddedHttpServer
 import io.opentracing.mock.MockSpan
-import net.spals.appbuilder.app.finatra.tracing.TracingFinatraWebApp
+import net.spals.appbuilder.app.examples.finatra.tracing.TracingFinatraWebApp
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.empty
 import org.hamcrest.Matchers.hasEntry

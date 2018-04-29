@@ -1,12 +1,13 @@
-package net.spals.appbuilder.app.finatra.doc
+package net.spals.appbuilder.app.examples.finatra.doc
 
 import com.github.xiaodongw.swagger.finatra.SwaggerSupport
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.Controller
 import net.spals.appbuilder.annotations.service.AutoBindSingleton
+import net.spals.appbuilder.app.finatra.doc.FinatraWebAppSwagger
 
 /**
-  * A Finatra [[Controller]] used in API documentation tests.
+  * A Finatra [[com.twitter.finatra.http.Controller]] used in API documentation tests.
   *
   * @author tkral
   */

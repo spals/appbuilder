@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.sample
+package net.spals.appbuilder.app.examples.finatra.sample
 
 import com.twitter.finatra.http.routing.HttpRouter
 import net.spals.appbuilder.app.finatra.FinatraWebApp
@@ -19,14 +19,17 @@ import org.mockito.Mockito.mock
   */
 object SampleFinatraWebAppMain extends SampleFinatraWebApp
 
-private[finatra] class SampleFinatraWebApp extends FinatraWebApp {
+class SampleFinatraWebApp extends FinatraWebApp {
 
+  // Use mock HttpRouter for testing purposes. Normally,
+  // this would use the production HttpRouter shipped with
+  // Finatra
   val mockRouter = mock(classOf[HttpRouter])
 
   enableServiceGraph(ServiceGraphFormat.ASCII)
   setServiceConfigFromClasspath("config/sample-finatra-service.conf")
   setServiceScan(new ServiceScan.Builder()
-    .addServicePackages("net.spals.appbuilder.app.finatra.sample")
+    .addServicePackages("net.spals.appbuilder.app.examples.finatra.sample")
     .addDefaultServices(classOf[FileStore])
     .addDefaultServices(classOf[KeyStore])
     .addDefaultServices(classOf[MapStore])

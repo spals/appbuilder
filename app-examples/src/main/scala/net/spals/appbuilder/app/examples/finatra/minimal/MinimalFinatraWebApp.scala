@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.minimal
+package net.spals.appbuilder.app.examples.finatra.minimal
 
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 
@@ -9,7 +9,7 @@ import net.spals.appbuilder.app.finatra.FinatraWebApp
   */
 object MinimalFinatraWebAppMain extends MinimalFinatraWebApp
 
-private[finatra] class MinimalFinatraWebApp extends FinatraWebApp {
+class MinimalFinatraWebApp extends FinatraWebApp {
 
   build()
 

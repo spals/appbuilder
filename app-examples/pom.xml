@@ -22,9 +22,11 @@
             <groupId>com.xorlev.grpc-jersey</groupId>
             <artifactId>jersey-rpc-support</artifactId>
         </dependency>
+        <!-- Include mock opentracing to support functional testing. -->
         <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-mock</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder</groupId>
@@ -53,6 +55,10 @@
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-app-dropwizard</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.spals.appbuilder.plugins</groupId>
+            <artifactId>spals-appbuilder-app-finatra</artifactId>
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
@@ -89,6 +95,12 @@
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-monitor-lightstep</artifactId>
+        </dependency>
+        <!-- Include mockito to support functional testing. -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

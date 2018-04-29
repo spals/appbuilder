@@ -1,5 +1,6 @@
-package net.spals.appbuilder.app.finatra.sample.web
+package net.spals.appbuilder.app.examples.finatra.sample.web
 
+import com.google.common.annotations.VisibleForTesting
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.Controller
 import net.spals.appbuilder.annotations.service.AutoBindSingleton
@@ -10,7 +11,8 @@ import net.spals.appbuilder.annotations.service.AutoBindSingleton
   * @author tkral
   */
 @AutoBindSingleton
-private[finatra] class SampleFinatraController extends Controller {
+@VisibleForTesting
+/*private[finatra]*/ class SampleFinatraController extends Controller {
 
   get("/ping") { request: Request =>
     "pong"

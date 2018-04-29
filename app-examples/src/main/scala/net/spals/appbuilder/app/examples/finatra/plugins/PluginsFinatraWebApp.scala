@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.plugins
+package net.spals.appbuilder.app.examples.finatra.plugins
 
 import io.opentracing.Tracer
 import net.spals.appbuilder.app.finatra.FinatraWebApp
@@ -17,12 +17,12 @@ import net.spals.appbuilder.model.core.ModelSerializer
   */
 object PluginsFinatraWebAppMain extends PluginsFinatraWebApp
 
-private[finatra] class PluginsFinatraWebApp extends FinatraWebApp {
+class PluginsFinatraWebApp extends FinatraWebApp {
 
   enableServiceGraph(ServiceGraphFormat.TEXT)
   setServiceConfigFromClasspath("config/plugins-finatra-service.conf")
   setServiceScan(new ServiceScan.Builder()
-    .addServicePackages("net.spals.appbuilder.app.finatra.plugins")
+    .addServicePackages("net.spals.appbuilder.app.examples.finatra.plugins")
     .addServicePlugins("net.spals.appbuilder.filestore.s3", classOf[FileStore])
     .addDefaultServices(classOf[KeyStore])
     .addServicePlugins("net.spals.appbuilder.mapstore.cassandra", classOf[MapStore])

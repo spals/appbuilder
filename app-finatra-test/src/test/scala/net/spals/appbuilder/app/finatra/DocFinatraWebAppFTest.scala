@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Stage
 import com.twitter.finagle.http.Status.Ok
 import com.twitter.finatra.http.EmbeddedHttpServer
-import net.spals.appbuilder.app.finatra.doc.DocFinatraWebApp
+import net.spals.appbuilder.app.examples.finatra.doc.DocFinatraWebApp
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{hasEntry, hasKey, is}
 import org.testng.annotations.{AfterClass, BeforeClass, Test}
