@@ -29,6 +29,7 @@ public class RestGrpcWebApp extends GrpcWebApp {
     @Override
     protected void configure(final Builder grpcWebAppBuilder) {
         grpcWebAppBuilder
+            .enableCors()
             .enableRestServer()
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
             .setServiceScan(new ServiceScan.Builder()

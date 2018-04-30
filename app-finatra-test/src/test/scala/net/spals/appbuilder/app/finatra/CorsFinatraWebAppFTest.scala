@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Stage
 import com.twitter.finagle.http.Status.Ok
 import com.twitter.finatra.http.EmbeddedHttpServer
-import net.spals.appbuilder.app.finatra.cors.CorsFinatraWebApp
+import net.spals.appbuilder.app.examples.finatra.cors.CorsFinatraWebApp
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{hasEntry, is}
 import org.testng.annotations.{AfterClass, BeforeClass, Test}
@@ -34,13 +34,13 @@ class CorsFinatraWebAppFTest {
   }
 
   @Test def testCorsEnabled() {
-    val docResponse = testServerWrapper.httpOptions(
+    val corsResponse = testServerWrapper.httpOptions(
       path = "/cors/get",
       headers = Map("Origin" -> "Some", "Access-Control-Request-Method" -> "GET")
     )
-    assertThat(docResponse.statusCode, is(Ok.code))
+    assertThat(corsResponse.statusCode, is(Ok.code))
 
-    val headerMap = docResponse.headerMap.asJava
+    val headerMap = corsResponse.headerMap.asJava
     assertThat(headerMap, hasEntry[String, String]("Access-Control-Allow-Origin", "*"))
     assertThat(headerMap, hasEntry[String, String]("Access-Control-Allow-Headers", "origin, content-type, accept, authorization"))
     assertThat(headerMap, hasEntry[String, String]("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD"))

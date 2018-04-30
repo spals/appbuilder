@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.cors;
+package net.spals.appbuilder.app.examples.dropwizard.cors;
 
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 

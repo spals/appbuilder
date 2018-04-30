@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.cors
+package net.spals.appbuilder.app.examples.finatra.cors
 
 import net.spals.appbuilder.app.finatra.FinatraWebApp
 import net.spals.appbuilder.config.service.ServiceScan
@@ -10,7 +10,7 @@ import net.spals.appbuilder.config.service.ServiceScan
   */
 object CorsFinatraWebAppMain extends CorsFinatraWebApp
 
-private[finatra] class CorsFinatraWebApp extends FinatraWebApp {
+class CorsFinatraWebApp extends FinatraWebApp {
 
   enableCors()
   setServiceScan(new ServiceScan.Builder()

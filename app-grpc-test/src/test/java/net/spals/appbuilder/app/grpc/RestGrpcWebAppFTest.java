@@ -147,6 +147,7 @@ public class RestGrpcWebAppFTest {
             .post(Entity.json(ImmutableMap.of("name", "Tim")));
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        assertCors(restResponse);
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), notNullValue()));
         restV2UserId = json.get("id").toString();
@@ -159,6 +160,7 @@ public class RestGrpcWebAppFTest {
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        assertCors(restResponse);
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), is(restV2UserId)));
         assertThat(json, hasEntry(is("name"), is("Tim")));
@@ -171,6 +173,7 @@ public class RestGrpcWebAppFTest {
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).delete();
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        assertCors(restResponse);
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), is(restV2UserId)));
     }
@@ -183,6 +186,7 @@ public class RestGrpcWebAppFTest {
             .post(Entity.json(ImmutableMap.of("name", "Tim")));
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        assertCors(restResponse);
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), notNullValue()));
         restV3UserId = json.get("id").toString();
@@ -195,6 +199,7 @@ public class RestGrpcWebAppFTest {
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        assertCors(restResponse);
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), is(restV3UserId)));
         assertThat(json, hasEntry(is("name"), is("Tim")));
@@ -207,7 +212,17 @@ public class RestGrpcWebAppFTest {
         final Response restResponse = restTarget.request(MediaType.APPLICATION_JSON_TYPE).delete();
 
         assertThat(restResponse.getStatus(), is(OK.getStatusCode()));
+        assertCors(restResponse);
         final Map<String, Object> json = restResponse.readEntity(new GenericType<Map<String, Object>>() {});
         assertThat(json, hasEntry(is("id"), is(restV3UserId)));
+    }
+
+    private void assertCors(final Response response) {
+        assertThat(response.getStringHeaders(), hasEntry(is("Access-Control-Allow-Origin"), contains("*")));
+        assertThat(response.getStringHeaders(), hasEntry(is("Access-Control-Allow-Credentials"), contains("true")));
+        assertThat(response.getStringHeaders(),
+            hasEntry(is("Access-Control-Allow-Headers"), contains("origin, content-type, accept, authorization")));
+        assertThat(response.getStringHeaders(),
+            hasEntry(is("Access-Control-Allow-Methods"), contains("GET, POST, PUT, DELETE, OPTIONS, HEAD")));
     }
 }

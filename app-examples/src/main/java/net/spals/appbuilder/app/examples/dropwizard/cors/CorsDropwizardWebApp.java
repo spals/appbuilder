@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.dropwizard.cors;
+package net.spals.appbuilder.app.examples.dropwizard.cors;
 
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
@@ -28,7 +28,7 @@ public class CorsDropwizardWebApp extends Application<Configuration> {
         webAppDelegateBuilder = new DropwizardWebApp.Builder(bootstrap, LOGGER)
             .enableCors()
             .setServiceScan(new ServiceScan.Builder()
-                .addServicePackages("net.spals.appbuilder.app.dropwizard.cors")
+                .addServicePackages("net.spals.appbuilder.app.examples.dropwizard.cors")
                 .build());
     }
 

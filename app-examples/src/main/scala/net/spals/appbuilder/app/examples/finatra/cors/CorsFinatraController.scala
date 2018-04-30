@@ -1,4 +1,4 @@
-package net.spals.appbuilder.app.finatra.cors
+package net.spals.appbuilder.app.examples.finatra.cors
 
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.Controller

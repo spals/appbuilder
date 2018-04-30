@@ -60,6 +60,7 @@ public abstract class GrpcWebServerModule extends AbstractModule implements Inje
             setServiceScan(ServiceScan.empty());
 
             setRestServerEnabled(false);
+            setCorsEnabled(false);
             setGrpcInternalServerBuilder(Optional.empty());
             setRestResourceConfig(Optional.empty());
         }
