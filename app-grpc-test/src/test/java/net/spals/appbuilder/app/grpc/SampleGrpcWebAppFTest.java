@@ -5,7 +5,10 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
+import io.grpc.Metadata;
 import io.grpc.Server;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
 import io.opentracing.NoopTracer;
 import io.opentracing.Tracer;
 import net.spals.appbuilder.app.examples.grpc.sample.*;
@@ -32,6 +35,7 @@ import org.testng.annotations.Test;
 import java.util.Map;
 import java.util.Set;
 
+import static com.googlecode.catchexception.CatchException.verifyException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -241,9 +245,27 @@ public class SampleGrpcWebAppFTest {
     }
 
     @Test
-    public void testServiceRequestInGrpcV2() {
+    public void testServiceInterceptorInGrpcV2() {
         final SampleServiceV2Grpc.SampleServiceV2BlockingStub stub =
             SampleServiceV2Grpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final SampleRequestV2 request = SampleRequestV2.newBuilder()
+            .setIntField(1).setStringField("myString").build();
+        // We'll verify that the interceptor exists because we have not
+        // set the proper token header on our request
+        verifyException(() -> stub.getSampleV2(request), StatusRuntimeException.class);
+    }
+
+    @Test
+    public void testServiceRequestInGrpcV2() {
+        final Metadata headers = new Metadata();
+        final Metadata.Key<String> tokenKey = Metadata.Key.of("token", Metadata.ASCII_STRING_MARSHALLER);
+        headers.put(tokenKey, "myToken");
+
+        final SampleServiceV2Grpc.SampleServiceV2BlockingStub stub = MetadataUtils.attachHeaders(
+            SampleServiceV2Grpc.newBlockingStub(testServerWrapper.getChannel()),
+            headers
+        );
 
         final SampleRequestV2 request = SampleRequestV2.newBuilder()
             .setIntField(1).setStringField("myString").build();
@@ -254,9 +276,27 @@ public class SampleGrpcWebAppFTest {
     }
 
     @Test
-    public void testServiceRequestInGrpcV3() {
+    public void testServiceInterceptorInGrpcV3() {
         final SampleServiceV3Grpc.SampleServiceV3BlockingStub stub =
             SampleServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel());
+
+        final SampleRequestV3 request = SampleRequestV3.newBuilder()
+            .setIntField(1).setStringField("myString").build();
+        // We'll verify that the interceptor exists because we have not
+        // set the proper token header on our request
+        verifyException(() -> stub.getSampleV3(request), StatusRuntimeException.class);
+    }
+
+    @Test
+    public void testServiceRequestInGrpcV3() {
+        final Metadata headers = new Metadata();
+        final Metadata.Key<String> tokenKey = Metadata.Key.of("token", Metadata.ASCII_STRING_MARSHALLER);
+        headers.put(tokenKey, "myToken");
+
+        final SampleServiceV3Grpc.SampleServiceV3BlockingStub stub = MetadataUtils.attachHeaders(
+            SampleServiceV3Grpc.newBlockingStub(testServerWrapper.getChannel()),
+            headers
+        );
 
         final SampleRequestV3 request = SampleRequestV3.newBuilder()
             .setIntField(1).setStringField("myString").build();

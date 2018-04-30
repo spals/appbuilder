@@ -1,6 +1,5 @@
 package net.spals.appbuilder.app.examples.grpc.sample.web;
 
-import com.google.inject.Inject;
 import io.grpc.stub.StreamObserver;
 import net.spals.appbuilder.annotations.service.AutoBindSingleton;
 import net.spals.appbuilder.app.examples.grpc.sample.SampleRequestV3;
@@ -13,10 +12,7 @@ import net.spals.appbuilder.app.examples.grpc.sample.SampleServiceV3Grpc;
  * @author tkral
  */
 @AutoBindSingleton
-public class SampleGrpcServiceV3 extends SampleServiceV3Grpc.SampleServiceV3ImplBase {
-
-    @Inject
-    SampleGrpcServiceV3() { }
+class SampleGrpcServiceV3 extends SampleServiceV3Grpc.SampleServiceV3ImplBase {
 
     @Override
     public void getSampleV3(
