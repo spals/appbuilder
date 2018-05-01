@@ -4,21 +4,14 @@ import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
-import net.spals.appbuilder.app.dropwizard.tracing.TracingDropwizardWebApp;
+import net.spals.appbuilder.app.examples.dropwizard.tracing.TracingDropwizardWebApp;
 import org.testng.annotations.*;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 

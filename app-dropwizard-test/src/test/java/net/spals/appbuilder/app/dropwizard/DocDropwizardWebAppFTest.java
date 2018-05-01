@@ -2,7 +2,7 @@ package net.spals.appbuilder.app.dropwizard;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
-import net.spals.appbuilder.app.dropwizard.doc.DocDropwizardWebApp;
+import net.spals.appbuilder.app.examples.dropwizard.doc.DocDropwizardWebApp;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

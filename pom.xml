@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.spals</groupId>
         <artifactId>spals-parent-pom</artifactId>
-        <version>17</version>
+        <version>18</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -51,12 +51,14 @@
         <dropwizard.version>1.1.0</dropwizard.version>
         <finatra.version>2.10.0</finatra.version>
         <governator.version>1.15.10</governator.version>
+        <grpc.version>1.11.0</grpc.version>
+        <grpc.jersey.version>0.3.2</grpc.jersey.version>
         <!--
         Downgrade guava.version to allow for better backwards compatibility
         with embedded applications. Specifically, the checkState signature
         auto-generated in FreeBuilder *_Builder classes.
         -->
-        <guava.version>19.0</guava.version>
+        <guava.version>20.0</guava.version>
         <!-- NOTE: Must match what's available in governator.version -->
         <hibernate.version>5.3.4.Final</hibernate.version>
         <jasypt.version>1.9.2</jasypt.version>
@@ -64,6 +66,8 @@
         <javax.el>3.0.0</javax.el>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <javax.ws.rs-api.version>2.1</javax.ws.rs-api.version>
+        <!-- NOTE: Must match what's available in dropwizard.vesion -->
+        <jersey.version>2.25.1</jersey.version>
         <jgrapht.version>1.0.1</jgrapht.version>
         <kafka-clients.version>0.10.1.1</kafka-clients.version>
         <kinesis-client.version>1.7.4</kinesis-client.version>
@@ -73,6 +77,7 @@
         <logback.version>1.2.1</logback.version>
         <mapdb.version>3.0.3</mapdb.version>
         <mongodb-driver.version>3.5.0</mongodb-driver.version>
+        <netty.version>4.1.22.Final</netty.version>
         <opentracing.aws.version>0.0.2</opentracing.aws.version>
         <opentracing.cassandra.version>0.0.2</opentracing.cassandra.version>
         <opentracing.concurrent.version>0.0.2</opentracing.concurrent.version>
@@ -94,8 +99,11 @@
         <module>app-core-test</module>
         <module>app-dropwizard</module>
         <module>app-dropwizard-test</module>
+        <module>app-examples</module>
         <module>app-finatra</module>
         <module>app-finatra-test</module>
+        <module>app-grpc</module>
+        <module>app-grpc-test</module>
         <module>app-mock</module>
         <module>app-mock-test</module>
         <module>bom</module>
@@ -170,6 +178,16 @@
                 <groupId>com.datastax.cassandra</groupId>
                 <artifactId>cassandra-driver-core</artifactId>
                 <version>${cassandra-driver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-scala_${scala.version}</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.inject.extensions</groupId>
@@ -283,6 +301,11 @@
                 <version>${typesafe.config.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.xorlev.grpc-jersey</groupId>
+                <artifactId>jersey-rpc-support</artifactId>
+                <version>${grpc.jersey.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>de.javakaffee</groupId>
                 <artifactId>kryo-serializers</artifactId>
                 <version>${kryo-serializers.version}</version>
@@ -297,6 +320,26 @@
                 <artifactId>dropwizard-testing</artifactId>
                 <version>${dropwizard.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing</groupId>
@@ -415,6 +458,11 @@
                 <artifactId>spals-appbuilder-app-core-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder</groupId>
+                <artifactId>spals-appbuilder-app-examples</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder</groupId>
@@ -550,6 +598,17 @@
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
+                <artifactId>spals-appbuilder-app-grpc-test</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.spals.appbuilder.plugins</groupId>
                 <artifactId>spals-appbuilder-filestore-s3</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -638,6 +697,11 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
                 <version>${javax.el}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-netty-http</artifactId>
+                <version>${jersey.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>

@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "net.spals.appbuilder.app.examples.grpc.sample";
+option java_outer_classname = "SampleServerV2Proto";
+
+service SampleServiceV2 {
+    rpc GetSampleV2(SampleRequestV2) returns (SampleResponseV2) {  }
+}
+
+message SampleRequestV2 {
+    optional int32 intField = 1;
+    optional string stringField = 2;
+}
+
+message SampleResponseV2 {
+    optional int32 intField = 1;
+    optional string stringField = 2;
+}

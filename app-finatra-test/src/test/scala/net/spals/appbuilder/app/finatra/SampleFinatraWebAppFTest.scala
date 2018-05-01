@@ -5,8 +5,8 @@ import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
 import com.twitter.inject.annotations.FlagImpl
 import io.opentracing.{NoopTracer, Tracer}
-import net.spals.appbuilder.app.finatra.sample.web.{SampleFinatraController, SampleFinatraExceptionMapper, SampleFinatraFilter}
-import net.spals.appbuilder.app.finatra.sample.{SampleFinatraCustomSet, SampleFinatraCustomSingleton, SampleFinatraWebApp}
+import net.spals.appbuilder.app.examples.finatra.sample.web.{SampleFinatraController, SampleFinatraExceptionMapper, SampleFinatraFilter}
+import net.spals.appbuilder.app.examples.finatra.sample.{SampleFinatraCustomSet, SampleFinatraCustomSingleton, SampleFinatraWebApp}
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
@@ -67,7 +67,7 @@ class SampleFinatraWebAppFTest {
   @DataProvider def customModuleInjectionProvider(): Array[Array[AnyRef]] = {
     Array(
       Array("AutoBoundModule",
-        "net.spals.appbuilder.app.finatra.sample.SampleFinatraWebApp:SampleFinatraAutoBoundModule"),
+        "net.spals.appbuilder.app.examples.finatra.sample.SampleFinatraWebApp:SampleFinatraAutoBoundModule"),
       Array("GuiceModule", "SampleFinatraGuiceModule"),
       Array("TwitterModule", "SampleFinatraTwitterModule")
     )

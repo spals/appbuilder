@@ -4,7 +4,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.datastax.driver.core.Cluster
 import com.google.inject.{Key, Stage, TypeLiteral}
 import com.twitter.finatra.http.EmbeddedHttpServer
-import net.spals.appbuilder.app.finatra.plugins.PluginsFinatraWebApp
+import net.spals.appbuilder.app.examples.finatra.plugins.PluginsFinatraWebApp
 import net.spals.appbuilder.filestore.core.{FileStore, FileStorePlugin}
 import net.spals.appbuilder.keystore.core.{KeyStore, KeyStorePlugin}
 import net.spals.appbuilder.mapstore.core.{MapStore, MapStoreIndex, MapStoreIndexPlugin, MapStorePlugin}

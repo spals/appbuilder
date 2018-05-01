@@ -12,12 +12,13 @@ import com.twitter.finatra.http.exceptions.ExceptionManager
 import com.twitter.finatra.http.marshalling.{DefaultMessageBodyReader, DefaultMessageBodyWriter}
 import com.twitter.finatra.http.response.ResponseBuilder
 import io.opentracing.Tracer
-import net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp
+import net.spals.appbuilder.app.examples.finatra.minimal.MinimalFinatraWebApp
 import net.spals.appbuilder.executor.core.ExecutorServiceFactory
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.{instanceOf, is, notNullValue}
 import org.slf4j
 import org.testng.annotations.{AfterClass, BeforeClass, DataProvider, Test}
+
 /**
   * Functional tests for a minimal [[FinatraWebApp]]
   *
@@ -44,7 +45,7 @@ class MinimalFinatraWebAppFTest {
   }
 
   @Test def testFinatraWebAppName() {
-    assertThat(minimalApp.getName, is("net.spals.appbuilder.app.finatra.minimal.MinimalFinatraWebApp"))
+    assertThat(minimalApp.getName, is("net.spals.appbuilder.app.examples.finatra.minimal.MinimalFinatraWebApp"))
   }
 
   @DataProvider def defaultServiceConfigProvider(): Array[Array[AnyRef]] = {

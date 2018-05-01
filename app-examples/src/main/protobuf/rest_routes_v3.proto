@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+// Should be included in the service packages scanned by ServiceScan
+option java_package = "net.spals.appbuilder.app.examples.grpc.rest";
+option java_outer_classname = "RestServerV3Proto";
+
+import "google/api/annotations.proto";
+
+service UserServiceV3 {
+    rpc DeleteUserV3(DeleteUserRequestV3) returns (DeleteUserResponseV3) {
+        option (google.api.http).delete = "/v3/users/{id}";
+    }
+
+    rpc GetUserV3(GetUserRequestV3) returns (GetUserResponseV3) {
+        option (google.api.http).get = "/v3/users/{id}";
+    }
+
+    rpc PostUserV3(PostUserRequestV3) returns (PostUserResponseV3) {
+        option (google.api.http) = {
+            post: "/v3/users/",
+            body: "*";
+        };
+    }
+}
+
+message DeleteUserRequestV3 {
+    string id = 1;
+}
+
+message DeleteUserResponseV3 {
+    string id = 1;
+}
+
+message GetUserRequestV3 {
+    string id = 1;
+}
+
+message GetUserResponseV3 {
+    string id = 1;
+    string name = 2;
+}
+
+message PostUserRequestV3 {
+    string name = 1;
+}
+
+message PostUserResponseV3 {
+    string id = 1;
+    string name = 2;
+}
+
+message UserRecordV3 {
+    string id = 1;
+    string name = 2;
+}

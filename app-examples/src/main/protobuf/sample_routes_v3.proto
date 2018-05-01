@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.spals.appbuilder.app.examples.grpc.sample";
+option java_outer_classname = "SampleServerV3Proto";
+
+service SampleServiceV3 {
+    rpc GetSampleV3(SampleRequestV3) returns (SampleResponseV3) {  }
+}
+
+message SampleRequestV3 {
+    int32 intField = 1;
+    string stringField = 2;
+}
+
+message SampleResponseV3 {
+    int32 intField = 1;
+    string stringField = 2;
+}

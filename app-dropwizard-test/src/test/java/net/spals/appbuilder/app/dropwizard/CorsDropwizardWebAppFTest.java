@@ -2,7 +2,7 @@ package net.spals.appbuilder.app.dropwizard;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.testing.DropwizardTestSupport;
-import net.spals.appbuilder.app.dropwizard.cors.CorsDropwizardWebApp;
+import net.spals.appbuilder.app.examples.dropwizard.cors.CorsDropwizardWebApp;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -49,14 +49,14 @@ public class CorsDropwizardWebAppFTest {
     public void testCorsEnabled() {
         final String target = "http://localhost:" + testServerWrapper.getLocalPort() + "/cors/get";
         final WebTarget webTarget = webClient.target(target);
-        final Response docResponse = webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
+        final Response corsResponse = webTarget.request(MediaType.APPLICATION_JSON_TYPE).get();
 
-        assertThat(docResponse.getStatus(), is(OK.getStatusCode()));
-        assertThat(docResponse.getStringHeaders(), hasEntry(is("Access-Control-Allow-Origin"), contains("*")));
-        assertThat(docResponse.getStringHeaders(), hasEntry(is("Access-Control-Allow-Credentials"), contains("true")));
-        assertThat(docResponse.getStringHeaders(),
+        assertThat(corsResponse.getStatus(), is(OK.getStatusCode()));
+        assertThat(corsResponse.getStringHeaders(), hasEntry(is("Access-Control-Allow-Origin"), contains("*")));
+        assertThat(corsResponse.getStringHeaders(), hasEntry(is("Access-Control-Allow-Credentials"), contains("true")));
+        assertThat(corsResponse.getStringHeaders(),
             hasEntry(is("Access-Control-Allow-Headers"), contains("origin, content-type, accept, authorization")));
-        assertThat(docResponse.getStringHeaders(),
+        assertThat(corsResponse.getStringHeaders(),
             hasEntry(is("Access-Control-Allow-Methods"), contains("GET, POST, PUT, DELETE, OPTIONS, HEAD")));
     }
 }
