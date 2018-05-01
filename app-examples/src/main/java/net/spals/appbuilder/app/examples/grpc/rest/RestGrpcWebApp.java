@@ -27,7 +27,7 @@ public class RestGrpcWebApp extends GrpcWebApp {
     }
 
     @Override
-    protected void configure(final Builder grpcWebAppBuilder) {
+    protected void configure(final GrpcWebApp.Builder grpcWebAppBuilder) {
         grpcWebAppBuilder
             .enableCors()
             .enableRestServer()

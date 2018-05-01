@@ -34,7 +34,7 @@ public class SampleGrpcWebApp extends GrpcWebApp {
     }
 
     @Override
-    protected void configure(final Builder grpcWebAppBuilder) {
+    protected void configure(final GrpcWebApp.Builder grpcWebAppBuilder) {
         grpcWebAppBuilder
             .enableServiceGraph(ServiceGraphFormat.TEXT)
             .setServiceConfigFromClasspath(SERVICE_CONFIG_FILE_NAME)
