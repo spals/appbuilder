@@ -47,7 +47,6 @@ public class SampleGenericWorkerAppFTest {
     private final Logger LOGGER = LoggerFactory.getLogger(MinimalGenericWorkerAppFTest.class);
 
     private final GenericWorkerApp sampleApp = new GenericWorkerApp.Builder("sample", LOGGER)
-        .enableServiceGraph(ServiceGraphFormat.ASCII)
         .setServiceConfigFromClasspath("config/sample-generic-service.conf")
         .setServiceScan(new ServiceScan.Builder()
             .addServicePackages("net.spals.appbuilder.app.core.sample")

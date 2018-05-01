@@ -70,7 +70,6 @@ public class SampleJaxRsWebAppFTest {
 
     private final JaxRsWebApp sampleApp = new JaxRsWebApp.Builder("sample", LOGGER)
         .setConfigurable(configurable)
-        .enableServiceGraph(ServiceGraphFormat.ASCII)
         .setFilterRegistration(filterRegistration)
         .setServiceConfigFromClasspath("config/sample-jaxrs-service.conf")
         .setServiceScan(new ServiceScan.Builder()
