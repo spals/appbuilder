@@ -45,12 +45,12 @@ So we are going to define a `ArithmeticCalculator` micro-service to handle this 
 
 _NOTE_: These are not complete examples. Some parts of the quickstart are left as an exercise for the reader. However, the Spals AppBuilder test suite contains the following complete examples:
  
-- A minimally viable [Java application](https://github.com/spals/appbuilder/blob/master/app-dropwizard-test/src/test/java/net/spals/appbuilder/app/dropwizard/minimal/MinimalDropwizardWebApp.java)
-- A sample [Java application](https://github.com/spals/appbuilder/blob/master/app-dropwizard-test/src/test/java/net/spals/appbuilder/app/dropwizard/sample/SampleDropwizardWebApp.java) which uses pre-defined micro-services, configures their default implementations, and defines custom micro-services
-- A sample [Java application](https://github.com/spals/appbuilder/blob/master/app-dropwizard-test/src/test/java/net/spals/appbuilder/app/dropwizard/plugins/PluginsDropwizardWebApp.java) which uses pre-defined micro-services and configures their alternate implementations (plugins)
-- A minimally viable [Scala application](https://github.com/spals/appbuilder/blob/master/app-finatra-test/src/test/scala/net/spals/appbuilder/app/finatra/minimal/MinimalFinatraWebApp.scala)
-- A sample [Scala application](https://github.com/spals/appbuilder/blob/master/app-finatra-test/src/test/scala/net/spals/appbuilder/app/finatra/sample/SampleFinatraWebApp.scala)  which uses pre-defined micro-services, configures their default implementations, and defines custom micro-services
-- A sample [Scala application](https://github.com/spals/appbuilder/blob/master/app-finatra-test/src/test/scala/net/spals/appbuilder/app/finatra/plugins/PluginsFinatraWebApp.scala) which uses pre-defined micro-services and configures their alternate implementations (plugins)
+- A minimally viable [Java application](https://github.com/spals/appbuilder/blob/master/app-examples/src/main/java/net/spals/appbuilder/app/examples/dropwizard/minimal/MinimalDropwizardWebApp.java)
+- A sample [Java application](https://github.com/spals/appbuilder/blob/master/app-examples/src/main/java/net/spals/appbuilder/app/examples/dropwizard/sample/SampleDropwizardWebApp.java) which uses pre-defined micro-services, configures their default implementations, and defines custom micro-services
+- A sample [Java application](https://github.com/spals/appbuilder/blob/master/app-examples/src/main/java/net/spals/appbuilder/app/examples/dropwizard/plugins/PluginsDropwizardWebApp.java) which uses pre-defined micro-services and configures their alternate implementations (plugins)
+- A minimally viable [Scala application](https://github.com/spals/appbuilder/blob/master/app-examples/src/main/scala/net/spals/appbuilder/app/examples/finatra/minimal/MinimalFinatraWebApp.scala)
+- A sample [Scala application](https://github.com/spals/appbuilder/blob/master/app-examples/src/main/scala/net/spals/appbuilder/app/examples/finatra/sample/SampleFinatraWebApp.scala)  which uses pre-defined micro-services, configures their default implementations, and defines custom micro-services
+- A sample [Scala application](https://github.com/spals/appbuilder/blob/master/app-examples/src/main/scala/net/spals/appbuilder/app/examples/finatra/plugins/PluginsFinatraWebApp.scala) which uses pre-defined micro-services and configures their alternate implementations (plugins)
 
 ## Installation
 
