@@ -57,6 +57,7 @@ public class SampleGrpcWebAppFTest {
     @AfterClass
     void classTearDown() {
         testServerWrapper.after();
+        assertThat(sampleApp.isRunning(), is(false));
     }
 
     @DataProvider

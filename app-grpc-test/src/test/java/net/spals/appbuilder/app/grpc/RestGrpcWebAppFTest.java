@@ -59,6 +59,7 @@ public class RestGrpcWebAppFTest {
         mapStore.dropTable("users");
 
         testServerWrapper.after();
+        assertThat(restApp.isRunning(), is(false));
     }
 
     @Test

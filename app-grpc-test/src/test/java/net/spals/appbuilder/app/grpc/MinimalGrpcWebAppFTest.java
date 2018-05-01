@@ -35,6 +35,7 @@ public class MinimalGrpcWebAppFTest {
     @AfterClass
     void classTearDown() {
         testServerWrapper.after();
+        assertThat(minimalApp.isRunning(), is(false));
     }
 
     @Test

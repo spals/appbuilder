@@ -56,8 +56,7 @@ public abstract class GrpcWebApp implements App {
 
     protected GrpcWebApp(final int grpcPort) {
         grpcWebAppBuilder = new GrpcWebApp.Builder(
-            getClass().getSimpleName() /* name */,
-            LoggerFactory.getLogger(getClass()),
+            new GenericWorkerApp.Builder(getClass().getSimpleName() /* name */, LoggerFactory.getLogger(getClass())),
             ServerBuilder.forPort(grpcPort),
             this
         );
@@ -182,18 +181,16 @@ public abstract class GrpcWebApp implements App {
         private final GenericWorkerApp.Builder appDelegateBuilder;
 
         private final GrpcWebApp grpcWebApp;
-
         private final GrpcWebServerModule.Builder webServerModuleBuilder =
             new GrpcWebServerModule.Builder();
 
-        private Builder(
-            final String name,
-            final Logger logger,
+        Builder(
+            final GenericWorkerApp.Builder appDelegateBuilder,
             final ServerBuilder<?> grpcExternalServerBuilder,
             final GrpcWebApp grpcWebApp
         ) {
-            appDelegateBuilder = new GenericWorkerApp.Builder(name, logger);
-            webServerModuleBuilder.setApplicationName(name);
+            this.appDelegateBuilder = appDelegateBuilder;
+            webServerModuleBuilder.setApplicationName(appDelegateBuilder.getName());
             setGrpcExternalServerBuilder(grpcExternalServerBuilder);
 
             this.grpcWebApp = grpcWebApp;
