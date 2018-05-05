@@ -55,7 +55,6 @@ public class PluginsDropwizardWebApp extends Application<Configuration> {
                 .addServicePlugins("net.spals.appbuilder.mapstore.dynamodb", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.mapstore.mongodb", MapStore.class)
                 .addServicePlugins("net.spals.appbuilder.message.kafka", MessageConsumer.class, MessageProducer.class)
-                .addServicePlugins("net.spals.appbuilder.message.kinesis", MessageConsumer.class, MessageProducer.class)
                 .addServicePlugins("net.spals.appbuilder.model.protobuf", ModelSerializer.class)
                 .addServicePlugins("net.spals.appbuilder.monitor.lightstep", Tracer.class)
                 .build());

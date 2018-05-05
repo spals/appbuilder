@@ -70,8 +70,6 @@
         <jersey.version>2.25.1</jersey.version>
         <jgrapht.version>1.0.1</jgrapht.version>
         <kafka-clients.version>0.10.1.1</kafka-clients.version>
-        <kinesis-client.version>1.7.4</kinesis-client.version>
-        <kinesis-producer.version>0.12.3</kinesis-producer.version>
         <kryo-serializers.version>0.41</kryo-serializers.version>
         <lightstep.tracer.version>0.12.15</lightstep.tracer.version>
         <logback.version>1.2.1</logback.version>
@@ -131,7 +129,6 @@
         <module>message-core-test</module>
         <module>message-kafka</module>
         <module>message-kafka-test</module>
-        <module>message-kinesis</module>
         <module>model-core</module>
         <module>model-core-test</module>
         <module>model-protobuf</module>
@@ -151,22 +148,7 @@
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
-                <artifactId>amazon-kinesis-client</artifactId>
-                <version>${kinesis-client.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>amazon-kinesis-producer</artifactId>
-                <version>${kinesis-producer.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-dynamodb</artifactId>
-                <version>${aws-java-sdk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-kinesis</artifactId>
                 <version>${aws-java-sdk.version}</version>
             </dependency>
             <dependency>
@@ -661,11 +643,6 @@
                 <artifactId>spals-appbuilder-message-kafka-test</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.spals.appbuilder.plugins</groupId>
-                <artifactId>spals-appbuilder-message-kinesis</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spals.appbuilder.plugins</groupId>

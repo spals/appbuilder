@@ -135,10 +135,9 @@ public class PluginsDropwizardWebAppFTest {
             new TypeLiteral<Map<String, MessageConsumerPlugin>>(){};
         final Map<String, MessageConsumerPlugin> messageConsumerPluginMap =
             serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey));
-        assertThat(messageConsumerPluginMap, aMapWithSize(3));
+        assertThat(messageConsumerPluginMap, aMapWithSize(2));
         assertThat(messageConsumerPluginMap, hasKey("blockingQueue"));
         assertThat(messageConsumerPluginMap, hasKey("kafka"));
-        assertThat(messageConsumerPluginMap, hasKey("kinesis"));
     }
 
     @Test
@@ -150,10 +149,9 @@ public class PluginsDropwizardWebAppFTest {
             new TypeLiteral<Map<String, MessageProducerPlugin>>(){};
         final Map<String, MessageProducerPlugin> messageProducerPluginMap =
             serviceInjector.getInstance(Key.get(messageProducerPluginMapKey));
-        assertThat(messageProducerPluginMap, aMapWithSize(3));
+        assertThat(messageProducerPluginMap, aMapWithSize(2));
         assertThat(messageProducerPluginMap, hasKey("blockingQueue"));
         assertThat(messageProducerPluginMap, hasKey("kafka"));
-        assertThat(messageProducerPluginMap, hasKey("kinesis"));
     }
 
     @Test

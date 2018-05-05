@@ -86,10 +86,6 @@
         </dependency>
         <dependency>
             <groupId>net.spals.appbuilder.plugins</groupId>
-            <artifactId>spals-appbuilder-message-kinesis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.spals.appbuilder.plugins</groupId>
             <artifactId>spals-appbuilder-model-protobuf</artifactId>
         </dependency>
         <dependency>

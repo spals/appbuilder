@@ -101,10 +101,9 @@ class PluginsFinatraWebAppFTest {
 
     val messageConsumerPluginMapKey = new TypeLiteral[java.util.Map[String, MessageConsumerPlugin]](){}
     val messageConsumerPluginMap = serviceInjector.getInstance(Key.get(messageConsumerPluginMapKey))
-    assertThat(messageConsumerPluginMap, Matchers.aMapWithSize[String, MessageConsumerPlugin](3))
+    assertThat(messageConsumerPluginMap, Matchers.aMapWithSize[String, MessageConsumerPlugin](2))
     assertThat(messageConsumerPluginMap, hasKey("blockingQueue"))
     assertThat(messageConsumerPluginMap, hasKey("kafka"))
-    assertThat(messageConsumerPluginMap, hasKey("kinesis"))
   }
 
   @Test def testMessageProducerInjection() {
@@ -113,10 +112,9 @@ class PluginsFinatraWebAppFTest {
 
     val messageProducerPluginMapKey = new TypeLiteral[java.util.Map[String, MessageProducerPlugin]](){}
     val messageProducerPluginMap = serviceInjector.getInstance(Key.get(messageProducerPluginMapKey))
-    assertThat(messageProducerPluginMap, Matchers.aMapWithSize[String, MessageProducerPlugin](3))
+    assertThat(messageProducerPluginMap, Matchers.aMapWithSize[String, MessageProducerPlugin](2))
     assertThat(messageProducerPluginMap, hasKey("blockingQueue"))
     assertThat(messageProducerPluginMap, hasKey("kafka"))
-    assertThat(messageProducerPluginMap, hasKey("kinesis"))
   }
 
   @Test def testModelInjection() {
