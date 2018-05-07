@@ -6,9 +6,7 @@ import com.google.common.io.Resources;
 import net.spals.appbuilder.filestore.core.model.*;
 import org.testng.annotations.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -70,13 +68,13 @@ public class LocalFSFileStorePluginFTest {
     }
 
     @Test
-    public void testGetFile() throws IOException {
+    public void testGetFileMetadata() throws IOException {
         final Path basePath = Files.createTempDir().toPath();
         final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
 
         final FileStoreKey fileKey = new FileStoreKey.Builder()
                 .setPartition("LocalFSFileStorePluginFTest")
-                .setId("testGetFile.txt")
+                .setId("testGetFileMetadata.txt")
                 .build();
         final InputStream fileStream = new ByteArrayInputStream("abcde".getBytes());
         final PutFileRequest putFileRequest = new PutFileRequest.Builder().setFileStream(fileStream)
@@ -86,6 +84,55 @@ public class LocalFSFileStorePluginFTest {
         final Optional<FileMetadata> getFileMetadata = fileStorePlugin.getFileMetadata(fileKey);
         assertThat(getFileMetadata, not(Optional.empty()));
         assertThat(getFileMetadata.get(), is(putFileMetadata));
+    }
+
+    @Test
+    public void testGetFileMetadataMissing() throws IOException {
+        final Path basePath = Files.createTempDir().toPath();
+        final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
+
+        final FileStoreKey fileKey = new FileStoreKey.Builder()
+            .setPartition("LocalFSFileStorePluginFTest")
+            .setId("testGetFileMetadataMissing.txt")
+            .build();
+
+        final Optional<FileMetadata> getFileMetadata = fileStorePlugin.getFileMetadata(fileKey);
+        assertThat(getFileMetadata, is(Optional.empty()));
+    }
+
+    @Test
+    public void testGetFileContent() throws IOException {
+        final Path basePath = Files.createTempDir().toPath();
+        final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
+
+        final FileStoreKey fileKey = new FileStoreKey.Builder()
+            .setPartition("LocalFSFileStorePluginFTest")
+            .setId("testGetFileContent.txt")
+            .build();
+        final InputStream fileStream = new ByteArrayInputStream("abcde".getBytes());
+        final PutFileRequest putFileRequest = new PutFileRequest.Builder().setFileStream(fileStream)
+            .setFileSecurityLevel(FileSecurityLevel.PUBLIC).build();
+        fileStorePlugin.putFile(fileKey, putFileRequest);
+
+        final Optional<InputStream> getFileContent = fileStorePlugin.getFileContent(fileKey);
+        assertThat(getFileContent, not(Optional.empty()));
+
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(getFileContent.get()));
+        assertThat(reader.readLine(), is("abcde"));
+    }
+
+    @Test
+    public void testGetFileContentMissing() throws IOException {
+        final Path basePath = Files.createTempDir().toPath();
+        final LocalFSFileStorePlugin fileStorePlugin = new LocalFSFileStorePlugin(basePath);
+
+        final FileStoreKey fileKey = new FileStoreKey.Builder()
+            .setPartition("LocalFSFileStorePluginFTest")
+            .setId("testGetFileContentMissing.txt")
+            .build();
+
+        final Optional<InputStream> getFileContent = fileStorePlugin.getFileContent(fileKey);
+        assertThat(getFileContent, is(Optional.empty()));
     }
 
     @Test
