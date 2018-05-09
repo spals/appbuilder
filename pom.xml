@@ -743,6 +743,45 @@
                                 <configuration>
                                     <createSourcesJar>true</createSourcesJar>
                                     <minimizeJar>true</minimizeJar>
+                                    <!-- Relocation common packages that applications may want to upgrade -->
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>com.amazonaws</pattern>
+                                            <shadedPattern>net.spals.shaded.com.amazonaws</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.fasterxml.jackson</pattern>
+                                            <shadedPattern>net.spals.shaded.com.fasterxml.jackson</shadedPattern>
+                                        </relocation>
+                                        <relation>
+                                            <pattern>com.google.auto.value</pattern>
+                                            <shadedPattern>net.spals.shaded.com.google.auto.value</shadedPattern>
+                                        </relation>
+                                        <relocation>
+                                            <pattern>com.google.common</pattern>
+                                            <shadedPattern>net.spals.shaded.com.google.common</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.google.protobuf</pattern>
+                                            <shadedPattern>net.spals.shaded.com.google.protobuf</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.apache.http</pattern>
+                                            <shadedPattern>net.spals.shaded.org.apache.http</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.inferred.freebuilder</pattern>
+                                            <shadedPattern>net.spals.shaded.org.inferred.freebuilder</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.joda.time</pattern>
+                                            <shadedPattern>net.spals.shaded.org.joda.time</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>org.yaml.snakeyaml</pattern>
+                                            <shadedPattern>net.spals.shaded.org.yaml.snakeyaml</shadedPattern>
+                                        </relocation>
+                                    </relocations>
                                     <shadedArtifactAttached>true</shadedArtifactAttached>
                                     <shadedClassifierName>bundle</shadedClassifierName>
                                     <shadeTestJar>false</shadeTestJar>
