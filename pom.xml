@@ -744,6 +744,17 @@
                                 </goals>
                                 <configuration>
                                     <createSourcesJar>true</createSourcesJar>
+                                    <!-- Exclude signature files from any bundle -->
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
                                     <minimizeJar>${maven-shade-plugin.minimizeJar}</minimizeJar>
                                     <!-- Relocation common packages that applications may want to upgrade -->
                                     <relocations>
