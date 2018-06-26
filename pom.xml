@@ -754,6 +754,13 @@
                                                 <exclude>META-INF/*.RSA</exclude>
                                             </excludes>
                                         </filter>
+                                        <filter>
+                                            <!-- Specifically include Jackson databind ext classes for Dropwizard application startup -->
+                                            <artifact>com.fasterxml.jackson.core:jackson-databind</artifact>
+                                            <includes>
+                                                <include>com/fasterxml/jackson/databind/ext/**</include>
+                                            </includes>
+                                        </filter>
                                     </filters>
                                     <minimizeJar>${maven-shade-plugin.minimizeJar}</minimizeJar>
                                     <!-- Relocation common packages that applications may want to upgrade -->
