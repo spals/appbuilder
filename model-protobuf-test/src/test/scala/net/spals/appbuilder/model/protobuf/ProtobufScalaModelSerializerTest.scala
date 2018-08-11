@@ -41,10 +41,21 @@ class ProtobufScalaModelSerializerTest {
   def testModelEquality(modelObject: Any) {
     val modelSerializer = new ProtobufModelSerializer
 
-    val serializedModelObject = modelSerializer.serialize(modelObject)
-    assertThat(serializedModelObject, is(notNullValue))
+    val bytes = modelSerializer.serialize(modelObject)
+    assertThat(bytes, is(notNullValue))
 
-    val deserializedModelObject = modelSerializer.deserialize(serializedModelObject)
+    val deserializedModelObject = modelSerializer.deserialize(bytes)
+    assertThat(deserializedModelObject, is(modelObject))
+  }
+
+//  @Test(dataProvider = "modelEqualityProvider")
+  def testModelEqualityJson(modelObject: Any): Unit = {
+    val modelSerializer = new ProtobufModelSerializer
+
+    val json = modelSerializer.jsonSerialize(modelObject)
+    assertThat(json, is(notNullValue))
+
+    val deserializedModelObject = modelSerializer.jsonDeserialize(json)
     assertThat(deserializedModelObject, is(modelObject))
   }
 }

@@ -12,6 +12,8 @@ import org.hamcrest.Matcher;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -48,11 +50,22 @@ public class ProtobufJavaModelSerializerTest {
     public void testModelEquality(final Object modelObject) {
         final ProtobufModelSerializer modelSerializer = new ProtobufModelSerializer();
 
-        final byte[] serializedModelObject = modelSerializer.serialize(modelObject);
-        assertThat(serializedModelObject, is(notNullValue()));
-        assertThat(serializedModelObject, not((Matcher)emptyArray()));
+        final byte[] bytes = modelSerializer.serialize(modelObject);
+        assertThat(bytes, is(notNullValue()));
+        assertThat(bytes, not((Matcher)emptyArray()));
 
-        final Object deserializedModelObject = modelSerializer.deserialize(serializedModelObject);
+        final Object deserializedModelObject = modelSerializer.deserialize(bytes);
+        assertThat(deserializedModelObject, is(modelObject));
+    }
+
+    @Test(dataProvider = "modelEqualityProvider")
+    public void testModelEqualityJson(final Object modelObject) throws IOException {
+        final ProtobufModelSerializer modelSerializer = new ProtobufModelSerializer();
+
+        final String json = modelSerializer.jsonSerialize(modelObject);
+        assertThat(json, is(notNullValue()));
+
+        final Object deserializedModelObject = modelSerializer.jsonDeserialize(json);
         assertThat(deserializedModelObject, is(modelObject));
     }
 }

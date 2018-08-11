@@ -28,10 +28,21 @@ class PojoScalaModelSerializerTest {
   def testModelEquality(modelObject: AnyRef) {
     val modelSerializer = new PojoModelSerializer
 
-    val serializedModelObject = modelSerializer.serialize(modelObject)
-    assertThat(serializedModelObject, is(notNullValue))
+    val bytes = modelSerializer.serialize(modelObject)
+    assertThat(bytes, is(notNullValue))
 
-    val deserializedModelObject = modelSerializer.deserialize(serializedModelObject)
+    val deserializedModelObject = modelSerializer.deserialize(bytes)
+    assertThat(deserializedModelObject, is(modelObject))
+  }
+
+//  @Test(dataProvider = "modelEqualityProvider")
+  def testModelEqualityJson(modelObject: AnyRef) {
+    val modelSerializer = new PojoModelSerializer
+
+    val json = modelSerializer.jsonSerialize(modelObject)
+    assertThat(json, is(notNullValue))
+
+    val deserializedModelObject = modelSerializer.jsonDeserialize(json)
     assertThat(deserializedModelObject, is(modelObject))
   }
 
