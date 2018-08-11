@@ -45,14 +45,7 @@ class DefaultMessageProducer implements MessageProducer {
         final ModelSerializer modelSerializer = loadModelSerializer(producerConfig);
         final MessageProducerPlugin messageProducerPlugin = loadMessageProducerPlugin(producerConfig);
 
-        final byte[] serializedPayload;
-        try {
-            serializedPayload = modelSerializer.serialize(payload);
-        } catch (IOException e) {
-            logger.error("Error while serializing message payload with " + producerConfig.getFormat(), e);
-            return;
-        }
-
+        final byte[] serializedPayload = modelSerializer.serialize(payload);
         try {
             messageProducerPlugin.sendMessage(producerConfig, serializedPayload);
         } catch (IOException e) {
