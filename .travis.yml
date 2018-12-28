@@ -21,8 +21,8 @@ before_install:
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/settings.xml -O ${TRAVIS_BUILD_DIR}/.travis/settings.xml
 
 install:
-  - mvn --settings .travis/settings.xml --show-version dependency:resolve -Ddeploy
-  - mvn --settings .travis/settings.xml --show-version dependency:resolve-plugins -Ddeploy
+  - mvn --quiet --settings .travis/settings.xml dependency:resolve -Ddeploy
+  - mvn --quiet --settings .travis/settings.xml dependency:resolve-plugins -Ddeploy
 
 script:
   - mvn -T 2.0C --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
