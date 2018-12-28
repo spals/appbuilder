@@ -8,7 +8,7 @@ sudo: required
 
 cache:
   directories:
-    - ${HOME}/.m2/repository
+    - ${HOME}/.m2
 
 services:
   - docker
@@ -21,11 +21,11 @@ before_install:
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/settings.xml -O ${TRAVIS_BUILD_DIR}/.travis/settings.xml
 
 script:
-  - mvn --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
+  - mvn -T 2.0C --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
 
 before_deploy:
-  - mvn --settings .travis/settings.xml --show-version dependency:resolve -Ddeploy
-  - mvn --settings .travis/settings.xml --show-version dependency:resolve-plugins -Ddeploy
+  - mvn -T 2.0C --settings .travis/settings.xml --show-version dependency:resolve -Ddeploy
+  - mvn -T 2.0C --settings .travis/settings.xml --show-version dependency:resolve-plugins -Ddeploy
 
 deploy:
   - provider: script
