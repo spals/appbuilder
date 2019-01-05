@@ -8,6 +8,7 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import io.dropwizard.Configuration;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.Tracer;
 import net.spals.appbuilder.app.examples.dropwizard.minimal.MinimalDropwizardWebApp;
@@ -32,7 +33,11 @@ import static org.hamcrest.Matchers.notNullValue;
 public class MinimalDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-        new DropwizardTestSupport<>(MinimalDropwizardWebApp.class, new Configuration());
+        new DropwizardTestSupport<>(
+            MinimalDropwizardWebApp.class,
+            "",
+            ConfigOverride.config("server.applicationConnectors[0].port", "0")
+        );
     private DropwizardWebApp webAppDelegate;
 
     @BeforeClass
