@@ -33,7 +33,7 @@ public class GrpcWebAppWithMocks extends GrpcWebApp {
     private GrpcWebAppWithMocks(
         final GrpcWebApp delegateWebApp
     ) {
-        super(0);
+        super(delegateWebApp.getGrpcPort());
         this.delegateWebApp = delegateWebApp;
     }
 
