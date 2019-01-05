@@ -25,7 +25,7 @@ install:
   - mvn --quiet --settings .travis/settings.xml dependency:resolve-plugins -Ddeploy
 
 script:
-  - mvn -T 2.0C --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
+  - mvn --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
 
 deploy:
   - provider: script
