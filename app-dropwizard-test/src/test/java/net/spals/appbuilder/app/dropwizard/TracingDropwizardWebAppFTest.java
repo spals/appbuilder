@@ -1,6 +1,7 @@
 package net.spals.appbuilder.app.dropwizard;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -24,7 +25,11 @@ import static org.hamcrest.Matchers.*;
 public class TracingDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-        new DropwizardTestSupport<>(TracingDropwizardWebApp.class, new Configuration());
+        new DropwizardTestSupport<>(
+            TracingDropwizardWebApp.class,
+            "",
+            ConfigOverride.config("server.applicationConnectors[0].port", "0")
+        );
     private MockTracer mockTracer;
 
     private final Client webClient = ClientBuilder.newClient();

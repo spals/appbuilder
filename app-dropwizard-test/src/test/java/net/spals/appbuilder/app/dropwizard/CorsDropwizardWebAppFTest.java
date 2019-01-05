@@ -1,6 +1,7 @@
 package net.spals.appbuilder.app.dropwizard;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
 import net.spals.appbuilder.app.examples.dropwizard.cors.CorsDropwizardWebApp;
 import org.testng.annotations.AfterClass;
@@ -26,7 +27,11 @@ import static org.hamcrest.Matchers.*;
 public class CorsDropwizardWebAppFTest {
 
     private final DropwizardTestSupport<Configuration> testServerWrapper =
-        new DropwizardTestSupport<>(CorsDropwizardWebApp.class, new Configuration());
+        new DropwizardTestSupport<>(
+            CorsDropwizardWebApp.class,
+            "",
+            ConfigOverride.config("server.applicationConnectors[0].port", "0")
+        );
 
     private final Client webClient = ClientBuilder.newClient();
 
