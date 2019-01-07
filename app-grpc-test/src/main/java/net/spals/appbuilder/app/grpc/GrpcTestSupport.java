@@ -70,8 +70,9 @@ public class GrpcTestSupport {
         try {
             grpcWebApp.start();
             LOGGER.info("Started test gRPC server on port " + grpcWebApp.getGrpcPort());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Throwable t) {
+            LOGGER.error("Unable to start test gRPC server", t);
+            throw new RuntimeException(t);
         }
     }
 
