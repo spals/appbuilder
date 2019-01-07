@@ -33,7 +33,12 @@ public class GrpcWebAppWithMocks extends GrpcWebApp {
     private GrpcWebAppWithMocks(
         final GrpcWebApp delegateWebApp
     ) {
-        super(delegateWebApp.getGrpcPort());
+        // Note: We don't forward the gRPC port from the delegate.
+        // This is because reading the port requires the gRPC server
+        // to actually be running (which it likely is not). Also, this
+        // class will be used in conjunction with GrpcTestSupport which
+        // will overwrite the port anyway.
+        super(0);
         this.delegateWebApp = delegateWebApp;
     }
 

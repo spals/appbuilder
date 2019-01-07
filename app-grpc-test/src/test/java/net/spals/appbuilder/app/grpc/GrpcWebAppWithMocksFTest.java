@@ -1,14 +1,14 @@
 package net.spals.appbuilder.app.grpc;
 
-import net.spals.appbuilder.app.examples.grpc.sample.SampleGrpcWebApp;
-import net.spals.appbuilder.filestore.core.FileStore;
-import net.spals.appbuilder.mapstore.core.MapStore;
+import net.spals.appbuilder.app.examples.grpc.minimal.MinimalGrpcWebApp;
+import net.spals.appbuilder.executor.core.ExecutorServiceFactory;
 import org.mockito.internal.util.MockUtil;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
@@ -19,9 +19,9 @@ import static org.mockito.Mockito.mock;
  */
 public class GrpcWebAppWithMocksFTest {
 
-    private final GrpcWebApp sampleAppWithMocks = GrpcWebAppWithMocks.grpcWithMocks(new SampleGrpcWebApp())
-        .addMockSingleton(mock(MapStore.class), MapStore.class);
-    private final GrpcTestSupport testServerWrapper = GrpcTestSupport.embeddedGrpc(sampleAppWithMocks);
+    private final GrpcWebApp minimalAppWithMocks = GrpcWebAppWithMocks.grpcWithMocks(new MinimalGrpcWebApp())
+        .addMockSingleton(mock(ExecutorServiceFactory.class), ExecutorServiceFactory.class);
+    private final GrpcTestSupport testServerWrapper = GrpcTestSupport.nettyGrpc(minimalAppWithMocks);
 
     @BeforeClass
     void classSetup() {
@@ -31,22 +31,21 @@ public class GrpcWebAppWithMocksFTest {
     @AfterClass
     void classTearDown() {
         testServerWrapper.after();
-        assertThat(sampleAppWithMocks.isRunning(), is(false));
+        assertThat(minimalAppWithMocks.isRunning(), is(false));
+    }
+
+    @Test
+    public void testPositiveGrpcPortNumber() {
+        // This is really more of a test for GrpcTestSupport, but let's make
+        // sure that the 0 port number is actually overwritten.
+        assertThat(minimalAppWithMocks.getGrpcPort(), greaterThan(0));
     }
 
     @Test
     public void testInjectedMocks() {
-        // Assert that the mocked MapStore is present in the service graph.
+        // Assert that the mocked ExecutorServiceFactory is present in the service graph.
         assertThat(MockUtil.isMock(
-            sampleAppWithMocks.getServiceInjector().getInstance(MapStore.class)
+            minimalAppWithMocks.getServiceInjector().getInstance(ExecutorServiceFactory.class)
         ), is(true));
-    }
-
-    @Test
-    public void testNonInjectedMocks() {
-        // Assert that anything not mocked is left alone
-        assertThat(MockUtil.isMock(
-            sampleAppWithMocks.getServiceInjector().getInstance(FileStore.class)
-        ), is(false));
     }
 }
