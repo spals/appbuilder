@@ -22,9 +22,9 @@ before_install:
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/deploy-lib.sh -O ${TRAVIS_BUILD_DIR}/.travis/deploy-lib.sh
   - wget https://raw.githubusercontent.com/spals/parent-pom/master/.travis/settings.xml -O ${TRAVIS_BUILD_DIR}/.travis/settings.xml
 
-install:
-  - mvn --quiet --settings .travis/settings.xml dependency:resolve -Ddeploy
-  - mvn --quiet --settings .travis/settings.xml dependency:resolve-plugins -Ddeploy
+#install:
+#  - mvn --quiet --settings .travis/settings.xml dependency:resolve -Ddeploy
+#  - mvn --quiet --settings .travis/settings.xml dependency:resolve-plugins -Ddeploy
 
 script:
   - mvn --batch-mode --settings .travis/settings.xml --show-version verify -DrunReporting
