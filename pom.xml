@@ -60,7 +60,7 @@
         -->
         <guava.version>20.0</guava.version>
         <!-- NOTE: Must match what's available in governator.version -->
-        <hibernate.version>5.3.4.Final</hibernate.version>
+        <hibernate.version>5.3.6.Final</hibernate.version>
         <jasypt.version>1.9.2</jasypt.version>
         <!-- NOTE: Must match what's available in governator.version -->
         <javax.el>3.0.0</javax.el>
