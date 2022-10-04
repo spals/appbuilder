@@ -82,7 +82,7 @@
         <opentracing.jaxrs2.version>0.0.9</opentracing.jaxrs2.version>
         <opentracing.mongo.version>0.0.3</opentracing.mongo.version>
         <opentracing.version>0.30.0</opentracing.version>
-        <protobuf.version>3.3.0</protobuf.version>
+        <protobuf.version>3.16.3</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
         <swagger.version>1.5.18</swagger.version>
         <swagger.finatra.version>0.7.2</swagger.finatra.version>
